@@ -1,0 +1,6 @@
+# Folders
+crashLogs/*
+pipeline/*
+
+# Config files
+config_file*
