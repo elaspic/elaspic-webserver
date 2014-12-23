@@ -1,0 +1,107 @@
+.field {
+	margin-top: 52px;
+}
+.field .content {
+	margin-top: 40px;
+	position: relative;
+}
+/* Help */
+.helpimg {
+    margin: 20px 30px;
+    padding: 30px 60px;
+    background-color: white;
+    border: 1px solid #EBEBEB;
+    width: 700px;
+}
+.helptxt {
+    margin-left: 30px;
+}
+.helpimg img {
+    width: 100%;
+}
+p {
+    margin-top: 2px;
+}
+h4 {
+    margin-top: 12px;
+}
+h3 {
+    padding-top: 30px;
+}
+h4, .pul {
+    margin-bottom: 2px;
+}
+.mono {
+    font-size: 14px;
+}
+ul {
+    padding-left: 20px;
+    margin-top: 2px;
+    list-style: square inside url('data:image/gif;base64,R0lGODlhBQAKAIABAAAAAP///yH5BAEAAAEALAAAAAAFAAoAAAIIjI+ZwKwPUQEAOw==');
+}
+ul li {
+    text-indent: -12px;
+} 
+li span {
+    text-indent: 0;
+}
+i.click2 {
+    font-style: italic;
+}
+
+/* Reference */
+.pdesc {
+	font-size: 15px;
+	
+}
+.paper {
+	font-size: 15px;
+	font-weight: 300;
+}
+.paper a {
+	border-bottom-width: 1px;
+	border-bottom-style: dotted;
+	border-bottom-color: transparent;
+}
+
+/* Contact */
+.cont {
+	margin-bottom: 21px;
+	width: 300px;
+}
+.cont.float {
+	position: absolute;
+	top: 0;
+	left: 360px;
+}
+.cont input, .cont textarea {
+	display: block;
+	border: 1px solid #EBEBEB;
+	padding: 8px;
+	width: 100%;
+}
+.cont input {
+
+}
+.cont textarea { 
+	width: 500px;
+	height: 180px;
+}
+#cont .submit {
+	margin: 5px 0px 10px 750px;
+}
+#cont .form-response, #cont .error {
+	position: absolute;
+	bottom: 20px;
+	right: 150px;
+	text-align: right;
+	display: none;
+}
+#cont .form-response {
+	
+}
+#cont .error {
+	background-image: none;
+	font-weight: 600;
+	font-size: 13;
+}

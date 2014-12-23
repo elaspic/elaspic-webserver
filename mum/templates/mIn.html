@@ -1,0 +1,26 @@
+{% extends "in.html" %}
+
+
+
+
+{% block bodyin %}
+
+<div class="contentbox">
+    Use the format <span class="mono" style="font-weight: 600; font-size: 14px;">protein.mutation</span> (<span class="click example">example</span>): <br />
+    <div class="leftcontent">
+        <div class="text-area" spellcheck="false">
+            <div id="validation"></div>
+            <div class="textwrap"><textarea id="proteinsinput" placeholder="POLR2A.R1167A.."></textarea></div>
+        </div>
+        <div id="proteinsfile">or <span id="pfilelabel" class="click">upload file</span> <input class="hidden" id="pfile" type="file" name="fileToUpload" /> <span id="uploaderr"></span></div>
+    </div>
+    <div id="resp_wrapper">
+        <div id="input_resp" class="descbar"></div>
+        <div id="input_err" class="descbar"></div>
+    </div>
+    
+    
+</div>
+
+
+{% endblock %}
