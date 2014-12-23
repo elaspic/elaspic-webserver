@@ -1,0 +1,16 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html lang="en">
+    <head>
+       <title></title>
+    </head>
+    <body>
+<p>Hello,</p>
+<p><br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Your job: <b>{{ JID }}</b> {{ status }}.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can access it here: <a target="_blank" href="http://elaspic.kimlab.org/result/{{ JID }}/">http://elaspic.kimlab.org/result/{{ JID }}/</a>.</p>
+{% ifequal status 'is complete' %}<p><br />Please notice that your results will remain on our server for 90 days.</p>{% endifequal %}
+<p><br />If you have questions, suggestions, or problems, do not reply to this message, <br />
+ but write instead to <a target="_blank" href="mailto:{{ SUPPORT_EMAIL }}">{{ SUPPORT_EMAIL }}</a>.</p>
+<p>Cheers, <br />{{ SITE_NAME }} team</p>
+<p><br /><i><small>[This is an automatic message sent from <b>{{ SITE_NAME }}</b> web-server.]</small></i></p>
+    </body>
+</html>

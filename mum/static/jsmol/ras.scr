@@ -1,0 +1,1 @@
+y = script("show selected").split("."); z = y.join("\n").split("\n"); q = z.find("\\[").join("|"); select @q;

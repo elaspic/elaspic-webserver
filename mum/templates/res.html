@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+	{% spaceless %}
+		<div class="menupath">
+		
+			<a href="/" class="click">{{ SITE_NAME }} home</a> &#60;&#60; 
+		
+			{% ifequal current 'result2' %}<a href="{{ url }}" class="click">{% endifequal %}
+			
+			Job #{{ job.jobID }}
+			
+			{% ifequal current 'result2' %} </a> &#60;&#60; {{ data.inputIdentifier }}.{{ data.mut.mut }} {% endifequal %}
+			
+		</div>
+	{% endspaceless %}
+	
+    {% block otherfields %} {% endblock %}
+
+     <div id="cite" class="field">
+        <div class="top">
+            <div class="description"><h2>Citation</h2></div>
+            <div class="line tall"><hr /></div>
+        </div>
+        <div class="content">
+
+
+            If you use these results, please cite the papers <a target="_blank" href="/reference/" class="click">on this page</a>.
+
+
+        </div>
+    </div> 
+    
+{% endblock %}
+
+
