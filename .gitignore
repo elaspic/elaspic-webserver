@@ -1,6 +1,6 @@
 # Folders
 crashLogs/
-pipeline/*
+pipeline/
 
 # Config files
 config_file*
