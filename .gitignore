@@ -1,6 +1,7 @@
 # Folders
 crashLogs/
 pipeline/
+mum/static/jobs/*
 
 # Config files
 config_file*
