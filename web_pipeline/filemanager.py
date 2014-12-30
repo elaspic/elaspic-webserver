@@ -216,8 +216,8 @@ class FileManager(object):
 
         if filetype == 'txt':
             self.type = 'text/plain'
-            myfile.write('\t'.join(header) + '\n')
-            myfile.write('\n'.join(body))
+            myfile.write('\t'.join(header) + '\r\n')
+            myfile.write('\r\n'.join(body))
 
         elif filetype == 'zip':
             
@@ -226,8 +226,8 @@ class FileManager(object):
             # Result text files.
             if al:
                 temp2 = NamedTemporaryFile()
-                temp2.write('\t'.join(header) + '\n')
-                temp2.write('\n'.join(body))
+                temp2.write('\t'.join(header) + '\r\n')
+                temp2.write('\r\n'.join(body))
                 temp2.flush()
                 files['allresults'] = temp2.name
             
