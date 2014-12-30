@@ -103,7 +103,7 @@ function handleResults(result, ajaxRequests) {
 					var ve = 've'
 				}
 				var validateHtml = "<div><h4>" + validated + " mutation" + s + " ha" + ve + " been correctly input.</h4>" +
-								   "'<p><b></b><i>To continue, click Submit.</i></p></div>"
+								   "<p><b></b><i>To continue, input your email address (optional) and click Submit.</i></p></div>"
 				$("#input_resp").html(validateHtml);		 
 				$("#input_resp").show() 
 				$("#input_err").css('margin-top', '27px');

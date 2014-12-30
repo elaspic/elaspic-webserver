@@ -226,10 +226,10 @@ def runPipelineWrapper(mutation, jid):
             os.environ['MPLCONFIGDIR'] = ''
         except Exception:
             pass
-#        try:
-#            shutil.rmtree('/tmp/' + tempDir)
-#        except Exception:
-#            pass
+        try:
+            shutil.rmtree('/tmp/' + tempDir)
+        except Exception:
+            pass
         # Return.
         # 0: Complete without errors.
         # 1: Complete with errors.
