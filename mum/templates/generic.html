@@ -13,21 +13,23 @@
         
         	{% if help %}
 				
-				The webserver relies on two different pipelines: 
+				<p style="margin-top: 0;">The webserver relies on two different pipelines: 
 				    <a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam" style="click">PDBfam</a> 
 				and <a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" style="click">ELASPIC</a>.
-				<br /><a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam">PDBfam</a>
+				</p>
+				<p><a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam">PDBfam</a>
 				unifies domain definitions obtained from Gene3D and pFam in order to create domain 
 				boundaries that are the most consistent with both with the structural fold and the evolutionary 
 				conservation of the protein. PDBfam domain boundaries for the entire Uniprot database can be 
 				<a href="{{ STATIC_FOLDER }}download/pdbfam/">downloaded here</a>.
-				<br /><a target="_blank" href="https://bitbucket.org/ostrokach/elaspic">ELASPIC</a>
+				</p>
+				<p><a target="_blank" href="https://bitbucket.org/ostrokach/elaspic">ELASPIC</a>
 				constructs homology models of domains and domain-domain interactions, and uses those models, 
 				together with sequential and other features, to predict the energetic impact of a mutation on 
 				the stability of a single domain or the affinity between two domains. 
 				A more detailed description of the ELASPIC method, including cross-validation and comparison 
 				with existing approaches can be found in <a href="/reference/" style="click">the original publication</a>. 
-			
+				</p>
 		</div>
 	</div>
 	<div id="help2" class="field">
@@ -37,7 +39,7 @@
 		</div>
 		<div class="content">
 			
-				<h3>Run {{ SITE_NAME }}</h3>
+				<h3 style="padding-top: 0;">Run {{ SITE_NAME }}</h3>
         		<p>On the job submission page, users would see the page as below.</p>
         		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help1bwedit.png" /></div>
         		<div class="helptxt">
