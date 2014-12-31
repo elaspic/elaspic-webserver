@@ -40,7 +40,7 @@
 		<div class="content">
 			
 				<h3 style="padding-top: 0;">Run {{ SITE_NAME }}</h3>
-        		<p>On the job submission page, users would see the page as below.</p>
+        		<p>On the main input page, users will see the page as below. Follow the numbers to correctly submit a job:</p>
         		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help1bwedit.png" /></div>
         		<div class="helptxt">
             		<h4>1. Enter protein identifier</h4>
@@ -63,21 +63,21 @@
             		    protein input.
             		</p>
             		<ul><li>Warning: because ELASPIC uses structures of protein domains to predict stability/affinity effects, the 
-            		        mutation has to fall within domain boundries.
+            		        mutation has to fall within known domain boundries.
         		        </li>
         		    </ul>
             		<h4>3. Submit job</h4>
-            		<p>A valid e-mail address can to be entered to be notified about job completion. An email will be sent on job start and completion 
+            		<p>A valid e-mail address can be entered for notifications about the submitted job. An email will be sent on job start and completion 
             		with a link to the results. Check junk e-mail folder in case the notification got delivered there. </p>
             		<h4>! Switch to batch input</h4>
-            		<p>An alternative option to input multiple mutations at once or upload a file with data.</p>
+            		<p>Alternative option to input multiple mutations at once or upload a file with data.</p>
             		<h4>!! See previously run mutations</h4>
             		<p>Mutations already in the database are shown on the protein figure. Click each individual mutation to see their 
             		results in the same format as on the result page.</p>
         		</div>
 
 				<h3>{{ SITE_NAME }} prediction results</h3>
-        		<p>As output, ELASPIC gives a table of selected mutations and their predicted stability effects.</p>
+        		<p>As output, ELASPIC gives a table of selected mutations and their predicted stability effects, as seen below:</p>
         		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help2bwedit.png" /></div>
         		<div class="helptxt">
             		<h4>1. Result table</h4>
@@ -86,11 +86,11 @@
             		        <i class="click2">core</i> <small>(of domain)</small> and 
             		        <i class="click2">interface</i> <small>(between two proteins known to interact)</small></i>.
             		    Besides mutation type, the table has six colums with results: 
-            		        <b>(1-2)</b> The sequence identity and alignment score of the template used to model the protein domain structure/interaction. 
-            		        <b>(3)</b> The DOPE score of the model given by <a class="click2" target="_blank" href="https://salilab.org/modeller/">Modeller</a>. 
-            		        <b>(4-5)</b> The Gibbs free energy of the optimized wild-type and mutated models calculated by 
+            		        <b>(i-ii)</b> The sequence identity and alignment score of the template used to model the protein domain or interaction structure. 
+            		        <b>(iii)</b> The DOPE score of the model given by <a class="click2" target="_blank" href="https://salilab.org/modeller/">Modeller</a>. 
+            		        <b>(iv-v)</b> The Gibbs free energy of the optimized wild-type and mutated models calculated by 
             		              <a class="click2" target="_blank" href="http://foldx.crg.es/">FoldX</a>. 
-            		        <b>(6)</b> The final change in domain stability (core) or binding affinity (interface) as predicted by {{ SITE_NAME }}.
+            		        <b>(vi)</b> The final change in domain stability (core) or binding affinity (interface) as predicted by {{ SITE_NAME }}.
             		</p>
             		<ul><li>Notice: For interface mutations two values are given for both sequence identity and alignment score.
             		        The first one given will always be for the protein entered while the second is for the interacting protein.
@@ -113,9 +113,10 @@
             		    and sequences can be downloaded.
             		</p>
             		<h4>4. See detailed results for mutation</h4>
-            		<p>Each row can be clicked to see detailed results and models for a specific mutation.</p>
+            		<p>Each completed row can be clicked to see detailed results.</p>
         		</div>
         		<h3>Detailed results</h3>
+				<p>The detailed results include a protein domain graphic and the modelled and wild-type protein structures superimposed in an enhanced dynamic 3D structure viewer:</p>
         		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help3bwedit.png" /></div>
         		<div class="helptxt">
             		<h4>1. Affected interaction network</h4>
@@ -138,18 +139,18 @@
             		<p>
             		    A <a class="click2" target="_blank" href="http://sourceforge.net/projects/jsmol/">Jmol plugin</a> shows both the modelled wild-type and mutant 
             		    structures. 
-            		    See mouse controls <a class="click" target="_blank" href="http://wiki.jmol.org/index.php/Mouse_Manual">here</a>.
+            		    See mouse controls <a class="click" target="_blank" href="http://wiki.jmol.org/index.php/Mouse_Manual">in their wiki</a>.
             		</p>
             		<div class="helptxt">
                 		<h4>! Set quality settings</h4>
                 		<p>
                 		    Jmol runs by default in in Java mode. However, if Java not is installed or compatible with the browser 
-                		    (as on mobile phones the plugin can be run in HTML5 mode with a single click. Furthermore, if the 
+                		    (e.g. mobile phones) the plugin can be switched to HTML5 mode with a single click. Furthermore, if the 
                 		    structural rendering is too demanding for the browser, the quality can be reduced.
                 		</p>
                 		<h4>!! Set display settings</h4>
                 		<p>
-                		    The buttons below the plugin can change what is displayed. 
+                		    The buttons below the plugin can manipulate the display. 
                 		    To control details such as labels, colors, and schemes use the buttons on the left. 
                 		    To view or hide a model or protein, or to view the structures in a larger window use the buttons on the right.
                 		</p>
