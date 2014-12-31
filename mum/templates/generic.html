@@ -3,16 +3,41 @@
 {% block body %}
 
 
-     <div id="cite" class="field">
+    <div id="cite" class="field">
         <div class="top">
-            <div class="description"><h2>{% if help %}Run {{ SITE_NAME }}{% else %}{{ this|capfirst }}{% endif %}</h2></div>
+            <div class="description"><h2>{% if help %}Source and file download{% else %}{{ this|capfirst }}{% endif %}</h2></div>
             <div class="line tall"><hr /></div>
         </div>
         <div class="content">
         
         
         	{% if help %}
-        	
+				
+				The webserver relies on two different pipelines: 
+				    <a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam" style="click">PDBfam</a> 
+				and <a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" style="click">ELASPIC</a>.
+				<br /><a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam">PDBfam</a>
+				unifies domain definitions obtained from Gene3D and pFam in order to create domain 
+				boundaries that are the most consistent with both with the structural fold and the evolutionary 
+				conservation of the protein. PDBfam domain boundaries for the entire Uniprot database can be 
+				<a href="{{ STATIC_FOLDER }}download/pdbfam/">downloaded here</a>.
+				<br /><a target="_blank" href="https://bitbucket.org/ostrokach/elaspic">ELASPIC</a>
+				constructs homology models of domains and domain-domain interactions, and uses those models, 
+				together with sequential and other features, to predict the energetic impact of a mutation on 
+				the stability of a single domain or the affinity between two domains. 
+				A more detailed description of the ELASPIC method, including cross-validation and comparison 
+				with existing approaches can be found in <a href="/reference/" style="click">the original publication</a>. 
+			
+		</div>
+	</div>
+	<div id="help2" class="field">
+		<div class="top">
+			<div class="description"><h2>{{ SITE_NAME }} tutorial</h2></div>
+			<div class="line tall"><hr /></div>
+		</div>
+		<div class="content">
+			
+				<h3>Run {{ SITE_NAME }}</h3>
         		<p>On the job submission page, users would see the page as below.</p>
         		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help1bwedit.png" /></div>
         		<div class="helptxt">
@@ -40,23 +65,17 @@
         		        </li>
         		    </ul>
             		<h4>3. Submit job</h4>
-            		<p>A valid e-mail address has to be entered to submit a job. An email will be sent on job start and completion 
-            		with a link to the results. Check junk e-mail folder just in case the notification got delivered there. </p>
+            		<p>A valid e-mail address can to be entered to be notified about job completion. An email will be sent on job start and completion 
+            		with a link to the results. Check junk e-mail folder in case the notification got delivered there. </p>
             		<h4>! Switch to batch input</h4>
-            		<p>An option to input multiple mutations at once or upload a file with data is available.</p>
+            		<p>An alternative option to input multiple mutations at once or upload a file with data.</p>
             		<h4>!! See previously run mutations</h4>
             		<p>Mutations already in the database are shown on the protein figure. Click each individual mutation to see their 
             		results in the same format as on the result page.</p>
         		</div>
-        </div>
-    </div>
-    <div id="help2" class="field">
-        <div class="top">
-            <div class="description"><h2>{{ SITE_NAME }} prediction results</h2></div>
-            <div class="line tall"><hr /></div>
-        </div>
-        <div class="content">
-        		<p>As output, ELASPIC gives a table of selected mutation and their predicted stability effects.</p>
+
+				<h3>{{ SITE_NAME }} prediction results</h3>
+        		<p>As output, ELASPIC gives a table of selected mutations and their predicted stability effects.</p>
         		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help2bwedit.png" /></div>
         		<div class="helptxt">
             		<h4>1. Result table</h4>
@@ -65,7 +84,7 @@
             		        <i class="click2">core</i> <small>(of domain)</small> and 
             		        <i class="click2">interface</i> <small>(between two proteins known to interact)</small></i>.
             		    Besides mutation type, the table has six colums with results: 
-            		        <b>(1-2)</b> The sequence identity and alignment score of the template used to model the structure needed. 
+            		        <b>(1-2)</b> The sequence identity and alignment score of the template used to model the protein domain structure/interaction. 
             		        <b>(3)</b> The DOPE score of the model given by <a class="click2" target="_blank" href="https://salilab.org/modeller/">Modeller</a>. 
             		        <b>(4-5)</b> The Gibbs free energy of the optimized wild-type and mutated models calculated by 
             		              <a class="click2" target="_blank" href="http://foldx.crg.es/">FoldX</a>. 
