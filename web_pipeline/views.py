@@ -431,6 +431,8 @@ def displaySecondaryResult(request):
                     protName = UniprotIdentifier.objects.using('uniprot').get(identifierType='GeneWiki', uniprotID=prot.id)
                 except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
                     protName = prot.name.split('_')[0]
+            except HGNCIdentifier.MultipleObjectsReturned:
+                protName = HGNCIdentifier.objects.using('uniprot').filter(identifierType='HGNC_genename', uniprotID=prot.id)[0]
             ds[idx].append([index, dname, dpopup, int(defstart / dpSize * barSize),
                             int(pxSize), defstart, defend, isInDomain, 
                             int(dpSize), prot.id, prot.desc, 
