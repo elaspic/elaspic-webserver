@@ -195,6 +195,8 @@ def displayResult(request):
                             mut.inac = HGNCIdentifier.objects.using('uniprot').get(identifierType='HGNC_genename', uniprotID=d.protein.id)
                         except HGNCIdentifier.DoesNotExist:
                             mut.inac = d.protein.name.split('_')[0]
+                        except HGNCIdentifier.MultipleObjectsReturned:
+                            mut.inac = HGNCIdentifier.objects.using('uniprot').filter(identifierType='HGNC_genename', uniprotID=d.protein.id)[0]
                     mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
                     # Check for dublicates. Remove the last one. 
                     # This is a quick and dirty fix and should be fixed to pick 
