@@ -270,7 +270,7 @@ $(document).ready(function(){
         $("#uploaderr").hide();
         var example = ['CCM1.E567Q', 'O00522.E567A', 'KRIT1_HUMAN.E567F',
                        'HLA-DRB1.V209R', 'KRas2.I36M', 'ENSG00000133703.V8R',
-                       'P05230.F147W', 'KIAA0145.R612Y', '3PPJ.R575F',
+                       'P68871.V35D', 'KIAA0145.R612Y', '3PPJ.R575F',
                        'Q9Y2L6.G109S', 'EIF4E3.A21N',
                        'ROCK2.L581I', '5027.F95E', 'Cx46.G233T'];
         $("#proteinsinput").val( example.join("\n") );
