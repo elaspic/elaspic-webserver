@@ -453,7 +453,7 @@ def displaySecondaryResult(request):
                     intmuts[idx - 1]['mut'].model.template.domain.getdomain(1 if chain == 2 else 2).id == initialProtein:
                 curdom = ds[idx]
                 curmut = intmuts[idx - 1]['mut']
-                curmut.seqid = seqid
+                curmut.seqid = seqid if idx and not didx else None
     pxMutnum = mutNum / pSize * barSize - mutLineSize/2
     if pxMutnum < 0:
             pxMutnum = 0
