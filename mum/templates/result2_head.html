@@ -208,6 +208,7 @@ cyoption = {
     ready: function(){
       	cy = this;
       	cy.zoomingEnabled(false);
+		cy.boxSelectionEnabled(false);
       	cy.panningEnabled(false)
       	cy.elements().lock();
       	cy.elements().addClass('faded');
