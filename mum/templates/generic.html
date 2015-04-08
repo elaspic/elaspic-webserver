@@ -14,14 +14,16 @@
         	{% if help %}
 				
 				<p style="margin-top: 0;">The webserver relies on two different pipelines: 
-				    <a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam" class="click">PDBfam</a> 
+				    <a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click">Profs</a> 
 				and <a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" class="click">ELASPIC</a>.
 				</p>
-				<p><a target="_blank" href="https://bitbucket.org/afgiraldofo/pdbfam" class="click2" style="font-weight: 600;">PDBfam</a>
-				unifies domain definitions obtained from Gene3D and pFam in order to create domain 
+				<p><a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click2" style="font-weight: 600;">Profs</a>
+				unifies domain definitions obtained from Pfam and CATH in order to create domain 
 				boundaries that are the most consistent with both with the structural fold and the evolutionary 
-				conservation of the protein. PDBfam domain boundaries for the entire Uniprot database can be 
-				<a href="{{ STATIC_FOLDER }}download/pdbfam/">downloaded here</a>.
+				conservation of the protein. Profs domain boundaries for the entire Uniprot database can be 
+				<a href="{{ STATIC_FOLDER }}download/">downloaded here</a>. 
+        An R package implementing the Profs pipeline is hosted on 
+        <a href="https://bitbucket.org/afgiraldofo/profs" class="click">bitbucket</a>.
 				</p>
 				<p><a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" class="click2" style="font-weight: 600;">ELASPIC</a>
 				constructs homology models of domains and domain-domain interactions, and uses those models, 
@@ -29,6 +31,10 @@
 				the stability of a single domain or the affinity between two domains. 
 				A more detailed description of the ELASPIC method, including cross-validation and comparison 
 				with existing approaches can be found in <a href="/reference/" class="click">the original publication</a>. 
+        A python package implementing the ELASPIC pipeline is hosted on 
+        <a href="https://bitbucket.org/ostrokach/elaspic" class="click">bitbucket</a>. 
+        Documentation for the ELASPIC pipeline is hosted on 
+        <a href="https://elaspic.readthedocs.org/en/" class="click">readthedocs</a>. 
 				</p>
 		</div>
 	</div>
