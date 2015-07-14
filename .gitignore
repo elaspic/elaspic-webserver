@@ -5,3 +5,5 @@ mum/static/jobs/*
 
 # Config files
 config_file*
+
+*.pyc
