@@ -1,8 +1,9 @@
 from re import sub
 from subprocess import Popen, PIPE
+import json
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.utils import simplejson, html
+from django.utils import html
 from django.conf import settings
 from django.core.mail import EmailMessage
 
@@ -34,7 +35,7 @@ from web_pipeline.tasks import runPipelineWrapper, cleanupServer
 #        except:
 #            success = False
 #    
-#    return HttpResponse(simplejson.dumps({'success': success}), mimetype='application/json')
+#    return HttpResponse(json.dumps({'success': success}), content_type='application/json')
 
 def rerunMut(request):
     if not request.GET:
@@ -67,7 +68,7 @@ def rerunMut(request):
             # ##### ############ #####
             
     
-    return HttpResponse(simplejson.dumps({'error': error}), mimetype='application/json')
+    return HttpResponse(json.dumps({'error': error}), content_type='application/json')
 
 def dlFile(request):
     if not request.GET:
@@ -107,7 +108,7 @@ def prepareDownloadFiles(request):
     
     del fm
 
-    return HttpResponse(simplejson.dumps(jsonDict), mimetype='application/json')
+    return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
 
 
@@ -134,7 +135,7 @@ def checkIfJobIsReady(request):
                 'seq': seqList,
                 'iden': idenList}
     
-    return HttpResponse(simplejson.dumps(jsonDict), mimetype='application/json')
+    return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
 
 
@@ -182,14 +183,14 @@ def uploadFile(request):
     jsonDict = {'msg': msg,
                 'error': err}    
     
-    return HttpResponse(simplejson.dumps(jsonDict), mimetype='application/json')
+    return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
 
 
 def getProtein(request):
     
     
-    #return HttpResponse(simplejson.dumps({'r': [{'seq': 'AAAAAAAAAAAAAAAAAAAAAAAA'}], 'e': False}), mimetype='application/json')    
+    #return HttpResponse(json.dumps({'r': [{'seq': 'AAAAAAAAAAAAAAAAAAAAAAAA'}], 'e': False}), content_type='application/json')    
     
     # Check if the site was reached with GET method.
     if not request.GET:
@@ -198,7 +199,7 @@ def getProtein(request):
         raise Http404
     
     # Parse requested input.
-    inps = request.GET['p'].split(' ')
+    inps = request.GET['p'].split()
     mutReq = True if 'm' in request.GET else False
     nameReq = True if 'n' in request.GET else False
     seqReq = True if 's' in request.GET else False
@@ -409,8 +410,8 @@ def getProtein(request):
         err = None
 
     # Return.
-    return HttpResponse(simplejson.dumps({'r': output, 'e': err}), 
-                                          mimetype='application/json')
+    return HttpResponse(json.dumps({'r': output, 'e': err}), 
+                                          content_type='application/json')
     
 
 def sendContactMail(request):
@@ -445,8 +446,9 @@ def sendContactMail(request):
         response = 'Your message has been successfully sent. Allow us 2 business days to get back to you.'
 
     
-    return HttpResponse(simplejson.dumps({'response': response, 'error': error}), mimetype='application/json')
+    return HttpResponse(json.dumps({'response': response, 'error': error}), content_type='application/json')
     
 def cleanup(request):
     cleanupServer.delay()
     return HttpResponseRedirect('/')
+ 

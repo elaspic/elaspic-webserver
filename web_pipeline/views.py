@@ -276,7 +276,7 @@ def displaySecondaryResult(request):
         if not os.path.exists(pdbpath):
             try:
                 original_umask = os.umask(0)
-                os.makedirs(pdbpath, 0777)
+                os.makedirs(pdbpath, 777)
             finally:
                 os.umask(original_umask)
         fileError = False
