@@ -31,6 +31,8 @@
 .text-area textarea {
     width: 100%;
     line-height: 20px;
+    white-space: pre; /* AS change  for firefox compatibility */
+    background: white; /* AS change for firefox compatibility */
 }
 #nothumanwarning {
 	overflow: hidden;
