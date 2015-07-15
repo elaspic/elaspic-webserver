@@ -23,7 +23,7 @@ from web_pipeline.models import Mutation, Imutation
 from web_pipeline.cleanupmanager import CleanupManager
 
 os.environ['MPLCONFIGDIR'] = mkdtemp()
-from pipeline.code.elaspic import Pipeline
+from elaspic.pipeline import Pipeline
 
 
 
@@ -52,9 +52,9 @@ def cleanupServer():
 def sleepabit(a=5, b=10):
     
     sleepFor = randint(a, b)
-    print "Will now sleep for %d seconds." % sleepFor
+    print("Will now sleep for %d seconds." % sleepFor)
     sleep(sleepFor)
-    print "Done sleeping!"
+    print("Done sleeping!")
     
     return 1
 

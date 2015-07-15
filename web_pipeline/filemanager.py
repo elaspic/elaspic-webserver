@@ -1,4 +1,7 @@
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from zipfile import ZipFile
 from os import path
 from tempfile import NamedTemporaryFile
@@ -13,7 +16,7 @@ from django.conf import settings
 from web_pipeline.models import Protein, Job, JobToMut, Imutation, Interaction
 from web_pipeline.functions import getPnM, getResultData
 
-from pipeline.code.call_foldx import names_rows_stability as energyHeader
+from elaspic.call_foldx import names_rows_stability as energyHeader
 
 
 
