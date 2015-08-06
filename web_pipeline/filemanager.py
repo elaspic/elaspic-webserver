@@ -1,7 +1,4 @@
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+import six
 from zipfile import ZipFile
 from os import path
 from tempfile import NamedTemporaryFile
@@ -67,7 +64,7 @@ class FileManager(object):
             return ""
         
         # Create temporary buffer file.
-        myfile = StringIO()
+        myfile = six.BytesIO()
         files = {'sequences': {}, 
                  'alignments': {},
                  'simpleresults': {},
@@ -219,8 +216,8 @@ class FileManager(object):
 
         if filetype == 'txt':
             self.type = 'text/plain'
-            myfile.write('\t'.join(header) + '\r\n')
-            myfile.write('\r\n'.join(body))
+            myfile.write(six.b('\t'.join(header) + '\r\n'))
+            myfile.write(six.b('\r\n'.join(body)))
 
         elif filetype == 'zip':
             
@@ -248,7 +245,7 @@ class FileManager(object):
                                         id="%s|%s|%s" % (m.inputIdentifier, p.id, p.name),
                                         description=p.description)
                         tempfiles.append(NamedTemporaryFile())
-                        SeqIO.write([seq], tempfiles[-1], 'fasta')
+                        SeqIO.write([seq], tempfiles[-1].name, 'fasta')
                         tempfiles[-1].flush()
                         files['sequences'][fname] = tempfiles[-1].name
                         self.fileCount += 1
