@@ -3,9 +3,6 @@ crashlogs/
 mum/static/jobs/*
 */__pycache__
 
-# Config files
-config_file*
-
+# Files
 *.pyc
-
 
