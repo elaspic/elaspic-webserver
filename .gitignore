@@ -1,9 +1,11 @@
 # Folders
-crashLogs/
-pipeline/
+crashlogs/
 mum/static/jobs/*
+*/__pycache__
 
 # Config files
 config_file*
 
 *.pyc
+
+
