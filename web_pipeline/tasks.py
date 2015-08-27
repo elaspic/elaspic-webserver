@@ -26,8 +26,6 @@ os.environ['MPLCONFIGDIR'] = mkdtemp()
 from elaspic.pipeline import Pipeline
 
 
-
-
 @app.task
 def cleanupServer():
     
@@ -72,36 +70,37 @@ def runPipelineWrapper(mutation, jid):
         
     
     # Change current folder to pipeline code.
-    tempDir = "elaspic_%s_%s_%s/" % (jid, mutation.protein, mutation.mut)
-    pipelineDir = os.path.join(settings.PROJECT_ROOT, 'pipeline/code/')
-    os.chdir(pipelineDir)
-    
+    #~ tempDir = "elaspic_%s_%s_%s/" % (jid, mutation.protein, mutation.mut)
+    #~ pipelineDir = os.path.join(settings.PROJECT_ROOT, 'pipeline/code/')
+    #~ os.chdir(pipelineDir)
+    #~ 
     # Create temp config file.
-    t = get_template('configTemp.ini')
-    c = Context({'tempDir': tempDir,
-                 'debug': str(settings.PIPELINE_DEBUG),
-                 'dbPath': str(settings.DB_PATH),
-                 'blastDbPath': str(settings.BLAST_DB_PATH),
-                 'pdbPath': str(settings.PDB_PATH),
-                 'binPath': str(settings.BIN_PATH),
-                 'dbFile': str(settings.DB_FILE)})
-    tf = NamedTemporaryFile()
-    tf.write(t.render(c))
-    tf.flush()
+    #~ t = get_template('configTemp.ini')
+    #~ c = Context({'tempDir': tempDir,
+                 #~ 'debug': str(settings.PIPELINE_DEBUG),
+                 #~ 'dbPath': str(settings.DB_PATH),
+                 #~ 'blastDbPath': str(settings.BLAST_DB_PATH),
+                 #~ 'pdbPath': str(settings.PDB_PATH),
+                 #~ 'binPath': str(settings.BIN_PATH),
+                 #~ 'dbFile': str(settings.DB_FILE)})
+    #~ tf = NamedTemporaryFile()
+    #~ tf.write(t.render(c))
+    #~ tf.flush()
+
 
     # Set environment variables from ~/.bashrc.
-    old_env = os.environ
-    with open(os.path.join(settings.HOME_PATH, '.bashrc')) as f:
-        for l in f:
-            if l[:6] != 'export':
-                continue
-            # Get all path variables to set.
-            envVar, envPath = re.match(r'^export (.+?)="?(.+?)"?$', l[:-1]).groups()
-            # Extract %SOME_VAR from paths and substitute with %s.
-            envPathVars = re.findall(r'\$[0-9A-Z_]*', envPath)
-            envPath = re.sub(r'\$[0-9A-Z_]*', '%s', envPath)
-            # Insert current environmental variables into %s.
-            os.environ[envVar] = envPath % tuple([os.environ.get(l[1:]) or '' for l in envPathVars])
+    #~ old_env = os.environ
+    #~ with open(os.path.join(settings.HOME_PATH, '.bashrc')) as f:
+        #~ for l in f:
+            #~ if l[:6] != 'export':
+                #~ continue
+            #~ # Get all path variables to set.
+            #~ envVar, envPath = re.match(r'^export (.+?)="?(.+?)"?$', l[:-1]).groups()
+            #~ # Extract %SOME_VAR from paths and substitute with %s.
+            #~ envPathVars = re.findall(r'\$[0-9A-Z_]*', envPath)
+            #~ envPath = re.sub(r'\$[0-9A-Z_]*', '%s', envPath)
+            #~ # Insert current environmental variables into %s.
+            #~ os.environ[envVar] = envPath % tuple([os.environ.get(l[1:]) or '' for l in envPathVars])
 
 
     # Create logger to redirect output.
@@ -120,14 +119,14 @@ def runPipelineWrapper(mutation, jid):
 
     try:
         # Run pipeline.
-        pipeline = Pipeline(tf.name)
-        tf.close()
+        pipeline = Pipeline(settings.ELASPIC_CONFIG_FILENAME, logger=logger)
+        #~ tf.close()
         
         # ##### Run pipeline #####
         #
         
         logger.info('----- Running: %s.%s -----' % (mutation.protein, mutation.mut))
-        pipeline(mutation.protein, mutation.mut, run_type=5, n_cores=1, logger=logger)
+        pipeline(mutation.protein, mutation.mut, run_type=5)
         
         #
         # ##### ############ #####
@@ -210,7 +209,7 @@ def runPipelineWrapper(mutation, jid):
 
         # Set current working directory and environment back to default.
         os.chdir(os.path.join(settings.PROJECT_ROOT, '..'))
-        os.environ = old_env
+        #~ os.environ = old_env
         
         # Save mutation.
         mutation.dateFinished = now()
