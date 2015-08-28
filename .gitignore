@@ -2,6 +2,7 @@
 crashlogs/
 mum/static/jobs/*
 */__pycache__
+static/
 
 # Files
 *.pyc
