@@ -34,6 +34,12 @@ class Mut(models.Model):
     
     error = models.TextField(blank=True)
 
+    #AS >>>
+    provean_job_id = models.IntegerField(null=True)
+    model_job_id = models.IntegerField(null=True)
+    mutation_job_id = models.IntegerField(null=True)
+    # <<<
+    
     def __unicode__(self):
         return '%s.%s' % (self.protein, self.mut)
     
@@ -122,7 +128,7 @@ class Protein(models.Model):
 class UniprotIdentifier(models.Model):
     id = models.AutoField(primary_key=True, db_index=True)
     
-    identifierID = models.CharField(max_length=255, primary_key=True, db_index=True, db_column='identifier_id')
+    identifierID = models.CharField(max_length=255, db_index=True, db_column='identifier_id') # primary_key=True,
     identifierType = models.CharField(max_length=20, db_index=True, db_column='identifier_type')
     uniprotID = models.CharField(max_length=10, db_index=True, db_column='uniprot_id')
     
