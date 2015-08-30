@@ -10,7 +10,7 @@ from django.utils.timezone import now
 
 from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, HGNCIdentifier, UniprotIdentifier, Domain
 from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail, checkForCompletion
-from web_pipeline.tasks import sleepabit, runPipelineWrapper
+from web_pipeline.tasks import sleepabit, runPipelineWrapperAll
 
 try:
     os.environ['MPLCONFIGDIR'] = mkdtemp()
@@ -128,9 +128,10 @@ def runPipeline(request):
     #
 
     # Run pipeline for new mutations.
+    p = runPipelineWrapperAll.delay([m[0] for m in newMuts], randomID)
     for m in newMuts:
         mut = m[0]
-        p = runPipelineWrapper.delay(mut, randomID)
+        #p = runPipelineWrapper.delay(mut, randomID)
         mut.taskId = p.task_id
         mut.save()
     

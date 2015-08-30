@@ -10,7 +10,7 @@ from django.core.mail import EmailMessage
 from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
-from web_pipeline.tasks import runPipelineWrapper, cleanupServer
+from web_pipeline.tasks import runPipelineWrapperAll, cleanupServer
 
 #def prepareAllFiles(request):
 #    if not request.GET:
@@ -61,7 +61,7 @@ def rerunMut(request):
             # ##### Rerun pipeline #####
             #
         
-            runPipelineWrapper.delay(m, j.jobID)
+            runPipelineWrapperAll.delay(m, j.jobID)
             #sleepabit.delay(5,10)    
             
             #
