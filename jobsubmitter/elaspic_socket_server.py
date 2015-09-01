@@ -24,6 +24,7 @@ conf.read_configuration_file(op.join(BASE_DIR, 'config_file_mysql.ini'))
 from elaspic import helper_functions, sql_db
 
 logger = helper_functions.get_logger()
+logger.info('#' * 80)
 
 PROVEAN_LOCK_DIR = op.join('/tmp', 'jobsubmitter', 'provean_locks')
 MODEL_LOCK_DIR = op.join('/tmp', 'jobsubmitter', 'model_locks')
@@ -32,7 +33,15 @@ os.makedirs(op.join(PROVEAN_LOCK_DIR, 'finished'), exist_ok=True)
 os.makedirs(op.join(MODEL_LOCK_DIR, 'finished'), exist_ok=True)
 os.makedirs(op.join(MUTATION_LOCK_DIR, 'finished'), exist_ok=True)
 
-DELAY = 120
+
+# Delay between how often you check the filesystem for a file
+DELAY_LOCK_EXISTS = int(os.environ.get('DELAY_LOCK_EXISTS') or os.environ.get('DELAY') or 30)
+# Delay between how often you query qstat with a JOBID
+DELAY_JOB_RUNNING = int(os.environ.get('DELAY_JOB_RUNNING') or os.environ.get('DELAY') or 30)
+
+logger.info('DELAY_LOCK_EXISTS: {}'.format(DELAY_LOCK_EXISTS))
+logger.info('DELAY_JOB_RUNNING: {}'.format(DELAY_LOCK_EXISTS))
+
 
 
 #%% 
@@ -132,23 +141,29 @@ def check_precalculated(uniprot_id):
     domain_model = (
         pd.read_sql_query(select_domain_model_query.format(**configs_copy), db.engine)
     )
-    configs_copy['uniprot_domain_ids'] = (
-        ', '.join(domain_model['uniprot_domain_id'].drop_duplicates().astype(str))
-    )
-    domain_pair_model = (
-        pd.read_sql_query(select_domain_pair_model_query.format(**configs_copy), db.engine)
-    )
-    
     provean_is_missing = (len(provean) == 0) & (len(domain_model) > 0)
     model_is_missing = (
         (len(domain_model[
             domain_model['model_filename'].isnull() &
-            domain_model['model_errors'].isnull()]) > 0) |
-        (len(domain_pair_model[
-            domain_pair_model['model_filename'].isnull() &
-            domain_pair_model['model_errors'].isnull()]) > 0)
+            domain_model['model_errors'].isnull()]) > 0)
     )
-    return provean_is_missing, model_is_missing
+    have_domains = len(domain_model)
+    
+    # Do this only if we have at least one domain
+    if len(domain_model) and not model_is_missing:
+        configs_copy['uniprot_domain_ids'] = (
+            ', '.join(domain_model['uniprot_domain_id'].drop_duplicates().astype(str))
+        )
+        domain_pair_model = (
+            pd.read_sql_query(select_domain_pair_model_query.format(**configs_copy), db.engine)
+        )
+        model_is_missing = (
+            model_is_missing |
+            (len(domain_pair_model[
+                domain_pair_model['model_filename'].isnull() &
+                domain_pair_model['model_errors'].isnull()]) > 0)
+        )
+    return provean_is_missing, model_is_missing, have_domains
 
 
 
@@ -165,34 +180,50 @@ def jobsubmitter(message_dict):
     This assumes that if we can't calculate a model, 
     we leave a note in the 'model_error' column.
     """
-    # Provean and model
+    ## Provean and model
     # (want to submit both together so that they finish faster)
     run_types = {'provean': {}, 'model': {}}
-    run_types['provean']['is_missing'], run_types['model']['is_missing'] = (
+    run_types['provean']['is_missing'], run_types['model']['is_missing'], have_domains = (
         check_precalculated(message_dict['uniprot_id'])
     )
+    
+    # If we don't have any domains with structural template, don't go any further
+    if not have_domains:
+        logger.info(
+            "Uniprot {uniprot_id} does not have any domains with structural templates!"
+            .format(**message_dict))
+        with open(get_lock_filename(message_dict, 'mutations', finished=True), 'w') as ofh:
+            ofh.write('0') # 0 means no job_id
+        return {'status': "Done"}
+    
     logger.debug('run_types: {}'.format(run_types))
+    submitjob_with_lock(message_dict, run_types) 
+    # If everything gets submitted, we avoid the loop below; no need to sleep
     while _precalculated_data_missing(run_types):
-        submitjob_with_lock(message_dict, run_types)
         # Wait for lock-setters to finish and jobs to become un-missing...
         logger.debug('sleeping...')
-        time.sleep(DELAY) 
-        run_types['provean']['is_missing'], run_types['model']['is_missing'] = (
+        time.sleep(DELAY_LOCK_EXISTS)
+        run_types['provean']['is_missing'], run_types['model']['is_missing'], __ = (
             check_precalculated(message_dict['uniprot_id'])
         )
+        submitjob_with_lock(message_dict, run_types)
         logger.debug('run_types: {}'.format(run_types))
     release_lock(run_types)
     run_types_all = run_types.copy()
-    # Mutations
+    
+    ## Mutations
     run_types = {'mutations': {}}
     logger.debug('run_types: {}'.format(run_types))
+    submitjob_with_lock(message_dict, run_types)
+    # If everything gets submitted, we avoid the loop below; no need to sleep
     while not all([v for v in run_types.values()]):
-        submitjob_with_lock(message_dict, run_types)
         logger.debug('sleeping...')
-        time.sleep(DELAY)
+        time.sleep(DELAY_LOCK_EXISTS)
+        submitjob_with_lock(message_dict, run_types)
         logger.debug('run_types: {}'.format(run_types))
     release_lock(run_types)
-    # Combine results
+    
+    ## Combine results
     run_types_all.update(run_types)
     return run_types_all
 
@@ -225,10 +256,12 @@ def release_lock(run_types):
         jobstatus_output = jobstatus(data['job_id'])
         while jobstatus_output['status'] != "Done":
             logger.debug('sleeping...')
-            time.sleep(DELAY)
+            time.sleep(DELAY_JOB_RUNNING)
             jobstatus_output = jobstatus(data['job_id'])
         #os.remove(lock_file)
-        shutil.move(data['lock_file'], op.join(op.dirname(data['lock_file']), 'finished'))
+        shutil.move(
+            data['lock_file'], 
+            op.join(op.dirname(data['lock_file']), 'finished', op.basename(data['lock_file'])))
         run_types[run_type].update(jobstatus_output)
 
 
