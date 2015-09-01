@@ -1,4 +1,5 @@
 # Folders
+log/
 crashlogs/
 mum/static/jobs/*
 */__pycache__
