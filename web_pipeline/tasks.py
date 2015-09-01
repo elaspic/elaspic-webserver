@@ -73,21 +73,19 @@ def _run_pipeline_remotely(mutation_dict, logger):
 
     time.sleep(5)
     mutation_dict_output = {
-        uniprot_id: {'mutations': mutations} 
+        uniprot_id: {'mutations': mutations}
         for (uniprot_id, mutations) 
         in mutation_dict.items()
     }
-    while not all([('status' in v and v['status'] == "Done") for v in mutation_dict_output.values()]):
-        logger.debug('mutation_dict_output: {}'.format(mutation_dict_output))
-        for uniprot_id, mutations in mutation_dict.items():
-            progress_dict = js.check_progress(uniprot_id, mutations)
-            if progress_dict:
-                for key, value in progress_dict.items():
-                    if value:
-                        mutation_dict_output[uniprot_id][key] = value
-            else:
-                mutation_dict_output[uniprot_id]['done'] = True
+    for uniprot_id, data in mutation_dict_output.items():
+        data.update(js.check_progress(uniprot_id, data['mutations']))
+    logger.debug('mutation_dict_output: {}'.format(mutation_dict_output))
+    while not all([(v.get('status') == "Done") for v in mutation_dict_output.values()]):
         time.sleep(60)
+        for uniprot_id, data in mutation_dict_output.items():
+            data.update(js.check_progress(uniprot_id, data['mutations']))
+    #TODO: There are better ways to handle job_ids (read files in finished/ folder),
+    #but we don't need them for now...
     return mutation_dict_output
     
 
@@ -323,12 +321,11 @@ def runPipelineWrapperAll(mutations, jid):
         #_run_pipeline_locally(mutation, logger)
         mutation_dict_output = _run_pipeline_remotely(mutation_dict, logger)
 
-        for mutation in mutations:
-            mutation.provean_job_id = mutation_dict_output[mutation.protein].get('provean_job_id', None)
-            mutation.model_job_id = mutation_dict_output[mutation.protein].get('model_job_id', None)
-            mutation.mutation_job_id = mutation_dict_output[mutation.protein].get('mutation_job_id', None)
-           
-        
+#        for mutation in mutations:
+#            mutation.provean_job_id = mutation_dict_output[mutation.protein].get('provean_job_id')
+#            mutation.model_job_id = mutation_dict_output[mutation.protein].get('model_job_id')
+#            mutation.mutation_job_id = mutation_dict_output[mutation.protein].get('mutation_job_id')
+
         # Save logs if we're debugging        
         if settings.DEBUG:
             logFile.flush()
@@ -359,6 +356,7 @@ def runPipelineWrapperAll(mutations, jid):
     
     else:
         # Fetch completed mutations.
+        logger.debug("Going over every mutation to check if it's been calculcated correctly...")
         for mutation in mutations:
             mut = list(Mutation.objects.using('data').filter(protein_id=mutation.protein, mut=mutation.mut))
             imut = list(Imutation.objects.using('data').filter(protein_id=mutation.protein, mut=mutation.mut))
@@ -383,25 +381,38 @@ def runPipelineWrapperAll(mutations, jid):
                 mutation.status = 'done'
                 mutation.error = None
                 mutation.affectedType = 'NO'
-    
+                
+        logger.debug('mutations: {}'.format(mutations))
     
     finally:
+        logger.debug("Check that everything is complete and send out emails...")
         for mutation in mutations:
+            logger.debug("mutation: {}".format(mutation))
             # Fail-safe in case of sys.exit() or some other dangerous stuff is
             # called within the pipeline.
             if exitCode == -1:
                 mutation.status = 'error'
                 mutation.error = '2: PIPELINECRASH: EXIT STATUS 4'
+            logger.debug("Exit code: {}".format(exitCode))
             
             # Save mutation.
             mutation.dateFinished = now()
             mutation.rerun = False
+            logger.debug("Saving mutation stats...")
             mutation.save()
+            logger.debug("Done saving mutation stats...")
         
             # If all mutations in job are done, then set job as done.
+            logger.debug("checkForCompletion")
+            logger.debug("mutation jobs: {}".format(mutation.jobs.all()))
+            
+            logFile.flush()
+            shutil.copy(logFile.name, os.path.join(settings.ELASPIC_LOG_PATH, logName + '.log'))
+            
             checkForCompletion(mutation.jobs.all())
 
         # Remove logger.
+        logger.debug("Removing logs. Say goodbye...")
         logger.handlers = []
         logFile.close()
 
