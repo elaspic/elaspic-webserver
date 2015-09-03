@@ -80,8 +80,8 @@ class JobSubmitter(object):
 if __name__ == '__main__':
     js = JobSubmitter()
 
-    uniprot_id = 'P35372'
-    mutation = 'N386A'
+    uniprot_id = 'P41250-BCG101'
+    mutation = 'M628D'
     mutation = 'P65A,V94A,T209P'
 
     uniprot_id = 'Q9VN38'
@@ -104,9 +104,6 @@ if __name__ == '__main__':
     job = js.submitjob(uniprot_id, mutation)
     
     print(js.check_progress(uniprot_id, mutation))
-    
-    jobstatus = js.jobstatus(job['job_id'])
-    print(jobstatus)
     
     jobstatus_full = js.jobstatus(job['job_id'], full=True)
     for key, value in jobstatus_full.items():

@@ -32,7 +32,7 @@ class Mut(models.Model):
     rerun = models.SmallIntegerField(default=0)
     taskId = models.CharField(max_length=50, blank=True)
     
-    error = models.TextField(blank=True)
+    error = models.TextField(blank=True, null=True) # AS + default=''
 
     #AS >>>
     provean_job_id = models.IntegerField(null=True)
