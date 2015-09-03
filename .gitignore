@@ -1,11 +1,11 @@
 # Folders
 log/
-crashlogs/
-mum/static/jobs/*
-*/__pycache__
 static/
+**/__pycache__
 
-# Files
-*.pyc
+# Prefixes
 celerybeat*
+
+# Extensions
+*.pyc
 
