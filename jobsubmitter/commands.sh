@@ -1,1 +1,1 @@
-alias jsupdate='sudo rsync -rv jobsubmitter/ /home/kimlab1/jobsubmitter/elaspic/ && sudo chmod 9284:kimlab /home/kimlab1/jobsubmitter/elaspic -R && chmod ug+rwX,o+rX /home/kimlab1/jobsubmitter/elaspic -R'
+alias jsupdate="sudo rsync -rv /home/kimlab1/strokach/websites/mum/jobsubmitter/ /home/kimlab1/jobsubmitter/elaspic/ --exclude '.*' --exclude '_*' && sudo chown 9284:kimlab /home/kimlab1/jobsubmitter/elaspic -R && sudo chmod ug+rwX,o+rX /home/kimlab1/jobsubmitter/elaspic -R"
