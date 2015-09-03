@@ -64,35 +64,26 @@ def _run_pipeline_locally(mutation, logger):
     pipeline(mutation.protein, mutation.mut, run_type=5)
 
 
-def _run_pipeline_remotely(mutation_dict, logger):
+def _run_pipeline_remotely(mutation, logger):
     js = JobSubmitter(logger=logger)
 
-    for uniprot_id, mutations in mutation_dict.items():
-        logger.debug("uniprot_id: {}, mutations: {}".format(uniprot_id, mutations))
-        js.submitjob(uniprot_id, mutations)
+    logger.debug("uniprot_id: {}, mutations: {}".format(mutation.protein, mutation.mut))
+    js.submitjob(mutation.protein, mutation.mut)
 
     time.sleep(5)
-    mutation_dict_output = {
-        uniprot_id: {'mutations': mutations}
-        for (uniprot_id, mutations) 
-        in mutation_dict.items()
-    }
-    for uniprot_id, data in mutation_dict_output.items():
-        data.update(js.check_progress(uniprot_id, data['mutations']))
-    logger.debug('mutation_dict_output: {}'.format(mutation_dict_output))
-    while not all([(v.get('status') == "Done") for v in mutation_dict_output.values()]):
+    output_dict = js.check_progress(mutation.protein, mutation.mut)
+    logger.debug('output_dict: {}'.format(output_dict))
+    while not output_dict.get('status') == "Done":
         time.sleep(60)
-        for uniprot_id, data in mutation_dict_output.items():
-            data.update(js.check_progress(uniprot_id, data['mutations']))
+        output_dict.update(js.check_progress(mutation.protein, mutation.mut))
     #TODO: There are better ways to handle job_ids (read files in finished/ folder),
     #but we don't need them for now...
-    return mutation_dict_output
+    return output_dict
     
 
 @app.task(rate_limit='10/m', max_retries=2)
 def runPipelineWrapper(mutation, jid):
     
-
     # Set mutation status as running.
     if not mutation.rerun:
         mutation.status = 'running'
@@ -154,13 +145,13 @@ def runPipelineWrapper(mutation, jid):
         
         ### Run pipeline ###
         #_run_pipeline_locally(mutation, logger)
-        _run_pipeline_remotely([(mutation.protein, mutation.mut,)], logger)
+        output_dict = _run_pipeline_remotely(mutation, logger)
         
-        # Save logs if we're debugging        
-        if settings.DEBUG:
-            logFile.flush()
-            shutil.copy(logFile.name, os.path.join(settings.ELASPIC_LOG_PATH, logName + '.log'))
-
+        logger.debug("Saving job ids to the database...")
+        mutation.provean_job_id = output_dict.get('provean_job_id')
+        mutation.model_job_id = output_dict.get('model_job_id')
+        mutation.mutation_job_id = output_dict.get('mutation_job_id')
+        
     except SoftTimeLimitExceeded:
         # Out of time. Cleanup!
         mutation.status = 'error'
@@ -233,7 +224,10 @@ def runPipelineWrapper(mutation, jid):
             mutation.status = 'error'
             mutation.error = '2: PIPELINECRASH: EXIT STATUS 4'
         
-        # Remove logger.
+        # (Save and) Remove logger
+        if settings.DEBUG:
+            logFile.flush()
+            shutil.copy(logFile.name, os.path.join(settings.ELASPIC_LOG_PATH, logName + '.log'))
         logger.handlers = []
         logFile.close()
 

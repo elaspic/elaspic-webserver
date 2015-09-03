@@ -128,10 +128,10 @@ def runPipeline(request):
     #
 
     # Run pipeline for new mutations.
-    p = runPipelineWrapper.delay([m[0] for m in newMuts], randomID)
+    #p = runPipelineWrapper.delay([m[0] for m in newMuts], randomID)
     for m in newMuts:
         mut = m[0]
-        #p = runPipelineWrapper.delay(mut, randomID)
+        p = runPipelineWrapper.delay(mut, randomID)
         mut.taskId = p.task_id
         mut.save()
     
