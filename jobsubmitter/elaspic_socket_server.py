@@ -283,6 +283,14 @@ class ElaspicPipeline(object):
             except FileExistsError:
                 self.logger.debug('Lockfile {} exists!'.format(lock_file))
                 continue
+            lock_file_finished = self.lock_filename(run_type, finished=True)
+            try:
+                os.remove(lock_file_finished)
+                self.logger.debug(
+                    'Removed lockfile {} from a previous job.'
+                    .format(lock_file_finished))
+            except FileNotFoundError:
+                pass
             submitjob_output = self.qsub(run_type)
             self.logger.debug('submitjob_output: {}'.format(submitjob_output))
             job_id = submitjob_output['job_id']
