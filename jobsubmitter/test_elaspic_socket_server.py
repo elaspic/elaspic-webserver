@@ -119,8 +119,8 @@ def test_check_progress():
     ]
     for uniprot_id, mutations, output in test_input:
         ep = f.ElaspicPipeline(uniprot_id, mutations)
-        output_dict = ep.check_progress()
-        assert output_dict['status'] == 'Done'
+        ep.check_progress()
+        assert ep.output_dict['status'] == 'Done'
 
 
 if __name__ == '__main__':
