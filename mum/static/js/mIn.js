@@ -245,7 +245,7 @@ $(document).ready(function(){
 
         // Remove spaces.
         var allinput = $.map($("#proteinsinput").val().split("\n"), function(str, i) {
-            if (i < 100)
+            if (i < 10000)
                 return str.replace(/\s+/g, "").substring(0,65);
         });
 

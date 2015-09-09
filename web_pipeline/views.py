@@ -40,7 +40,7 @@ def runPipeline(request):
         return HttpResponseRedirect('/') # No protein input.
 
     # Generate list of valid proteins and mutations.
-    pnms = request.GET['proteins'].split(' ')[:100]
+    pnms = request.GET['proteins'].split(' ')[:10000]
     validPnms = []
     for pnm in pnms:
         iden, mut = getPnM(pnm)
