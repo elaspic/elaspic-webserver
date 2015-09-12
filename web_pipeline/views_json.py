@@ -253,7 +253,7 @@ def getProtein(request):
         
         # Set domains.
         if domReq:
-            ds = Domain.objects.using('data').filter(protein_id=p.id)
+            ds = list(Domain.objects.using('data').filter(protein_id=p.id))
             output[idx]['doms'], output[idx]['defs'] = [], []
             for d in ds:
                 output[idx]['doms'].append(d.getname(''))

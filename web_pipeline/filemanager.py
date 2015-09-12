@@ -18,6 +18,19 @@ from elaspic.call_foldx import names_rows_stability as energyHeader
 
 
 
+#import logging
+#
+## Create logger to redirect output.
+#logName = "filemanager"
+#logger = logging.getLogger(logName)
+#hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
+#hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+#logger.addHandler(hdlr) 
+#logger.setLevel(logging.DEBUG)
+#logger.propagate = False
+
+
+
 class FileManager(object):
     
     def __init__(self, jobID, muts):
@@ -36,14 +49,14 @@ class FileManager(object):
                 model = inac.itemplate.imodel
             
             # Get local mutation data.
-            jtom = JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=jobID)
+            jtom = list(JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=jobID))
             if len(jtom) != 1:
                 continue
             
             # Get pipeline mutation data.
             if isInterface:
                 data = jtom[0]
-                realMut = Imutation.objects.using('data').filter(mut=mut, model=model)
+                realMut = list(Imutation.objects.using('data').filter(mut=mut, model=model))
                 data.realMut = [realMut[0]]
                 data.realMutErr = None
             else:

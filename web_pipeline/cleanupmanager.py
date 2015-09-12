@@ -25,12 +25,12 @@ class CleanupManager(object):
             
     def checkForStalledMuts(self, job=None):
         if job:
-            js = Job.objects.filter(jobID=job)
+            js = list(Job.objects.filter(jobID=job))
         else:
-            js = Job.objects.filter(isDone=False)
+            js = list(Job.objects.filter(isDone=False))
         
         for j in js:
-            muts = j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2))
+            muts = list(j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2)))
             for mut in muts:
                 if AsyncResult(mut.taskId).failed():
                     mut.status = 'error'
@@ -46,7 +46,7 @@ class CleanupManager(object):
     
     def removeOldJobs(self):
         """ Fetch and delete all jobs last visited too long ago. """
-        js = Job.objects.filter(dateVisited__lte=now()-timedelta(days=settings.JOB_EXPIRY_DAY ))
+        js = list(Job.objects.filter(dateVisited__lte=now()-timedelta(days=settings.JOB_EXPIRY_DAY )))
         for j in js:
             # Delete link to all mutations.
             j.jobtomut_set.all().delete()
@@ -54,7 +54,7 @@ class CleanupManager(object):
             
         # Delete all local files without a job.
         for dirs in os.listdir(settings.SAVE_PATH):
-            j = Job.objects.filter(jobID=dirs)
+            j = list(Job.objects.filter(jobID=dirs))
             if not j:
                 try:
                     rmtree(os.path.join(settings.SAVE_PATH, dirs))
@@ -82,7 +82,7 @@ class CleanupManager(object):
         lostMutations, toRunAgain  = [], []
     
         # Check that queued jobs are in Celery.
-        queuedMutsDB = Mut.objects.filter(Q(status='queued') | Q(rerun=1))
+        queuedMutsDB = list(Mut.objects.filter(Q(status='queued') | Q(rerun=1)))
         queuedMutsCel = [t['args'].split('<Mut: ')[1].split('>, ')[0] if '<Mut:' in t['args'] else 'cleanup' for t in i.reserved()[pc]]
         for mdb in queuedMutsDB:
             mdbstring = "%s.%s" % (mdb.protein, mdb.mut)
@@ -90,7 +90,7 @@ class CleanupManager(object):
                 lostMutations.append(mdb)
 
         # Check that all runnings jobs are in celery active list.
-        activeMutsDB = Mut.objects.filter(Q(status='running') | Q(rerun=2))
+        activeMutsDB = list(Mut.objects.filter(Q(status='running') | Q(rerun=2)))
         activeMutsCel = [t['args'].split('<Mut: ')[1].split('>, ')[0] if '<Mut:' in t['args'] else 'cleanup' for t in i.active()[pc]]
         for mdb in activeMutsDB:
             mdbstring = "%s.%s" % (mdb.protein, mdb.mut)

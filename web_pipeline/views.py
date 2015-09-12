@@ -66,7 +66,7 @@ def runPipeline(request):
     newMuts, doneMuts = [], []
     for pnm in validPnms:
         toRerun = False
-        m = Mut.objects.filter(protein=pnm[0], mut=pnm[1])
+        m = list(Mut.objects.filter(protein=pnm[0], mut=pnm[1]))
         # Check for blacklisted uniprots and skip.
         if pnm[0] in blacklisted_uniprots:
             if m:
@@ -197,7 +197,12 @@ def displayResult(request):
                         except HGNCIdentifier.DoesNotExist:
                             mut.inac = d.protein.name.split('_')[0]
                         except HGNCIdentifier.MultipleObjectsReturned:
-                            mut.inac = HGNCIdentifier.objects.using('uniprot').filter(identifierType='HGNC_genename', uniprotID=d.protein.id)[0]
+                            mut.inac = list(
+                                HGNCIdentifier
+                                .objects
+                                .using('uniprot')
+                                .filter(identifierType='HGNC_genename', uniprotID=d.protein.id)
+                            )[0]
                     mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
                     # Check for dublicates. Remove the last one. 
                     # This is a quick and dirty fix and should be fixed to pick 
@@ -248,7 +253,7 @@ def displaySecondaryResult(request):
     mutNum = int(mut[1:-1])
 
     # Get the mutation information or send back to main job URL.
-    jtom = JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=job)
+    jtom = list(JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=job))
     if len(jtom) != 1:
         return HttpResponseRedirect(returnUrl)
     m = jtom[0].mut
@@ -363,7 +368,7 @@ def displaySecondaryResult(request):
     ds, domainName, proteinToDomainID = [], '', {}
     for idx, prot in enumerate([p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])):
 
-        pds = Domain.objects.using('data').filter(protein_id=prot.id)
+        pds = list(Domain.objects.using('data').filter(protein_id=prot.id))
         
         # Check if homodimer with self.
         homodimer = True if prot == p else False
@@ -433,7 +438,12 @@ def displaySecondaryResult(request):
                 except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
                     protName = prot.name.split('_')[0]
             except HGNCIdentifier.MultipleObjectsReturned:
-                protName = HGNCIdentifier.objects.using('uniprot').filter(identifierType='HGNC_genename', uniprotID=prot.id)[0]
+                protName = list(
+                    HGNCIdentifier
+                    .objects
+                    .using('uniprot')
+                    .filter(identifierType='HGNC_genename', uniprotID=prot.id)
+                )[0]
             ds[idx].append([index, dname, dpopup, int(defstart / dpSize * barSize),
                             int(pxSize), defstart, defend, isInDomain, 
                             int(dpSize), prot.id, prot.desc, 
