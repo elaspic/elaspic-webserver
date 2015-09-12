@@ -10,6 +10,20 @@ from web_pipeline.models import Mutation, Imutation, Protein, HGNCIdentifier, Un
 from re import match
 
 
+
+#import logging
+#
+## Create logger to redirect output.
+#logName = "functions"
+#logger = logging.getLogger(logName)
+#hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
+#hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+#logger.addHandler(hdlr)
+#logger.setLevel(logging.DEBUG)
+#logger.propagate = False
+
+
+
 def checkForCompletion(jobs):
     for j in jobs:
         jms = list(j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2)))
@@ -38,7 +52,8 @@ def getResultData(jtom):
         jtom.realMut = [{}]
         return jtom 
         
-    jtom.realMut = MutResult.objects.using('data').filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein)
+    jtom.realMut = list(MutResult.objects.using('data').filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein))
+
     if not jtom.realMut:
         jtom.realMutErr = 'DNE' # Does not exists.
         jtom.realMut = [{}]
@@ -58,7 +73,7 @@ def getResultData(jtom):
             jtom.realMut = [min(highestSeqID, key=lambda m: m.model.dope_score)]
         return jtom
     elif aType == 'IN':
-        jtom.realMut = filter(None, [('' if m.mut_errors else m) for m in jtom.realMut])
+        jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
         return jtom
     
     jtom.realMutErr = 'OTH' # Other.
@@ -124,7 +139,7 @@ def fetchProtein(pid):
         except (HGNCIdentifier.DoesNotExist, Protein.DoesNotExist):
             try:
                 # 3)
-                iden = UniprotIdentifier.objects.using('uniprot').filter(identifierID=pid)
+                iden = list(UniprotIdentifier.objects.using('uniprot').filter(identifierID=pid))
                 if iden:
                     # If more than one identifier is found, return the most
                     # important one determined by the following dict:

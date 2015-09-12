@@ -197,7 +197,7 @@ def runPipelineWrapper(mutation, jid):
             # Check if mutation falls out of domain.
 #            try:
 #                inDomain = False
-#                domains = Domain.objects.using('data').filter(protein_id=mutation.protein)
+#                domains = list(Domain.objects.using('data').filter(protein_id=mutation.protein))
 #                mut_num = int(mutation.mut[1:-1])
 #                for d in domains:
 #                    d_start, d_end = d.getdefs().split(':')
