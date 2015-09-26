@@ -148,23 +148,20 @@ def uploadFile(request):
     
     myfile = request.FILES['fileToUpload']
     
-    
     if myfile.size > 1000000:
-        err = 1
         msg = "File is too large (>1 MB)"
     else:
         process = Popen(['/usr/bin/file', '-i', myfile.temporary_file_path()], stdout=PIPE)
         stdout, stderr = process.communicate()
-        
         try:
-            if stdout.split(' ')[1].split('/')[0] == "text":
+            if stdout.decode().split(' ')[1].split('/')[0] == "text":
                 err = 0
                 
                 # Remove white-spaces and empty lines.
-                lines = myfile.read().split('\n')
+                lines = myfile.read().decode().split('\n')
                 trimmedLines = []
                 for idx, line in enumerate(lines):
-                    if idx >= 100:
+                    if idx >= 500:
                         break
                     newline = sub(r'\s+', '', line)
                     if newline:
@@ -178,8 +175,6 @@ def uploadFile(request):
             err = 1
             msg = "File could not be uploaded - try again"
         
-    
-    
     jsonDict = {'msg': msg,
                 'error': err}    
     
