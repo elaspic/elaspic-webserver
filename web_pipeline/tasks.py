@@ -92,11 +92,17 @@ def _run_pipeline_remotely(mutation, logger):
     time.sleep(5)
     r = requests.get(url, {'uniprot_id': mutation.protein, 'mutations': mutation.mut})
     logger.debug('output_dict: {}'.format(r.json()))
-    while 'result' not in r.json()[mutation.mut] or not r.json()[mutation.mut]['result']:
+    while True:
+        if r.json().get('message') == 'Internal Server Error':
+            break
+        if r.json().get(mutation.mut, {}).get('result'):
+            break
+        if r.json().get(mutation.mut, {}).get('status') == 'Done':
+            break
         time.sleep(60)
         r = requests.get(url, {'uniprot_id': mutation.protein, 'mutations': mutation.mut})
         logger.debug('output_dict: {}'.format(r.json()))
-    return r.json()[mutation.mut]
+    return r.json()
 
 
 @app.task(rate_limit='10/m', max_retries=2)
@@ -108,7 +114,6 @@ def runPipelineWrapper(mutation, jid):
     else:
         mutation.rerun = 2
     mutation.save()
-
 
     # Change current folder to pipeline code.
     #~ tempDir = "elaspic_%s_%s_%s/" % (jid, mutation.protein, mutation.mut)
