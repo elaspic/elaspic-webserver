@@ -40,8 +40,6 @@ jQuery.fn.autoGrow = function() {
 
 function handleResults(result, ajaxRequests) {
 
-	
-
 	$("#validation div").remove();
 	var validationArray = [];
 	var validated = 0;
@@ -214,15 +212,17 @@ $(document).ready(function(){
     $("#pfile").ajaxfileupload({
         "action": "../json/uploadfile/",
         "onComplete": function(response) {
+            if (typeof response === 'string' || response instanceof String) {
+                // Converts text to JSON if needed (Chrome).
+                response = $.parseJSON($(response).text());
+            }
             // Split file per line and remove spaces.
             if (response.error) {
                 $("#uploaderr").show();
                 $("#uploaderr").html(response.msg);
             } else {
-
                 // Insert file text.
                 $("#proteinsinput").val(response.msg);
-
                 // Adjust input height.
                 $("#proteinsinput").trigger( "keyup" );
                 
