@@ -171,9 +171,9 @@ def runPipelineWrapper(mutation, jid):
         output_dict = _run_pipeline_remotely(mutation, logger)
 
         logger.debug("Saving job ids to the database...")
-        mutation.provean_job_id = output_dict['sequence'].get('job_id')
-        mutation.model_job_id = output_dict['model'].get('job_id')
-        mutation.mutation_job_id = output_dict[mutation.mut].get('job_id')
+        mutation.provean_job_id = output_dict.get('sequence', {}).get('job_id')
+        mutation.model_job_id = output_dict.get('sequence', {}).get('job_id')
+        mutation.mutation_job_id = output_dict.get('sequence', {}).get('job_id')
 
     except SoftTimeLimitExceeded:
         # Out of time. Cleanup!
