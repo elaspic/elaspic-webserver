@@ -11,6 +11,7 @@ from re import match
 
 
 
+<<<<<<< Updated upstream
 #import logging
 #
 ## Create logger to redirect output.
@@ -21,6 +22,18 @@ from re import match
 #logger.addHandler(hdlr)
 #logger.setLevel(logging.DEBUG)
 #logger.propagate = False
+=======
+import logging
+
+# Create logger to redirect output.
+logName = "functions"
+logger = logging.getLogger(logName)
+hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
+hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+logger.addHandler(hdlr) 
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
+>>>>>>> Stashed changes
 
 
 
@@ -52,8 +65,18 @@ def getResultData(jtom):
         jtom.realMut = [{}]
         return jtom 
         
+<<<<<<< Updated upstream
     jtom.realMut = list(MutResult.objects.using('data').filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein))
 
+=======
+    jtom.realMut = list(
+        MutResult.objects.using('data').filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein)
+    )
+    logger.info(jtom)
+    logger.info(jtom.realMut)
+    logger.info(aType)
+    
+>>>>>>> Stashed changes
     if not jtom.realMut:
         jtom.realMutErr = 'DNE' # Does not exists.
         jtom.realMut = [{}]

@@ -37,6 +37,27 @@ from web_pipeline.tasks import runPipelineWrapper, cleanupServer
 #    
 #    return HttpResponse(json.dumps({'success': success}), content_type='application/json')
 
+
+
+
+import logging
+
+# Create logger to redirect output.
+logName = "views_json"
+logger = logging.getLogger(logName)
+hdlr = logging.FileHandler('/home/kimadmin/mum/log/views_son.log')
+hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+logger.addHandler(hdlr) 
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
+
+
+
+
+
+
+
+
 def rerunMut(request):
     if not request.GET:
         raise Http404
