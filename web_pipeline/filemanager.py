@@ -16,18 +16,16 @@ from web_pipeline.functions import getPnM, getResultData
 from elaspic.call_foldx import names_rows_stability as energyHeader
 
 
+import logging
 
-
-#import logging
-#
-## Create logger to redirect output.
-#logName = "filemanager"
-#logger = logging.getLogger(logName)
-#hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
-#hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
-#logger.addHandler(hdlr) 
-#logger.setLevel(logging.DEBUG)
-#logger.propagate = False
+# Create logger to redirect output.
+logName = "filemanager"
+logger = logging.getLogger(logName)
+hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
+hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+logger.addHandler(hdlr) 
+logger.setLevel(logging.DEBUG)
+logger.propagate = False
 
 
 
@@ -36,6 +34,8 @@ class FileManager(object):
     def __init__(self, jobID, muts):
         self.muts = []
         self.job = Job.objects.get(jobID=jobID)
+        logger.info(jobID)
+        logger.info(muts)
         
         # Save mutation list.        
         for pnm in muts:
@@ -57,6 +57,7 @@ class FileManager(object):
             if isInterface:
                 data = jtom[0]
                 realMut = list(Imutation.objects.using('data').filter(mut=mut, model=model))
+                logger.info('realMut: {}'.format(realMut))
                 data.realMut = [realMut[0]]
                 data.realMutErr = None
             else:
@@ -100,6 +101,7 @@ class FileManager(object):
                 mutCompleted = True if (m.mut.status == 'done' and m.mut.affectedType != 'NO') \
                                     and (self.job.isDone or not(m.mut.rerun)) else False
                 if mutCompleted:
+                    logger.info(m.realMut)                    
                     rm = m.realMut[0]
                     mo = rm.model
                     t = mo.template
