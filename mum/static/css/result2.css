@@ -192,6 +192,9 @@
 
 
 /* 3D structure applet */
+#jmol1_object p {
+    margin: 0;
+}
 #protein3d_wrapper {
 	width: 600px;
 	float: left;

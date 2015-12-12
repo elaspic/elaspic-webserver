@@ -524,7 +524,7 @@ input.text, select, .styled-select, .selection label:before,
 .selection .descriptor, #table > div, .popbox {
 	background-color: #C5E7F9;
 }
-.protein2d .current.domain, .tooltip #rerun {
+.protein2d .current.domain-bg, .tooltip #rerun {
     background-color: #E1F0F9;
 }
 .protein2d .current2.domain {

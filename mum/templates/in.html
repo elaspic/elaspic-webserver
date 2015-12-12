@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block headscript %}<script type="text/javascript" src="{{ STATIC_FOLDER }}js/in.js"></script>
-{% ifequal current 'mIn' %}<script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.ajaxfileupload.js"></script>{% endifequal %}
+<script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.ajaxfileupload.js"></script>
 {% ifequal current 'sIn' %}<link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/2dprotein.css" media="all" />
 						   <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.color-2.1.2.min.js"></script>
 						   <script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
