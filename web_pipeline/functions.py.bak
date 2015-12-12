@@ -10,19 +10,6 @@ from web_pipeline.models import Mutation, Imutation, Protein, HGNCIdentifier, Un
 from re import match
 
 
-
-#import logging
-#
-## Create logger to redirect output.
-#logName = "functions"
-#logger = logging.getLogger(logName)
-#hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
-#hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
-#logger.addHandler(hdlr)
-#logger.setLevel(logging.DEBUG)
-#logger.propagate = False
-
-
 def checkForCompletion(jobs):
     for j in jobs:
         jms = list(j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2)))
@@ -50,6 +37,7 @@ def getResultData(jtom):
         jtom.realMutErr = 'NOT' # Not in core or in interface.
         jtom.realMut = [{}]
         return jtom 
+        
     jtom.realMut = list(MutResult.objects.using('data').filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein))
     if not jtom.realMut:
         jtom.realMutErr = 'DNE' # Does not exists.

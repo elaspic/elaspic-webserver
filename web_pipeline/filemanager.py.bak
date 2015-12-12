@@ -16,6 +16,21 @@ from web_pipeline.functions import getPnM, getResultData
 from elaspic.call_foldx import names_rows_stability as energyHeader
 
 
+
+
+<<<<<<< Updated upstream
+#import logging
+#
+## Create logger to redirect output.
+#logName = "filemanager"
+#logger = logging.getLogger(logName)
+#hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
+#hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
+#logger.addHandler(hdlr) 
+#logger.setLevel(logging.DEBUG)
+#logger.propagate = False
+=======
+
 import logging
 
 # Create logger to redirect output.
@@ -26,6 +41,7 @@ hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
 logger.addHandler(hdlr) 
 logger.setLevel(logging.DEBUG)
 logger.propagate = False
+>>>>>>> Stashed changes
 
 
 
@@ -57,7 +73,10 @@ class FileManager(object):
             if isInterface:
                 data = jtom[0]
                 realMut = list(Imutation.objects.using('data').filter(mut=mut, model=model))
+<<<<<<< Updated upstream
+=======
                 logger.info('realMut: {}'.format(realMut))
+>>>>>>> Stashed changes
                 data.realMut = [realMut[0]]
                 data.realMutErr = None
             else:
