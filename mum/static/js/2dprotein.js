@@ -19,13 +19,21 @@ function rainbow(numOfSteps, step) {
     return (c);
 }
 
-function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.floor(Math.random() * 16)];
+function blue_rainbow(numOfSteps, step) {
+    var switches = 4;
+    var r, g, b;
+    var h = step / numOfSteps;
+    var i = ~~(h * switches);
+    var f = h * switches - i;
+    var q = 1 - f;
+    switch(i % switches){
+        case 0: r = f*0.6+0.2; g = 0.2; b = 1; break;
+        case 1: r = 0.8; g = f*0.6+0.2; b = 1; break;
+        case 2: r = q*0.6+0.2; g = 0.8; b = 1; break;
+        case 3: r = f*0.8; g = 0.8; b = q*0.8+0.2; break;
     }
-    return color;
+    var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+    return (c);
 }
 
 var barSize = 868;
@@ -53,7 +61,7 @@ function create2dBar(protein) {
         
         for (var j = 0; j < protCount; j++) {
 
-            var color = rainbow(protCount, j);
+            var color = blue_rainbow(protCount, j);
             
             for (var i = 0; i < protein.inacs[j].aa.length; i++) {
                 
@@ -192,19 +200,29 @@ function fixBarMut() {
     // Summarize affected protein interactions.
     $('.inacsummary div').remove();
     
-    var inacs;
+    var inac;
+    var $inacs = $('.protein2d .aa' + num)
 
-    $('.protein2d .aa' + num).each(function(){
-        
-        inacs = '<div><div style="display:inline-block;border-radius:5px;width:10px;height:10px;background-color:' + $(this).css('background-color') + ';"></div>';
-        inacs += '<a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + $(this).attr('data-pid') + '">' + $(this).attr('data-prot') + '</a></div>';
-        
-        $('.inacsummary').append(inacs);
-        
-    });
+    var columns = 2;
     
-    if (inacs) {
+    var steps = Math.ceil($inacs.length / 2);
+
+    for (var i = 0; i < steps; i++) {
+        var count = 0;
+        $inacs.each(function(){
+            if (count % steps === i) {
+                inac = '<div><div class="inaccolor" style="background-color:' + $(this).css('background-color') + ';"></div>';
+                inac += '<a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + $(this).attr('data-pid') + '">' + $(this).attr('data-prot') + '</a></div>';
+                $('.inacsummary').append(inac);
+            }
+            count += 1;
+        });
+        
+    }
+    if (inac) {
         $('#inacbox').show();
+        $('#inacbox').css('height', Math.min(40+steps*20, 140) + 'px')
+        $('#inacbox .inacsummary').css('height', Math.min(10+steps*20, 110) + 'px')
     } else {
         $('#inacbox').hide();
     }

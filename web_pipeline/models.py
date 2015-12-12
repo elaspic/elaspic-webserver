@@ -135,7 +135,7 @@ class Protein(models.Model):
         if not '-' in self.id:
             return name
         else:
-            return name + '_iso' + self.id.split('-')[-1]
+            return name + ' isoform ' + self.id.split('-')[-1]
     
     def __unicode__(self):
         return '%s (%s)' % (self.id, self.name)
