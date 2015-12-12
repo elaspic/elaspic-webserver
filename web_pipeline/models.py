@@ -116,7 +116,26 @@ class Protein(models.Model):
         return self.description
         
     def getname(self):
-        return self.name.split('_')[0]
+        
+        try:
+            name = HGNCIdentifier.objects.using('uniprot').get(identifierType='HGNC_genename', uniprotID=self.id).identifierID
+        except HGNCIdentifier.DoesNotExist:
+            try:
+                name = UniprotIdentifier.objects.using('uniprot').get(identifierType='GeneWiki', uniprotID=self.id).identifierID
+            except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
+                name = self.name.split('_')[0]
+        except HGNCIdentifier.MultipleObjectsReturned:
+            name = list(
+                HGNCIdentifier
+                .objects
+                .using('uniprot')
+                .filter(identifierType='HGNC_genename', uniprotID=self.id)
+            )[0].identifierID
+        
+        if not '-' in self.id:
+            return name
+        else:
+            return name + '_iso' + self.id.split('-')[-1]
     
     def __unicode__(self):
         return '%s (%s)' % (self.id, self.name)

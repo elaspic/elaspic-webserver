@@ -1,16 +1,22 @@
 from re import sub
 from subprocess import Popen, PIPE
 import json
+from collections import defaultdict
+from tempfile import NamedTemporaryFile
+
+from Bio.PDB.PDBParser import PDBParser
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils import html
 from django.conf import settings
 from django.core.mail import EmailMessage
 
-from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation
+from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
 from web_pipeline.tasks import runPipelineWrapper, cleanupServer
+
+from web_pipeline.supl import pdb_template
 
 #def prepareAllFiles(request):
 #    if not request.GET:
@@ -138,6 +144,26 @@ def checkIfJobIsReady(request):
     return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
 
+def _move_hetatm_to_hetatm_chain(chain, hetatm_chain, res):
+    chain.detach_child(res.id)
+    hetatm_res = res
+    hetatm_res.id = (hetatm_res.id[0], len(hetatm_chain)+1, hetatm_res.id[2],)
+    hetatm_chain.add(hetatm_res)
+
+def _correct_methylated_lysines(res):
+    lysine_atoms = ['N', 'CA', 'CB', 'CG', 'CD', 'CE', 'NZ', 'C', 'O']
+    new_resname = 'LYS'
+    new_resid = (' ', res.id[1], res.id[2])
+    res.resname = new_resname
+    res.id = new_resid
+    atom_idx = 0
+    while atom_idx < len(res):
+        atom_id = res.child_list[atom_idx].id
+        if atom_id not in lysine_atoms:
+            res.detach_child(atom_id)
+        else:
+            atom_idx += 1
+
 
 def uploadFile(request):
     
@@ -148,35 +174,69 @@ def uploadFile(request):
     
     myfile = request.FILES['fileToUpload']
     
-    if myfile.size > 1000000:
-        msg = "File is too large (>1 MB)"
-    else:
+    filetype = request.POST['filetype']
+    
+    if myfile.size > 5000000:
+        jsonDict = {'msg': "File is too large (>5 MB)", 'error': 1}    
+        return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+        
+
+    try:
         process = Popen(['/usr/bin/file', '-i', myfile.temporary_file_path()], stdout=PIPE)
         stdout, stderr = process.communicate()
+    
+        if stdout.decode().split(' ')[1].split('/')[0] not in ('text', 'chemical'):
+            msg =  "Uploaded file has to be raw text (not '{0}')".format(stdout.decode().split(' ')[1][:-1])
+            jsonDict = {'msg': msg, 'error': 1}
+            return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+            
+        # Protein list upload.
+        if filetype == 'prot':
+            
+            # Remove white-spaces and empty lines.
+            lines = myfile.read().decode().split('\n')
+            trimmedLines = []
+            for idx, line in enumerate(lines):
+                if idx >= 500:
+                    break
+                newline = sub(r'\s+', '', line)
+                if newline:
+                    trimmedLines.append(newline)
+            msg = "\n".join(trimmedLines)
+
+    except Exception:
+        jsonDict = {'msg': "File could not be uploaded - try again", 'error': 1}
+        return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+    
+    
+    if filetype == 'pdb':
         try:
-            if stdout.decode().split(' ')[1].split('/')[0] == "text":
-                err = 0
-                
-                # Remove white-spaces and empty lines.
-                lines = myfile.read().decode().split('\n')
-                trimmedLines = []
-                for idx, line in enumerate(lines):
-                    if idx >= 500:
-                        break
-                    newline = sub(r'\s+', '', line)
-                    if newline:
-                        trimmedLines.append(newline)
-                msg = "\n".join(trimmedLines)
-                
-            else:
-                err = 1
-                msg = "Uploaded file has to be raw text (not '%s')" % stdout.split(' ')[1][:-1]
-        except:
-            err = 1
-            msg = "File could not be uploaded - try again"
         
-    jsonDict = {'msg': msg,
-                'error': err}    
+            with NamedTemporaryFile(mode='w') as temp_fh:
+                temp_fh.write(myfile.read().decode())
+                temp_fh.flush()
+                temp_fh.seek(0)
+
+                structure = PDBParser(QUIET=True).get_structure('uploadedPDB', temp_fh.name)
+
+            msg = sorted(pdb_template.get_structure_sequences(structure).items())
+            
+            print(len(msg[0][1]), len(msg[1][1]))
+            
+            if len(msg) < 1:
+                jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
+                return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+
+        except Exception:
+            jsonDict = {'msg': "PDB could not be parsed. ", 'error': 1}
+            return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+            
+
+        
+    jsonDict = {'inputfile': myfile.name or 'uploadedFile',
+                'msg': msg,
+                'error': 0}    
+
     
     return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
@@ -250,44 +310,74 @@ def getProtein(request):
         if domReq:
             ds = list(Domain.objects.using('data').filter(protein_id=p.id))
             output[idx]['doms'], output[idx]['defs'] = [], []
+            
+            inacs = defaultdict(set)
+            pidToName = {}
+
             for d in ds:
                 output[idx]['doms'].append(d.getname(''))
                 output[idx]['defs'].append(d.getdefs(1))
+                
+                # Set interactions.
+                model1 = Imodel.objects.using('data').filter(template__domain__domain1=d)
+                for m in model1:
+                    if not m.aa1:
+                        continue
+                    pid = m.template.domain.domain2.protein_id
+                    pidToName[pid] = m.template.domain.domain2.protein.getname()
+                    inacs[pid] = set.union(inacs[pid], set(m.aa1.split(',')))
+                model2 = Imodel.objects.using('data').filter(template__domain__domain2=d)
+                for m in model2:
+                    if not m.aa2:
+                        continue
+                    pid = m.template.domain.domain1.protein_id
+                    pidToName[pid] = m.template.domain.domain1.protein.getname()
+                    inacs[pid] = set.union(inacs[pid], set(m.aa2.split(',')))
+            
+            inacsum = defaultdict(int)
+            for aas in inacs.values():
+                for aa in aas:
+                    inacsum[aa] += 1
+
+            output[idx]['inacs'] = sorted([{'pid': k, 'prot': pidToName[k], 'aa': list(map(int,v))} for k,v in inacs.items()], key=lambda x: x['prot'])
+            
+            output[idx]['inacsum'] = inacsum
+
         
         # Set already known mutations for protein.
         if knownmutsReq:
-            mdict = {}
-            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
-            imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
-            
-            for m in muts + imuts:
-                chain = m.findChain()
-                inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
-                isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
-                iId = inac.id if m.__class__.__name__ == 'Imutation' else None
-                
-                toAppend = {'i': isInt, 
-                            'id': iId,
-                            'm': m.mut, 
-                            'd': '%0.3f' % m.ddG,
-                            'dw': m.dGwt(),
-                            'dm': m.dGmut(),
-                            'si': m.model.template.getsequenceidentity(chain),
-                            'sm': '%0.3f' % m.model.dope_score}
-                if m.mut in mdict and mdict[m.mut][0]['i']:
-                    mdict[m.mut].append(toAppend)
-                else:
-                    mdict[m.mut] = [toAppend]
+#            mdict = {}
+#            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+#            imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+#            
+#            for m in muts + imuts:
+#                chain = m.findChain()
+#                inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
+#                isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
+#                iId = inac.id if m.__class__.__name__ == 'Imutation' else None
+#                
+#                toAppend = {'i': isInt, 
+#                            'id': iId,
+#                            'm': m.mut, 
+#                            'd': '%0.3f' % m.ddG,
+#                            'dw': m.dGwt(),
+#                            'dm': m.dGmut(),
+#                            'si': m.model.template.getsequenceidentity(chain),
+#                            'sm': '%0.3f' % m.model.dope_score}
+#                if m.mut in mdict and mdict[m.mut][0]['i']:
+#                    mdict[m.mut].append(toAppend)
+#                else:
+#                    mdict[m.mut] = [toAppend]
             
             knMuts = {}
 
-            for k in mdict:
-                mnum = mdict[k][0]['m'][1:-1]
-                knMuts.setdefault(mnum, list()).append(mdict[k])
-
-            # Sort mutations
-            for k in knMuts:
-                knMuts[k] = sorted(knMuts[k], key=lambda x: x[0]['m'])
+#            for k in mdict:
+#                mnum = mdict[k][0]['m'][1:-1]
+#                knMuts.setdefault(mnum, list()).append(mdict[k])
+#
+#            # Sort mutations
+#            for k in knMuts:
+#                knMuts[k] = sorted(knMuts[k], key=lambda x: x[0]['m'])
 
             #output[idx]['prot'] = str(knMuts['537'])
             output[idx]['known'] = knMuts

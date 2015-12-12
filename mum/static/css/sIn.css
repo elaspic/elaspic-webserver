@@ -337,6 +337,9 @@ position: absolute;
 #selectsub select {
 	height: 100px !important;
 }
+#selectchain {
+    width: 100px;
+}
 #select2sub {
 	border-top-right-radius: 5px;
 	border-bottom-right-radius: 5px;

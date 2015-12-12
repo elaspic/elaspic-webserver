@@ -41,6 +41,7 @@
 							<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="1">
 								{{ dom.1 }}
 							</div>
+                            <div class="domain-bg{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
 						{% endspaceless %}{% endfor %}
 						<div class="tooltip2d"></div>
 					</div>
@@ -69,6 +70,7 @@
 							<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current2{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="2">
 								{{ dom.1 }}
 							</div>
+                            <div class="domain-bg" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
 						{% endspaceless %}{% endfor %}
 							<div class="tooltip2d"></div>
 						</div>
