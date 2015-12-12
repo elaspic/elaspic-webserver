@@ -367,38 +367,38 @@ def getProtein(request):
         
         # Set already known mutations for protein.
         if knownmutsReq:
-#            mdict = {}
-#            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
-#            imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
-#            
-#            for m in muts + imuts:
-#                chain = m.findChain()
-#                inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
-#                isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
-#                iId = inac.id if m.__class__.__name__ == 'Imutation' else None
-#                
-#                toAppend = {'i': isInt, 
-#                            'id': iId,
-#                            'm': m.mut, 
-#                            'd': '%0.3f' % m.ddG,
-#                            'dw': m.dGwt(),
-#                            'dm': m.dGmut(),
-#                            'si': m.model.template.getsequenceidentity(chain),
-#                            'sm': '%0.3f' % m.model.dope_score}
-#                if m.mut in mdict and mdict[m.mut][0]['i']:
-#                    mdict[m.mut].append(toAppend)
-#                else:
-#                    mdict[m.mut] = [toAppend]
+            mdict = {}
+            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+            imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+            
+            for m in muts + imuts:
+                chain = m.findChain()
+                inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
+                isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
+                iId = inac.id if m.__class__.__name__ == 'Imutation' else None
+                
+                toAppend = {'i': isInt, 
+                            'id': iId,
+                            'm': m.mut, 
+                            'd': '%0.3f' % m.ddG,
+                            'dw': m.dGwt(),
+                            'dm': m.dGmut(),
+                            'si': m.model.template.getsequenceidentity(chain),
+                            'sm': '%0.3f' % m.model.dope_score}
+                if m.mut in mdict and mdict[m.mut][0]['i']:
+                    mdict[m.mut].append(toAppend)
+                else:
+                    mdict[m.mut] = [toAppend]
             
             knMuts = {}
 
-#            for k in mdict:
-#                mnum = mdict[k][0]['m'][1:-1]
-#                knMuts.setdefault(mnum, list()).append(mdict[k])
-#
-#            # Sort mutations
-#            for k in knMuts:
-#                knMuts[k] = sorted(knMuts[k], key=lambda x: x[0]['m'])
+            for k in mdict:
+                mnum = mdict[k][0]['m'][1:-1]
+                knMuts.setdefault(mnum, list()).append(mdict[k])
+
+            # Sort mutations
+            for k in knMuts:
+                knMuts[k] = sorted(knMuts[k], key=lambda x: x[0]['m'])
 
             #output[idx]['prot'] = str(knMuts['537'])
             output[idx]['known'] = knMuts
