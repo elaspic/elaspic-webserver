@@ -1,6 +1,7 @@
 from re import sub
 from subprocess import Popen, PIPE
 import json
+import requests
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils import html
@@ -52,12 +53,6 @@ logger.setLevel(logging.DEBUG)
 logger.propagate = False
 
 
-
-
-
-
-
-
 def rerunMut(request):
     if not request.GET:
         raise Http404
@@ -73,23 +68,30 @@ def rerunMut(request):
         error = 1
     else:
         j = jtom.job
-        j.isDone= False
+        j.isDone = False
         j.save()
         m = jtom.mut
         if not m.rerun:
             m.rerun = True
             m.save()
             # ##### Rerun pipeline #####
-            #
-
-            runPipelineWrapper.delay(m, j.jobID)
-            #sleepabit.delay(5,10)
-
-            #
-            # ##### ############ #####
-
+            # runPipelineWrapper.delay(m, j.jobID)
+            # sleepabit.delay(5,10)
+            data_in = [{
+                'job_type': 'database',
+                'protein_id': m.protein,
+                'mutations': m.mut,
+                'uniprot_domain_pair_ids': '',
+            }]
+            status = None
+            n_tries = 0
+            while (not status or status == 'error') and n_tries < 10:
+                n_tries += 1
+                r = requests.post('http://192.168.6.201:8000/elaspic/api/1.0/', json=data_in)
+                status = r.json().get('status', None)
 
     return HttpResponse(json.dumps({'error': error}), content_type='application/json')
+
 
 def dlFile(request):
     if not request.GET:
@@ -150,7 +152,7 @@ def checkIfJobIsReady(request):
         seqList.append(jm.mut.mut)
         idenList.append(jm.inputIdentifier)
 
-
+    # TODO: job is ready when all mutations are ready
     jsonDict = {'done': j.isDone,
                 'status': staList,
                 'seq': seqList,

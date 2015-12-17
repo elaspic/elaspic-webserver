@@ -2,6 +2,7 @@ import os
 from tempfile import mkdtemp
 from shutil import copyfile
 from random import randint
+import requests
 
 from django.shortcuts import render
 from django.http import Http404, HttpResponseRedirect
@@ -68,21 +69,21 @@ def runPipeline(request):
     for pnm in validPnms:
         toRerun = False
         m = list(Mut.objects.filter(protein=pnm[0], mut=pnm[1]))
-        # Check for blacklisted uniprots and skip.
-        if pnm[0] in blacklisted_uniprots:
-            if m:
-                mut = m[0]
-                mut.status = 'error'
-                mut.affectedType = ''
-                mut.error = '5: Blacklisted'
-                mut.save()
-                doneMuts.append([mut, pnm[2]])
-            else:
-                doneMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1],
-                                                    status='error',
-                                                    error='5: Blaclisted'), pnm[2]])
-            checkForCompletion(doneMuts[-1][0].jobs.all())
-            continue
+#        # Check for blacklisted uniprots and skip.
+#        if pnm[0] in blacklisted_uniprots:
+#            if m:
+#                mut = m[0]
+#                mut.status = 'error'
+#                mut.affectedType = ''
+#                mut.error = '5: Blacklisted'
+#                mut.save()
+#                doneMuts.append([mut, pnm[2]])
+#            else:
+#                doneMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1],
+#                                                    status='error',
+#                                                    error='5: Blaclisted'), pnm[2]])
+#            checkForCompletion(doneMuts[-1][0].jobs.all())
+#            continue
 
         # Get potential results.
         muts = list(Mutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
@@ -126,18 +127,30 @@ def runPipeline(request):
     JobToMut.objects.bulk_create([JobToMut(job=j, mut=allMuts[0], inputIdentifier=allMuts[1]) for allMuts in doneMuts + newMuts])
 
     # ##### Run pipeline #####
-    #
-
 
     # Run pipeline for new mutations.'
-#    args_list = [
-#        {
-#            'job_type': 'database',
-#            'protein_id': mutation[0].protein,
-#            'mutations': mutation[0].mut,
-#            'uniprot_domain_pair_ids': '',
-#        } for mutation in newMuts
-#    ]
+    data_in = []
+    for m in newMuts + doneMuts:
+        mut = m[0]
+        mut.status = 'running'
+        # mut.taskId = p.task_ids
+        mut.save()
+        mutation = {
+            'job_type': 'database',
+            'protein_id': mut.protein,
+            'mutations': mut.mut,
+            'uniprot_domain_pair_ids': '',
+        }
+        data_in.append(mutation)
+
+    if data_in:
+        status = None
+        n_tries = 0
+        while (not status or status == 'error') and n_tries < 10:
+            n_tries += 1
+            r = requests.post('http://192.168.6.201:8000/elaspic/api/1.0/', json=data_in)
+            status = r.json().get('status', None)
+
 #    if args_list:
 #        p = jobsubmitter.main.delay(args_list, randomID)
 #        for m in newMuts:
@@ -147,11 +160,12 @@ def runPipeline(request):
 #            mut.save()
 
     #p = runPipelineWrapper.delay([m[0] for m in newMuts], randomID)
-    for m in newMuts:
-        mut = m[0]
-        p = runPipelineWrapper.delay(mut, randomID)
-        mut.taskId = p.task_id
-        mut.save()
+#    for m in newMuts:
+#        mut = m[0]
+#        p = runPipelineWrapper.delay(mut, randomID)
+#        mut.taskId = p.task_id
+#        mut.save()
+
 
     # ##### ############ #####
 
