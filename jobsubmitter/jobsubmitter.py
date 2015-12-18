@@ -17,7 +17,7 @@ import aiomysql
 from email.mime.text import MIMEText
 from collections import deque, defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from sh import hostname
+import sh
 
 import config
 import mum.settings
