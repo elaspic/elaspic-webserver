@@ -10,18 +10,22 @@ import shlex
 import re
 import time
 import logging
+import subprocess
 import smtplib
-from email.mime.text import MIMEText
-from collections import deque
-
-from sh import hostname
 import asyncio
 import aiomysql
+from email.mime.text import MIMEText
+from collections import deque, defaultdict
+from concurrent.futures import ThreadPoolExecutor
+from sh import hostname
 
-import settings
+import config
+import mum.settings
+# from web_pipeline import functions
 
 logger = logging.getLogger(__name__)
 loop = asyncio.get_event_loop()
+executor = ThreadPoolExecutor()
 
 
 # %% Parameters
@@ -36,14 +40,19 @@ SLEEP_FOR_LOOP = 0.01
 
 DATA_DIR = '/home/kimlab1/database_data/elaspic_v2'
 
-SCRIPTS_DIR = op.join(settings.BASE_DIR, 'scripts')
+# SCRIPTS_DIR is for beagle01
+# SCRIPTS_DIR = op.join(config.BASE_DIR, 'scripts')
+SCRIPTS_DIR = '/home/kimlab1/jobsubmitter/mum/jobsubmitter/scripts'
 PROVEAN_LOCK_DIR = op.join(DATA_DIR, 'locks', 'sequence')
 MODEL_LOCK_DIR = op.join(DATA_DIR, 'locks', 'model')
 MUTATION_LOCK_DIR = op.join(DATA_DIR, 'locks', 'mutation')
 
 JOB_ID_RE = re.compile('^Your job (\d.*) \(.*$')
 
-SSH_STRING = 'ssh jobsubmitter@192.168.6.201 '
+SSH_STRING = (
+    '' if sh.hostname().strip() == 'beagle01'
+    else 'ssh jobsubmitter@192.168.6.201 '
+)
 
 QSUB_SYSTEM_COMMAND = """\
 qsub -pe smp {num_cores} -l s_rt={s_rt} -l h_rt={h_rt} -l s_vmem={s_vmem} -l h_vmem={h_vmem} \
@@ -127,6 +136,55 @@ def send_email(item, system_command, restarting=False):
     s = smtplib.SMTP('localhost')
     s.sendmail(me, [you], msg.as_string())
     s.quit()
+
+
+def sendEmail(j, sendType='complete'):
+    """
+    Copy-paste from web_pipeline.functions, so that I don't have to laod all database models.
+    """
+    job_id, job_email = j
+    # Validate email address
+    if not match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$', job_email):
+        return 0
+
+    # Set Subject and content.
+    if sendType == 'started':
+        subject, status = 'started', 'has been correctly STARTED'
+    elif sendType == 'complete':
+        subject, status = 'results', 'is COMPLETE'
+
+    # Prepare template and email object.
+    sendSubject = '%s %s - Job ID: %s' % (mum.settings.SITE_NAME, subject, job_id)
+    html_content = render_to_string('email.html', {'JID': job_id,
+                                                   'SITE_NAME': mum.settings.SITE_NAME,
+                                                   'SITE_URL': mum.settings.SITE_URL,
+                                                   'SUPPORT_EMAIL': mum.settings.ADMINS[0][1],
+                                                   'status': status})
+    text_content = strip_tags(html_content)
+    msg = EmailMultiAlternatives(
+        sendSubject, text_content, mum.settings.EMAIL_HOST_USER, [job_email])
+    msg.attach_alternative(html_content, "text/html")
+
+    # Send email.
+    try:
+        msg.send()
+        return 1
+    except Exception:
+        return 0
+
+
+def remove_from_monitored_jobs(item):
+    if item.job_id and item.job_email:
+        job_key = (item.job_id, item.job_email)
+        logger.debug(
+            "Removing unique_id '{}' from monitored_jobs with key '{}..."
+            .format(item.unique_id, job_key)
+        )
+        try:
+            monitored_jobs[job_key].remove(item.unique_id)
+            logger.debug('Removed!')
+        except KeyError:
+            logger.debug('Key does not exist!')
 
 
 # %% Helper classes
@@ -218,6 +276,13 @@ loop.create_task(persist_precalculated())
 
 async def set_db_errors(error_queue):
     logger.debug('set_errors: '.format(error_queue))
+
+    async def helper(item):
+        remove_from_monitored_jobs(item)
+        await cur.execute(
+            "CALL update_muts('{}', '{}')".format(item.protein_id, item.mutations)
+        )
+
     async with aiomysql.connect(
             host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
             db='elaspic_webserver_2', loop=loop) as conn:
@@ -226,15 +291,10 @@ async def set_db_errors(error_queue):
                 if isinstance(error_queue, asyncio.Queue):
                     while not error_queue.empty():
                         item = await error_queue.get()
-                        await cur.execute(
-                            "CALL update_muts('{}', '{}')"
-                            .format(item.args['protein_id'], item.args['mutations'])
-                        )
+                        await helper(item)
                 else:
                     for item in error_queue:
-                        await cur.execute(
-                            "CALL update_muts('{}', '{}')".format(item.protein_id, item.mutations)
-                        )
+                        await helper(item)
                 await conn.commit()
             except Exception as e:
                 logger.error(
@@ -247,10 +307,12 @@ async def set_db_errors(error_queue):
 running_jobs = set()
 running_jobs_last_updated = 0
 validation_last_updated = 0
+monitored_jobs = defaultdict(set)
 
 validation_queue = asyncio.Queue()
 qsub_queue = asyncio.Queue()
 pre_qsub_queue = asyncio.Queue()
+
 
 async def get_stats():
     while True:
@@ -265,6 +327,22 @@ async def get_stats():
         await asyncio.sleep(SLEEP_FOR_INFO)
 
 loop.create_task(get_stats())
+
+
+async def finilize_finished_jobs():
+    while True:
+        if monitored_jobs:
+            for job_key, job_set in monitored_jobs.items():
+                finished_jobs = []
+                if not job_set:
+                    executor.submit(sendEmail, job_key, 'complete')
+                    finished_jobs.append(job_key)
+                    await asyncio.sleep(SLEEP_FOR_LOOP)
+            for job_key in finished_jobs:
+                monitored_jobs.pop(job_key)
+        await asyncio.sleep(SLEEP_FOR_QSUB)
+
+loop.create_task(finilize_finished_jobs())
 
 
 async def qstat():
@@ -340,6 +418,7 @@ async def validation():
                     logger.debug(message + 'nope!')
                 except FileNotFoundError:
                     logger.debug(message + 'yup!')
+                remove_from_monitored_jobs(item)
             else:
                 logger.error('Failed to validate with system command:\n{}'.format(system_command))
                 restarting = (
@@ -382,7 +461,7 @@ async def qsub():
             open(item.lock_path, 'x').close()
             system_command = SSH_STRING + QSUB_SYSTEM_COMMAND.format(**{
                 **item.args,
-                **settings.QSUB_OPTIONS[item.run_type],
+                **config.QSUB_OPTIONS[item.run_type],
                 'run_type': item.run_type,
                 'lock_filename': item.lock_path,
                 'lock_filename_finished': item.finished_lock_path,
@@ -478,9 +557,15 @@ loop.create_task(pre_qsub())
 
 
 async def cleanup():
+    """
+    """
     await set_db_errors(validation_queue)
     await set_db_errors(qsub_queue)
     await set_db_errors(pre_qsub_queue)
+    system_command = (
+        'bash -c "rm -f \"/home/kimlab1/database_data/elaspic_v2/locks/*/*.lock\""'
+    )
+    subprocess.check_output(shlex.split(system_command))
 
 
 # %% Main
@@ -506,15 +591,16 @@ async def main(data_in):
         have_prereqs = True
         # sequence
         s = Item(run_type='sequence', args=args)
-        if not check_prereqs([s]):
+        if not check_prereqs([s.unique_id]):
             await qsub_queue.put(s)
             have_prereqs = False
         # model
         m = Item(run_type='model', args=args)
-        if not check_prereqs([m]):
+        if not check_prereqs([m.unique_id]):
             await qsub_queue.put(m)
             have_prereqs = False
-        # mutation
+        # mutations
+        job_mutations = set()
         for mutation in args['mutations'].split(','):
             args1 = args.copy()
             args1['mutations'] = mutation
@@ -523,6 +609,10 @@ async def main(data_in):
                 await qsub_queue.put(mut)
             else:
                 await pre_qsub_queue.put(mut)
+            job_mutations.add(mut.unique_id)
+        if args.get('job_id') and args.get('job_email') and job_mutations:
+            job_key = (args.get('job_id'), args.get('job_email'))
+            monitored_jobs[job_key].update(job_mutations)
 
 
 def validate_args(args):
@@ -551,23 +641,24 @@ def validate_args(args):
             )
             # raise aiohttp.web.HTTPBadRequest(reason=reason)
             raise Exception(reason)
-    # Sanitize our inputs
-    valid_reg = re.compile(r'^[\w,_-]+$')
-    if not all(valid_reg.match(key) for key in args.keys()):
-        logger.debug('Bad request keys')
-        # raise aiohttp.web.HTTPBadRequest()
-        raise Exception(reason)
-    if not all(valid_reg.match(value) for value in args.values() if value):
-        logger.debug('Bad request values')
-        # raise aiohttp.web.HTTPBadRequest()
-        raise Exception(reason)
+    # This has been causing nothing but problems...
+#    # Sanitize our inputs
+#    valid_reg = re.compile(r'^[\w,_-@]+$')
+#    if not all(valid_reg.match(key) for key in args.keys()):
+#        logger.debug('Bad request keys')
+#        # raise aiohttp.web.HTTPBadRequest()
+#        raise Exception(reason)
+#    if not all(valid_reg.match(value) for value in args.values() if value):
+#        logger.debug('Bad request values')
+#        # raise aiohttp.web.HTTPBadRequest()
+#        raise Exception(reason)
 
 
 # %%
 if __name__ == '__main__':
     import logging.config
-    settings.LOGGING_CONFIGS['loggers']['']['handlers'] = ['default']
-    logging.config.dictConfig(settings.LOGGING_CONFIGS)
+    config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['default']
+    logging.config.dictConfig(config.LOGGING_CONFIGS)
     logger.debug('hello')
     data_in = [
         {

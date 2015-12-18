@@ -4,11 +4,15 @@ Created on Wed Dec 16 00:49:05 2015
 
 @author: strokach
 """
+import os
 import os.path as op
-
+import sys
 
 # %%
 BASE_DIR = op.abspath(op.dirname(__file__))
+PROJECT_DIR = op.abspath(op.join(BASE_DIR, '..'))
+sys.path.insert(0, PROJECT_DIR)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mum.settings")
 
 
 # %% SGE
@@ -87,7 +91,7 @@ LOGGING_CONFIGS = {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'timely',
-            'filename': op.abspath(op.join(BASE_DIR, '..', 'logs', 'main_info.log')),
+            'filename': op.abspath(op.join(BASE_DIR, '..', 'log', 'jobsubmitter.log')),
             'maxBytes': 32 * 1024 * 1024,  # 32 MB
             'backupCount': 3,
         },
@@ -95,7 +99,7 @@ LOGGING_CONFIGS = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'timely',
-            'filename': op.abspath(op.join(BASE_DIR, '..', 'logs', 'main_debug.log')),
+            'filename': op.abspath(op.join(BASE_DIR, '..', 'log', 'jobsubmitter.err')),
             'maxBytes': 32 * 1024 * 1024,  # 32 MB
             'backupCount': 3,
         },
