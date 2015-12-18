@@ -1,5 +1,8 @@
+mod_wsgi
+django
 celery
 django-celery
+aiohttp
 aiomysql
 sh
-mysqlclient
+
