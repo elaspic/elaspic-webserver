@@ -8,4 +8,5 @@ celerybeat-schedule*
 
 # Extensions
 *.pyc
+*.bak
 
