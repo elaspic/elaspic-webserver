@@ -1,6 +1,5 @@
 # Folders
-log/
-static/
+log
 **/__pycache__
 **/.coverage
 
@@ -9,4 +8,5 @@ celerybeat-schedule*
 
 # Extensions
 *.pyc
+*.bak
 

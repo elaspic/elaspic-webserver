@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.timezone import localtime
 
 #
-# To install: python /home/witvliet/Dropbox/django/mum/manage.py syncdb 
+# To install: python /home/witvliet/Dropbox/django/mum/manage.py syncdb
 #
 # Run shell: from web_pipeline.models import *
 #
@@ -34,12 +34,6 @@ class Mut(models.Model):
     
     error = models.TextField(blank=True, null=True) # AS + default=''
 
-    #AS >>>
-    provean_job_id = models.IntegerField(null=True)
-    model_job_id = models.IntegerField(null=True)
-    mutation_job_id = models.IntegerField(null=True)
-    # <<<
-    
     def __unicode__(self):
         return '%s.%s' % (self.protein, self.mut)
     
@@ -608,11 +602,11 @@ class Imutation(models.Model):
 #    pubmedID = models.PositiveIntegerField(null=True, blank=True)
 #    system = models.CharField(max_length=40, blank=True)
 #    database = models.CharField(max_length=8)
-#    throughput = models.CharField(max_length=1, choices=THROUGHPUT_CHOICES, blank=True)   
-# 
+#    throughput = models.CharField(max_length=1, choices=THROUGHPUT_CHOICES, blank=True)
+#
 #    def __unicode__(self):
 #        return self.database
-#        
+#
 #    class Meta:
 #        db_table = 'interaction_info'
 #        ordering = ['database', 'author', 'year', 'system']

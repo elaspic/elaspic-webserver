@@ -1,6 +1,7 @@
 from re import sub
 from subprocess import Popen, PIPE
 import json
+import requests
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
@@ -14,7 +15,7 @@ from django.core.mail import EmailMessage
 from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
-from web_pipeline.tasks import runPipelineWrapper, cleanupServer
+from web_pipeline.tasks import cleanupServer
 
 from web_pipeline.supl import pdb_template
 
@@ -58,12 +59,6 @@ logger.setLevel(logging.DEBUG)
 logger.propagate = False
 
 
-
-
-
-
-
-
 def rerunMut(request):
     if not request.GET:
         raise Http404
@@ -86,16 +81,25 @@ def rerunMut(request):
             m.rerun = True
             m.save()
             # ##### Rerun pipeline #####
-            #
-        
-            runPipelineWrapper.delay(m, j.jobID)
-            #sleepabit.delay(5,10)    
-            
-            #
-            # ##### ############ #####
-            
-    
+            # runPipelineWrapper.delay(m, j.jobID)
+            # sleepabit.delay(5,10)
+            data_in = [{
+                'job_id': j.jobID,
+                'job_email': j.email,
+                'job_type': 'database',
+                'protein_id': mut.protein,
+                'mutations': mut.mut,
+                'uniprot_domain_pair_ids': '',
+            }]
+            status = None
+            n_tries = 0
+            while (not status or status == 'error') and n_tries < 10:
+                n_tries += 1
+                r = requests.post('http://127.0.0.1:8000/elaspic/api/1.0/', json=data_in)
+                status = r.json().get('status', None)
+
     return HttpResponse(json.dumps({'error': error}), content_type='application/json')
+
 
 def dlFile(request):
     if not request.GET:
@@ -155,8 +159,8 @@ def checkIfJobIsReady(request):
         staList.append(jm.mut.status)
         seqList.append(jm.mut.mut)
         idenList.append(jm.inputIdentifier)
-        
-    
+
+    # TODO: job is ready when all mutations are ready
     jsonDict = {'done': j.isDone,
                 'status': staList,
                 'seq': seqList,
