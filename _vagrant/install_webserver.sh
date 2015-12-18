@@ -11,7 +11,7 @@ fi
 
 # Install required packages
 conda install -y elaspic
-pip install -r "${HOME}/mum/requirements.txt" 
+pip install -q -r "${HOME}/mum/requirements.txt" 
 
 # Copy webserver code
 python "${HOME}/mum/manage.py" collectstatic --noinput
@@ -36,3 +36,4 @@ if [[ $? -ne 0 ]] ; then
     sleep 1
     sudo service supervisor start
 fi
+

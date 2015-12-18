@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 
+DEBIAN_FRONTEND=noninteractive
+
 ## This should not be required with a newer packer script
 rm -r /var/lib/apt/lists/*
 
 ## Install system packages
 apt-get update
-apt-get install -y nfs-common
 apt-get install -y vim git
+
+# Postfix
+debconf-set-selections <<< "postfix postfix/mailname string your.hostname.com"
+debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 apt-get install -y postfix
 
 # Apache
@@ -40,7 +45,11 @@ fi
 
 
 ## Mount folders
-apt-get install nfs-common sshfs
+apt-get install -y nfs-common sshfs
+
+mkdir -p /home/kimlab1/database_data/blast
+mkdir -p /home/kimlab1/database_data/elaspic_v2
+mkdir -p /home/kimlab1/database_data/elaspic.kimlab.org
 
 if ! grep "/home/kimlab1/database_data/blast" /etc/fstab >/dev/null; then
     sudo echo "192.168.6.8:/kimlab1/database_data/blast /home/kimlab1/database_data/blast nfs rw,vers=3,hard,intr,noatime,rsize=32768,wsize=32768 0 2"  >> /etc/fstab
@@ -52,9 +61,8 @@ if ! grep "/home/kimlab1/database_data/elaspic.kimlab.org" /etc/fstab >/dev/null
     sudo echo "sshfs#jobsubmitter@192.168.6.201:/home/kimlab1/database_data/elaspic.kimlab.org    /home/kimlab1/database_data/elaspic.kimlab.org    fuse    cache=yes,kernel_cache,compression=no,Ciphers=arcfour,allow_other,IdentityFile=/home/kimadmin/.ssh/id_rsa,ServerAliveInterval=60    0    0"  >> /etc/fstab
 fi
 
-mount_folder 'kimlab1/database_data/blast'
-mount_folder 'kimlab1/database_data/elaspic_v2'
-mount_folder 'kimlab1/database_data/elaspic.kimlab.org'
+sudo mount --all
+
 
 ## Install Python
 su -c "source /vagrant/install_python.sh" $USER -l

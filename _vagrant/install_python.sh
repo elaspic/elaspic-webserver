@@ -12,8 +12,8 @@ fi
 # Install miniconda
 if [[ ! -e "$CONDA_INSTALL_DIR/bin/python" ]] ; then
     echo "Installing Miniconda..."
+    echo "$CONDA_INSTALL_DIR"
     rm -rf "$CONDA_INSTALL_DIR"
-    mkdir "$CONDA_INSTALL_DIR"
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh --quiet
     bash Miniconda3-latest-Linux-x86_64.sh -b -p "$CONDA_INSTALL_DIR"
     rm -f Miniconda3-latest-Linux-x86_64.sh
@@ -30,8 +30,10 @@ channels:
 EOF
 
 # Install useful conda packages
+echo "$PATH"
+echo `which conda`
 conda update -y -q conda
 conda install -y -q anaconda-client
 conda install -y -q conda-build jinja2 pip
-pip install mod_wsgi
+pip install -q mod_wsgi
 

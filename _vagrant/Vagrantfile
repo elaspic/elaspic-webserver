@@ -47,7 +47,7 @@ Vagrant.configure(2) do |config|
     type: "rsync", rsync__auto: true, rsync__verbose: true
   config.vm.synced_folder "/home/kimlab1/strokach/websites/mum", "/home/kimadmin/mum",
     type: "rsync", rsync__auto: true, rsync__verbose: true,
-    rsync__args: ["-rv", "--exclude-from=/home/kimlab1/strokach/websites/mum/.gitignore"] 
+    rsync__args: ["-av", "--exclude-from=/home/kimlab1/strokach/websites/mum/.gitignore"] 
 #  config.vm.synced_folder "/home/kimlab1/strokach/websites/mum/mum/static", "/home/kimadmin/mum/mum/static",
 #    type: "rsync", rsync__auto: true, rsync__verbose: true
 
