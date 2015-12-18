@@ -26,6 +26,8 @@ from web_pipeline.cleanupmanager import CleanupManager
 os.environ['MPLCONFIGDIR'] = mkdtemp()
 from elaspic.pipeline import Pipeline
 from web_pipeline.elaspic_socket_client import JobSubmitter
+from web_pipeline import jobsubmitter
+
 
 @app.task
 def cleanupServer():
@@ -105,7 +107,8 @@ def _run_pipeline_remotely(mutation, logger):
     return r.json()
 
 
-@app.task(rate_limit='10/m', max_retries=2)
+#@app.task(rate_limit='10/m', max_retries=2)
+@app.task
 def runPipelineWrapper(mutation, jid):
 
     # Set mutation status as running.
@@ -148,6 +151,12 @@ def runPipelineWrapper(mutation, jid):
             #~ # Insert current environmental variables into %s.
             #~ os.environ[envVar] = envPath % tuple([os.environ.get(l[1:]) or '' for l in envPathVars])
 
+    args_list = [{
+        'job_type': 'database',
+        'protein_id': mutation.protein,
+        'mutations': mutation.mut,
+        'uniprot_domain_pair_ids': '',
+    }]
 
     # Create logger to redirect output.
     logName = "%s_%s_%s" % (localtime(now()).strftime('%Y-%m-%d_%H.%M.%S'),
@@ -160,7 +169,6 @@ def runPipelineWrapper(mutation, jid):
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
 
-
     exitCode = -1
 
     try:
@@ -168,12 +176,12 @@ def runPipelineWrapper(mutation, jid):
 
         ### Run pipeline ###
         #_run_pipeline_locally(mutation, logger)
-        output_dict = _run_pipeline_remotely(mutation, logger)
-
-        logger.debug("Saving job ids to the database...")
-        mutation.provean_job_id = output_dict.get('sequence', {}).get('job_id')
-        mutation.model_job_id = output_dict.get('sequence', {}).get('job_id')
-        mutation.mutation_job_id = output_dict.get('sequence', {}).get('job_id')
+#        output_dict = _run_pipeline_remotely(mutation, logger)
+        jobsubmitter.main(args_list)
+#        logger.debug("Saving job ids to the database...")
+#        mutation.provean_job_id = output_dict.get('sequence', {}).get('job_id')
+#        mutation.model_job_id = output_dict.get('sequence', {}).get('job_id')
+#        mutation.mutation_job_id = output_dict.get('sequence', {}).get('job_id')
 
     except SoftTimeLimitExceeded:
         # Out of time. Cleanup!
@@ -183,6 +191,8 @@ def runPipelineWrapper(mutation, jid):
         exitCode = 3
 
     except Exception as e:
+        print('The following exception occured!\n{}'.format(e))
+
         # Other unknown exception.
         mutation.status = 'error'
         mutation.affectedType = ''
@@ -290,7 +300,7 @@ def runPipelineWrapper(mutation, jid):
 
 
 
-@app.task(rate_limit='10/m', max_retries=2)
+#@app.task(rate_limit='10/m', max_retries=2)
 def runPipelineWrapperAll(mutations, jid):
     """
     If there are multiple mutations in the same protein, submit them together.
@@ -299,11 +309,14 @@ def runPipelineWrapperAll(mutations, jid):
         mutations = [mutations]
 
     # Group mutations
-    mutation_dict = dict()
-    for mutation in mutations:
-        mutation_dict.setdefault(mutation.protein, set()).add(mutation.mut)
-    for key in mutation_dict:
-        mutation_dict[key] = ','.join(mutation_dict[key])
+    args_list = [
+        {
+            'job_type': 'database',
+            'protein_id': mutation.protein,
+            'mutations': mutation.mut,
+            'uniprot_domain_pair_ids': '',
+        } for mutation in mutations
+    ]
 
     # Set mutation status as running.
     for mutation in mutations:
@@ -329,14 +342,15 @@ def runPipelineWrapperAll(mutations, jid):
 
     logger.info('running runPipelineWrapperAll...')
     logger.info("mutations: {}".format(mutations))
-    logger.info("mutation_dict: {}".format(mutation_dict))
+    logger.info("args_list: {}".format(args_list))
 
 
     try:
 
         ### Run pipeline ###
         #_run_pipeline_locally(mutation, logger)
-        mutation_dict_output = _run_pipeline_remotely(mutation_dict, logger)
+        jobsubmitter.main(args_list)
+        # mutation_dict_output = _run_pipeline_remotely(mutation_dict, logger)
 
 #        for mutation in mutations:
 #            mutation.provean_job_id = mutation_dict_output[mutation.protein].get('provean_job_id')
@@ -357,6 +371,7 @@ def runPipelineWrapperAll(mutations, jid):
             exitCode = 3
 
     except Exception as e:
+        print('The following exception occured!\n{}'.format(e))
         # Other unknown exception.
         for mutation in mutations:
             mutation.status = 'error'
