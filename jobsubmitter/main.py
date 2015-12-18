@@ -7,14 +7,10 @@ Created on Wed Dec  9 09:45:19 2015
 import asyncio
 import logging
 import logging.config
-import json
-from urllib.parse import urlparse, parse_qsl
 
-import aiohttp
-import aiohttp.server
-from aiohttp import MultiDict, web
+from aiohttp import web
 
-import settings
+import config
 import jobsubmitter
 
 logger = logging.getLogger(__name__)
@@ -70,12 +66,12 @@ app.router.add_route('POST', '/elaspic/api/1.0/', post)
 # %%
 if __name__ == '__main__':
     import logging.config
-    settings.LOGGING_CONFIGS['loggers']['']['handlers'] = ['info_log', 'debug_log']
-    logging.config.dictConfig(settings.LOGGING_CONFIGS)
+    config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['info_log', 'debug_log']
+    logging.config.dictConfig(config.LOGGING_CONFIGS)
 
     loop = asyncio.get_event_loop()
     handler = app.make_handler()
-    f = loop.create_server(handler, '0.0.0.0', 8000)
+    f = loop.create_server(handler, '127.0.0.1', 8000)
     srv = loop.run_until_complete(f)
     print('serving on: {}'.format(srv.sockets[0].getsockname()))
     logger.info('*' * 75)
