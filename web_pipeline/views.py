@@ -11,7 +11,13 @@ from django.utils.timezone import now
 
 from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, HGNCIdentifier, UniprotIdentifier, Domain
 from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail, checkForCompletion
-from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
+# from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
+
+from mum.settings import SITE_URL
+import urllib.parse
+import logging
+
+logger = logging.getLogger()
 
 
 try:
@@ -98,14 +104,17 @@ def runPipeline(request):
             # 2) Mutation data changed from core to interface.
             # 3) Mutation data changed from not in domain.
             # 4) Pipeline crashed or ran out of time on last run.
-            if (typ == 'CO' and not muts) or (typ == 'IN' and not imuts)\
-              or (typ == 'CO' and imuts)\
-              or (typ == 'NO' and (muts or imuts))\
-              or (mut.error and (mut.error[0] != '1')):
+            if ((not typ) or  # AS
+                    (typ == 'CO' and not muts) or
+                    (typ == 'IN' and not imuts) or
+                    (typ == 'CO' and imuts) or
+                    (typ == 'NO' and (muts or imuts)) or
+                    (mut.error and (mut.error[0] != '1'))):
                 toRerun = True
 
             # Add mutations to lists.
-            if toRerun and not(mut.rerun):
+            # if toRerun and not(mut.rerun):  # AS
+            if toRerun:
                 mut.rerun = True
                 mut.save()
                 newMuts.append([mut, pnm[2]])
@@ -124,18 +133,23 @@ def runPipeline(request):
                 newMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1]), pnm[2]])
 
     # Link all mutations to job.
-    JobToMut.objects.bulk_create([JobToMut(job=j, mut=allMuts[0], inputIdentifier=allMuts[1]) for allMuts in doneMuts + newMuts])
+    JobToMut.objects.bulk_create(
+        [JobToMut(job=j, mut=allMuts[0], inputIdentifier=allMuts[1])
+         for allMuts in doneMuts + newMuts]
+    )
 
     # ##### Run pipeline #####
 
     # Run pipeline for new mutations.'
     data_in = []
-    for m in newMuts + doneMuts:
+    for m in newMuts:
         mut = m[0]
         mut.status = 'running'
         # mut.taskId = p.task_ids
         mut.save()
         mutation = {
+            'job_id': j.jobID,
+            'job_email': j.email,
             'job_type': 'database',
             'protein_id': mut.protein,
             'mutations': mut.mut,
@@ -148,8 +162,14 @@ def runPipeline(request):
         n_tries = 0
         while (not status or status == 'error') and n_tries < 10:
             n_tries += 1
-            r = requests.post('http://192.168.6.201:8000/elaspic/api/1.0/', json=data_in)
+            r = requests.post('http://127.0.0.1:8000/elaspic/api/1.0/', json=data_in)
             status = r.json().get('status', None)
+            logger.debug('status: {}'.format(status))
+    else:
+        logger.debug(
+            'No data! All mutations are done? newMuts: {}, doneMuts: {}'
+            .format(newMuts, doneMuts)
+        )
 
 #    if args_list:
 #        p = jobsubmitter.main.delay(args_list, randomID)
@@ -201,14 +221,24 @@ def displayResult(request):
 
     # Fetch data
     data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
+
+    if not job.isDone:
+        all_mutations_done = all(
+            (m.mut.status in ['done', 'error']) for m in data
+        )
+        if all_mutations_done:
+            job.isDone = 1
+            job.save()
+
     for m in data:
 
         # Set mutation status temporarily as 'running' if its rerunning.
-        if m.mut.rerun and not(job.isDone):
-            if m.mut.rerun == 2:
-                m.mut.status = 'running'
-            else:
-                m.mut.status = 'queued'
+#        if m.mut.rerun and not(job.isDone):
+#            if m.mut.rerun == 2:
+#                m.mut.status = 'running'
+#            else:
+#                m.mut.status = 'queued'
+
         # Get additional data for result table.
         doneInt, toRemove = [], []
         if not m.realMutErr:

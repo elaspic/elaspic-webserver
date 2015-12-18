@@ -11,7 +11,8 @@ from django.core.mail import EmailMessage
 from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
-from web_pipeline.tasks import runPipelineWrapper, cleanupServer
+from web_pipeline.tasks import cleanupServer
+
 
 #def prepareAllFiles(request):
 #    if not request.GET:
@@ -37,8 +38,6 @@ from web_pipeline.tasks import runPipelineWrapper, cleanupServer
 #            success = False
 #
 #    return HttpResponse(json.dumps({'success': success}), content_type='application/json')
-
-
 
 
 import logging
@@ -78,16 +77,18 @@ def rerunMut(request):
             # runPipelineWrapper.delay(m, j.jobID)
             # sleepabit.delay(5,10)
             data_in = [{
+                'job_id': j.jobID,
+                'job_email': j.email,
                 'job_type': 'database',
-                'protein_id': m.protein,
-                'mutations': m.mut,
+                'protein_id': mut.protein,
+                'mutations': mut.mut,
                 'uniprot_domain_pair_ids': '',
             }]
             status = None
             n_tries = 0
             while (not status or status == 'error') and n_tries < 10:
                 n_tries += 1
-                r = requests.post('http://192.168.6.201:8000/elaspic/api/1.0/', json=data_in)
+                r = requests.post('http://127.0.0.1:8000/elaspic/api/1.0/', json=data_in)
                 status = r.json().get('status', None)
 
     return HttpResponse(json.dumps({'error': error}), content_type='application/json')
