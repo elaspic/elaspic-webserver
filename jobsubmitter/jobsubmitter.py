@@ -20,8 +20,9 @@ from concurrent.futures import ThreadPoolExecutor
 import sh
 
 import config
-import mum.settings
-# from web_pipeline import functions
+
+# For sendEmail
+from web_pipeline import functions
 
 logger = logging.getLogger(__name__)
 loop = asyncio.get_event_loop()
@@ -53,6 +54,56 @@ SSH_STRING = (
     '' if sh.hostname().strip() == 'beagle01'
     else 'ssh jobsubmitter@192.168.6.201 '
 )
+
+
+# %% SGE
+QSUB_OPTIONS = {
+    'sequence': {
+        'elaspic_run_type': 1,
+        'num_cores': 1,
+        's_rt': '23:30:00',
+        'h_rt': '24:00:00',
+        's_vmem': '24G',
+        'h_vmem': '24G',
+        'args': [
+            '-pe', 'smp', '1',
+            '-l', 's_rt=23:30:00',
+            '-l', 'h_rt=24:00:00',
+            '-l', 's_vmem=5650M',
+            '-l', 'h_vmem=5850M',
+        ],
+    },
+    'model': {
+        'elaspic_run_type': 2,
+        'num_cores': 1,
+        's_rt': '23:30:00',
+        'h_rt': '24:00:00',
+        's_vmem': '24G',
+        'h_vmem': '24G',
+        'args': [
+            '-pe', 'smp', '1',
+            '-l', 's_rt=23:30:00',
+            '-l', 'h_rt=24:00:00',
+            '-l', 's_vmem=5650M',
+            '-l', 'h_vmem=5850M',
+        ],
+    },
+    'mutations': {
+        'elaspic_run_type': 3,
+        'num_cores': 1,
+        's_rt': '23:30:00',
+        'h_rt': '24:00:00',
+        's_vmem': '12G',
+        'h_vmem': '12G',
+        'args': [
+            '-pe', 'smp', '1',
+            '-l', 's_rt=23:30:00',
+            '-l', 'h_rt=24:00:00',
+            '-l', 's_vmem=5650M',
+            '-l', 'h_vmem=5850M',
+        ],
+    }
+}
 
 QSUB_SYSTEM_COMMAND = """\
 qsub -pe smp {num_cores} -l s_rt={s_rt} -l h_rt={h_rt} -l s_vmem={s_vmem} -l h_vmem={h_vmem} \
@@ -138,44 +189,9 @@ def send_email(item, system_command, restarting=False):
     s.quit()
 
 
-def sendEmail(j, sendType='complete'):
-    """
-    Copy-paste from web_pipeline.functions, so that I don't have to laod all database models.
-    """
-    job_id, job_email = j
-    # Validate email address
-    if not match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$', job_email):
-        return 0
-
-    # Set Subject and content.
-    if sendType == 'started':
-        subject, status = 'started', 'has been correctly STARTED'
-    elif sendType == 'complete':
-        subject, status = 'results', 'is COMPLETE'
-
-    # Prepare template and email object.
-    sendSubject = '%s %s - Job ID: %s' % (mum.settings.SITE_NAME, subject, job_id)
-    html_content = render_to_string('email.html', {'JID': job_id,
-                                                   'SITE_NAME': mum.settings.SITE_NAME,
-                                                   'SITE_URL': mum.settings.SITE_URL,
-                                                   'SUPPORT_EMAIL': mum.settings.ADMINS[0][1],
-                                                   'status': status})
-    text_content = strip_tags(html_content)
-    msg = EmailMultiAlternatives(
-        sendSubject, text_content, mum.settings.EMAIL_HOST_USER, [job_email])
-    msg.attach_alternative(html_content, "text/html")
-
-    # Send email.
-    try:
-        msg.send()
-        return 1
-    except Exception:
-        return 0
-
-
 def remove_from_monitored_jobs(item):
-    if item.job_id and item.job_email:
-        job_key = (item.job_id, item.job_email)
+    if item.args.get('job_id') and item.args.get('job_email'):
+        job_key = (item.args.get('job_id'), item.args.get('job_email'))
         logger.debug(
             "Removing unique_id '{}' from monitored_jobs with key '{}..."
             .format(item.unique_id, job_key)
@@ -274,14 +290,34 @@ async def persist_precalculated():
 loop.create_task(persist_precalculated())
 
 
+async def set_job_status(j):
+    """
+    Copy-paste from web_pipeline.functions, so that I don't have to laod all database models.
+    """
+    job_id, job_email = j
+    # Update database
+    async with aiomysql.connect(
+            host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
+            db='elaspic_webserver_2', loop=loop) as conn:
+        async with conn.cursor() as cur:
+            db_command = (
+                "update elaspic_webserver_2.jobs "
+                "set isDone = 1, dateFinished = now() "
+                "where jobID = '{}';"
+                .format(job_id)
+            )
+            logger.debug('Executing the following db command:\n{}'.format(db_command))
+            await cur.execute(db_command)
+        await conn.commit()
+
+
 async def set_db_errors(error_queue):
-    logger.debug('set_errors: '.format(error_queue))
+    logger.debug('set_db_errors: '.format(error_queue))
 
     async def helper(item):
         remove_from_monitored_jobs(item)
-        await cur.execute(
-            "CALL update_muts('{}', '{}')".format(item.protein_id, item.mutations)
-        )
+        db_command = "CALL update_muts('{}', '{}')".format(item.protein_id, item.mutations)
+        await cur.execute(db_command)
 
     async with aiomysql.connect(
             host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
@@ -329,22 +365,6 @@ async def get_stats():
 loop.create_task(get_stats())
 
 
-async def finilize_finished_jobs():
-    while True:
-        if monitored_jobs:
-            for job_key, job_set in monitored_jobs.items():
-                finished_jobs = []
-                if not job_set:
-                    executor.submit(sendEmail, job_key, 'complete')
-                    finished_jobs.append(job_key)
-                    await asyncio.sleep(SLEEP_FOR_LOOP)
-            for job_key in finished_jobs:
-                monitored_jobs.pop(job_key)
-        await asyncio.sleep(SLEEP_FOR_QSUB)
-
-loop.create_task(finilize_finished_jobs())
-
-
 async def qstat():
     global running_jobs
     global running_jobs_last_updated
@@ -374,6 +394,27 @@ async def qstat():
         await asyncio.sleep(SLEEP_FOR_QSTAT)
 
 loop.create_task(qstat())
+
+
+# %%
+async def finilize_finished_jobs():
+    while True:
+        logger.debug('finilize_finished_jobs')
+        if monitored_jobs:
+            for job_key, job_set in monitored_jobs.items():
+                finished_jobs = []
+                if not job_set:
+                    logger.debug("monitored_jobs with key '{}' is empty, finalizing..."
+                                 .format(monitored_jobs))
+                    executor.submsubmit(functions.sendEmail, job_key, 'complete')
+                    await set_job_status(job_key)
+                    finished_jobs.append(job_key)
+                    await asyncio.sleep(SLEEP_FOR_LOOP)
+            for job_key in finished_jobs:
+                monitored_jobs.pop(job_key)
+        await asyncio.sleep(SLEEP_FOR_QSTAT)
+
+loop.create_task(finilize_finished_jobs())
 
 
 async def validation():
@@ -461,7 +502,7 @@ async def qsub():
             open(item.lock_path, 'x').close()
             system_command = SSH_STRING + QSUB_SYSTEM_COMMAND.format(**{
                 **item.args,
-                **config.QSUB_OPTIONS[item.run_type],
+                **QSUB_OPTIONS[item.run_type],
                 'run_type': item.run_type,
                 'lock_filename': item.lock_path,
                 'lock_filename_finished': item.finished_lock_path,
@@ -509,7 +550,14 @@ async def qsub():
             except FileNotFoundError:
                 pass
             await asyncio.sleep(SLEEP_FOR_ERROR)
-            continue
+            restarting = item.qsub_tries < 5
+            if restarting:
+                logger.error('Restarting...')
+                item.qsub_tries += 1
+                await qsub_queue.put(item)
+            else:
+                logger.error('Too many restarts. Skipping...')
+                await set_db_errors([item])
         #
         await asyncio.sleep(SLEEP_FOR_QSUB)
 

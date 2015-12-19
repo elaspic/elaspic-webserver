@@ -7,62 +7,15 @@ Created on Wed Dec 16 00:49:05 2015
 import os
 import os.path as op
 import sys
+import django
+
 
 # %%
 BASE_DIR = op.abspath(op.dirname(__file__))
 PROJECT_DIR = op.abspath(op.join(BASE_DIR, '..'))
 sys.path.insert(0, PROJECT_DIR)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mum.settings")
-
-
-# %% SGE
-QSUB_OPTIONS = {
-    'sequence': {
-        'elaspic_run_type': 1,
-        'num_cores': 1,
-        's_rt': '23:30:00',
-        'h_rt': '24:00:00',
-        's_vmem': '24G',
-        'h_vmem': '24G',
-        'args': [
-            '-pe', 'smp', '1',
-            '-l', 's_rt=23:30:00',
-            '-l', 'h_rt=24:00:00',
-            '-l', 's_vmem=5650M',
-            '-l', 'h_vmem=5850M',
-        ],
-    },
-    'model': {
-        'elaspic_run_type': 2,
-        'num_cores': 1,
-        's_rt': '23:30:00',
-        'h_rt': '24:00:00',
-        's_vmem': '24G',
-        'h_vmem': '24G',
-        'args': [
-            '-pe', 'smp', '1',
-            '-l', 's_rt=23:30:00',
-            '-l', 'h_rt=24:00:00',
-            '-l', 's_vmem=5650M',
-            '-l', 'h_vmem=5850M',
-        ],
-    },
-    'mutations': {
-        'elaspic_run_type': 3,
-        'num_cores': 1,
-        's_rt': '23:30:00',
-        'h_rt': '24:00:00',
-        's_vmem': '12G',
-        'h_vmem': '12G',
-        'args': [
-            '-pe', 'smp', '1',
-            '-l', 's_rt=23:30:00',
-            '-l', 'h_rt=24:00:00',
-            '-l', 's_vmem=5650M',
-            '-l', 'h_vmem=5850M',
-        ],
-    }
-}
+django.setup()
 
 
 # %% Logger
