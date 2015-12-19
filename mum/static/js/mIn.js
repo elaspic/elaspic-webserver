@@ -211,6 +211,7 @@ $(document).ready(function(){
 
     $("#pfile").ajaxfileupload({
         "action": "../json/uploadfile/",
+        "params": {'filetype': 'prot'},
         "onComplete": function(response) {
             if (typeof response === 'string' || response instanceof String) {
                 // Converts text to JSON if needed (Chrome).

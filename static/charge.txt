@@ -1,0 +1,12 @@
+! full charges on side chains and termini only
+atom__resnumbc_charge_
+nz    lys        1.0
+nh1   arg        0.5
+nh2   arg        0.5
+oe1   glu       -0.5
+oe2   glu       -0.5
+od1   asp       -0.5
+od2   asp       -0.5
+oxt             -1.00
+ot              -1.00
+ot1             -1.00
