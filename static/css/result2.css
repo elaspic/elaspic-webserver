@@ -1,0 +1,242 @@
+/* Results */
+.content {
+	position: relative;
+}
+#bottomcontent {
+	position: relative;
+	overflow: auto;
+}
+#topresults .top {
+	margin-bottom: 30px;
+}
+#topresults .top.inac {
+	margin-bottom: 40px;
+}
+
+/* Cytoscape */
+#cywrapper {
+	position: absolute;
+	top: -20px;
+	left: 0;
+	width: 255px;
+	z-index: 2;
+	font-weight: 600;
+}
+#cy {
+	height: 200px;
+	width: 255px;
+}
+/* 2D bars */
+.protein2d {
+	height: 100px;
+}
+.protein2d_wrapper.inac  {
+	z-index: 1;
+	margin-left: 260px;
+}
+.protein2d_wrapper.inac, #protein2dinac_wrapper {
+	position: relative;
+}
+#protein2dinac_wrapper {
+	margin-left: 265px;
+	z-index: 0;
+}
+.protein2d .dheader {
+	font-size: 14px;
+}
+.protein2d .dheader .mono {
+	font-size: 16px;
+}
+
+#protein2dinac, #protein2dinac .before, #protein2dinac .after, #protein2dinac div {
+	height: 80px;
+	position: absolute;
+	z-index: 0;
+}
+#protein2dinac.toptria {
+	top: 0;
+	left: 0;
+}
+#protein2dinac .bottria {
+	bottom: 0;
+	left: 0;
+}
+
+#protein2dinac .before, #protein2dinac .after {
+	background-color: transparent;
+	border-color: #E8EAE8;
+}
+#protein2dinac .toptria, #protein2dinac .bottria {
+	border-color: #F4F4F4; 
+}
+#protein2dinac .before, #protein2dinac .after, #protein2dinac div {
+    width: 0px; height: 0px;
+    border-style: solid;
+}
+#protein2dinac {
+	background-color: #E8EAE8;
+}
+#protein2dinac {
+	top: -45px;
+}
+
+#protein2dinac .before {
+	border-left-color: transparent;
+}
+#protein2dinac .after {
+	border-right-color: transparent;
+}
+
+/* Result sidebar */
+#result_wrapper {
+	position: relative;
+	width: 236px;
+	float: left;
+	margin-left: 40px;
+	margin-top: 36px;
+	height: 398px;
+}
+#result_wrapper h4 {
+	font-size: 15px;
+	margin-top: 15px;
+	padding-bottom: 0px;
+}
+#result_wrapper p {
+	font-size: 13px;
+}
+#result_wrapper p .mono {
+	margin-left: 0px;
+	font-size: 12px;
+	display: block;
+	background-color: rgba(0, 0, 0, 0.1);
+	padding: 3px 7px;
+	border-radius: 3px;
+	font-weight: 600;
+	overflow: auto;
+}
+#result_wrapper p .mono#sbprotori, #result_wrapper p .mono#sbdomori {
+	background-color: rgba(165, 180, 189, 0.5);
+}
+#result_wrapper p .mono#sbprot, #result_wrapper p .mono#sbdom {
+	background-color: rgba(174, 148, 152, 0.5);
+}
+
+#result_wrapper p .half, #result_wrapper p .onethird, #result_wrapper p .twothirds, #result_wrapper p .wholeheader {
+	display: block;
+	float: left;
+	margin-right: 4px;
+}
+
+#result_wrapper p .half {
+	width: 104px;
+}
+#result_wrapper p .half.hright {
+	margin-left: 4px;
+	margin-right: 0px;
+}
+#result_wrapper p .onethird {
+	width: 60px;
+}
+#result_wrapper p .twothirds {
+	width: 124px;
+	margin: 0px;
+}
+
+#result_wrapper p.whole {
+	height: 40px;
+}
+#result_wrapper p .wholeheader {
+	width: 100%;
+	margin-right: 0px;
+}
+#result_wrapper p.br {
+	padding-top: 15px;
+}
+#result_wrapper p.ddg {
+	padding-top: 20px;
+}
+#result_wrapper p .small {
+	font-size: 12px;
+	color: #444;
+}
+#result_wrapper #pdbdl {
+	font-weight: 600;
+	font-variant:small-caps;
+	position: absolute;
+	bottom: 8px;
+	left: 18px;
+	padding: 0;
+	font-size: 14px;
+	color: #444;
+}
+#result_wrapper #pdbdl a, #result_wrapper #pdbdl .desc {
+	font-weight: 400;
+	font-size: 13px;
+}
+#result_wrapper #pdbdl .desc {
+	color: #444;
+}
+#result_wrapper .done, #result_wrapper .doneNO, #result_wrapper .error {
+	background-repeat: no-repeat;
+	background-position: 145px center;
+	margin-bottom: 15px;
+}
+#result_wrapper .done.inac, #result_wrapper .doneNO.inac, #result_wrapper .error.inac {
+	margin-bottom: 5px;
+}
+#result_wrapper .done {
+	font-style: italic;
+	color: #444;
+	font-size: 13px;
+}
+
+
+/* 3D structure applet */
+#protein3d_wrapper {
+	width: 600px;
+	float: left;
+}
+#appletplace {
+	width:596px;
+	height:396px;
+	padding: 1px;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 5px;
+}
+#stickFormRange {
+	display: inline;
+}
+#stickFormRange {
+	border: 1px solid #aaa;
+}
+.jmolbuts div {
+	font-size: 13px;
+}
+.jmolbuts#topbuts {
+	width: 230px;
+}
+#appletloading {
+	width: 360px;
+	float: right;
+	text-align: right;
+}
+
+.underline {
+	font-weight: 600;
+}
+.opennew {
+	margin-left: 65px;
+}
+#b1\.1 {
+	color: #6A737A;
+}
+#b2\.1, #pshowself {
+	color: #6092B8;
+}
+
+#pshowinac {
+	color: #AE7498;
+}
+
+

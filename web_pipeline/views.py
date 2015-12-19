@@ -9,7 +9,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.conf import settings
 from django.utils.timezone import now
 
-from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, HGNCIdentifier, UniprotIdentifier, Domain
+from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, Domain
 from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail, checkForCompletion
 # from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
 
@@ -244,6 +244,7 @@ def displayResult(request):
         # Get additional data for result table.
         doneInt, toRemove = [], []
         if not m.realMutErr:
+            print(len(m.realMut))
             for i, mut in enumerate(m.realMut):
                 chain = mut.findChain()
                 # Get alignment scores.
@@ -255,17 +256,8 @@ def displayResult(request):
                     if d.protein.id == m.mut.protein:
                         mut.inac = 'self'
                     else:
-                        try:
-                            mut.inac = HGNCIdentifier.objects.using('uniprot').get(identifierType='HGNC_genename', uniprotID=d.protein.id)
-                        except HGNCIdentifier.DoesNotExist:
-                            mut.inac = d.protein.name.split('_')[0]
-                        except HGNCIdentifier.MultipleObjectsReturned:
-                            mut.inac = list(
-                                HGNCIdentifier
-                                .objects
-                                .using('uniprot')
-                                .filter(identifierType='HGNC_genename', uniprotID=d.protein.id)
-                            )[0]
+                        mut.inac = d.protein.getname()
+                            
                     mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
                     # Check for dublicates. Remove the last one.
                     # This is a quick and dirty fix and should be fixed to pick
@@ -493,20 +485,7 @@ def displaySecondaryResult(request):
             # <i>, name, popup, pxstart, pxsize, start, end, status, psize.
             if not didx:
                 ds.append([])
-            try:
-                protName = HGNCIdentifier.objects.using('uniprot').get(identifierType='HGNC_genename', uniprotID=prot.id)
-            except HGNCIdentifier.DoesNotExist:
-                try:
-                    protName = UniprotIdentifier.objects.using('uniprot').get(identifierType='GeneWiki', uniprotID=prot.id)
-                except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
-                    protName = prot.name.split('_')[0]
-            except HGNCIdentifier.MultipleObjectsReturned:
-                protName = list(
-                    HGNCIdentifier
-                    .objects
-                    .using('uniprot')
-                    .filter(identifierType='HGNC_genename', uniprotID=prot.id)
-                )[0]
+            protName = prot.getname()
             ds[idx].append([index, dname, dpopup, int(defstart / dpSize * barSize),
                             int(pxSize), defstart, defend, isInDomain,
                             int(dpSize), prot.id, prot.desc,
