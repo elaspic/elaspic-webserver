@@ -222,13 +222,15 @@ def displayResult(request):
     # Fetch data
     data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
 
-    if not job.isDone:
-        all_mutations_done = all(
-            (m.mut.status in ['done', 'error']) for m in data
-        )
-        if all_mutations_done:
-            job.isDone = 1
-            job.save()
+    # AS this part is now done by the jobsubmitter
+#    if not job.isDone:
+#        all_mutations_done = all(
+#            (m.mut.status in ['done', 'error']) for m in data
+#        )
+#        if all_mutations_done:
+#            job.isDone = 1
+#            job.dateFinished = now()  # Todo: move this to the job finalizer script
+#            job.save()
 
     for m in data:
 
