@@ -407,7 +407,8 @@ async def finilize_finished_jobs():
                 if not job_set:
                     logger.debug("monitored_jobs with key '{}' is empty, finalizing..."
                                  .format(monitored_jobs))
-                    executor.submit(functions.sendEmail, job_key, 'complete')
+                    if job_key[1]:  # job email was specified
+                        executor.submit(functions.sendEmail, job_key, 'complete')
                     await set_job_status(job_key)
                     finished_jobs.append(job_key)
                     await asyncio.sleep(SLEEP_FOR_LOOP)
