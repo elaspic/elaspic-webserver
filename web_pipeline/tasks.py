@@ -26,7 +26,7 @@ from web_pipeline.cleanupmanager import CleanupManager
 os.environ['MPLCONFIGDIR'] = mkdtemp()
 from elaspic.pipeline import Pipeline
 from web_pipeline.elaspic_socket_client import JobSubmitter
-from web_pipeline import jobsubmitter
+#from web_pipeline import jobsubmitter
 
 
 @app.task

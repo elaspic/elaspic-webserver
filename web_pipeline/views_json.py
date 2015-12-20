@@ -375,7 +375,7 @@ def getProtein(request):
             muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
             imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
             
-            for m in muts + imuts:
+            for m in (muts + imuts):
                 chain = m.findChain()
                 inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
                 isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
@@ -402,7 +402,7 @@ def getProtein(request):
 
             # Sort mutations
             for k in knMuts:
-                knMuts[k] = sorted(knMuts[k], key=lambda x: x[0]['m'])
+                knMuts[k] = sorted(knMuts[k], key=lambda x: int(x[0]['m'][1:-1]))
 
             #output[idx]['prot'] = str(knMuts['537'])
             output[idx]['known'] = knMuts
