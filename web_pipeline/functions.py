@@ -7,20 +7,10 @@ from django.db.models import Q
 
 from web_pipeline.models import Mutation, Imutation, Protein, HGNCIdentifier, UniprotIdentifier
 
+import logging
 from re import match
 
-
-
-#import logging
-#
-## Create logger to redirect output.
-#logName = "functions"
-#logger = logging.getLogger(logName)
-#hdlr = logging.FileHandler('/home/kimadmin/mum/log/{}.log'.format(logName))
-#hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
-#logger.addHandler(hdlr)
-#logger.setLevel(logging.DEBUG)
-#logger.propagate = False
+logger = logging.getLogger(__name__)
 
 
 def checkForCompletion(jobs):
@@ -110,6 +100,8 @@ def sendEmail(j, sendType):
         msg.send()
         return 1
     except Exception:
+        logger.error('The following exception occured while trying to send mail: {}'
+                     .format(e))
         return 0
 
 

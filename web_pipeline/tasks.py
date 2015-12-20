@@ -24,10 +24,6 @@ from web_pipeline.models import Mutation, Imutation
 from web_pipeline.cleanupmanager import CleanupManager
 
 os.environ['MPLCONFIGDIR'] = mkdtemp()
-from elaspic.pipeline import Pipeline
-from web_pipeline.elaspic_socket_client import JobSubmitter
-from web_pipeline import jobsubmitter
-
 
 @app.task
 def cleanupServer():
@@ -59,28 +55,28 @@ def sleepabit(a=5, b=10):
 
     return 1
 
-
-def _run_pipeline_locally(mutation, logger):
-    pipeline = Pipeline(settings.ELASPIC_CONFIG_FILENAME, logger=logger)
-    logger.info('----- Running: %s.%s -----' % (mutation.protein, mutation.mut))
-    pipeline(mutation.protein, mutation.mut, run_type=5)
-
-
-def _run_pipeline_remotely_old(mutation, logger):
-    js = JobSubmitter(logger=logger)
-
-    logger.debug("uniprot_id: {}, mutations: {}".format(mutation.protein, mutation.mut))
-    js.submitjob(mutation.protein, mutation.mut)
-
-    time.sleep(5)
-    output_dict = js.check_progress(mutation.protein, mutation.mut)
-    logger.debug('output_dict: {}'.format(output_dict))
-    while not output_dict.get('status') == "Done":
-        time.sleep(60)
-        output_dict.update(js.check_progress(mutation.protein, mutation.mut))
-    #TODO: There are better ways to handle job_ids (read files in finished/ folder),
-    #but we don't need them for now...
-    return output_dict
+#
+#def _run_pipeline_locally(mutation, logger):
+#    pipeline = Pipeline(settings.ELASPIC_CONFIG_FILENAME, logger=logger)
+#    logger.info('----- Running: %s.%s -----' % (mutation.protein, mutation.mut))
+#    pipeline(mutation.protein, mutation.mut, run_type=5)
+#
+#
+#def _run_pipeline_remotely_old(mutation, logger):
+#    js = JobSubmitter(logger=logger)
+#
+#    logger.debug("uniprot_id: {}, mutations: {}".format(mutation.protein, mutation.mut))
+#    js.submitjob(mutation.protein, mutation.mut)
+#
+#    time.sleep(5)
+#    output_dict = js.check_progress(mutation.protein, mutation.mut)
+#    logger.debug('output_dict: {}'.format(output_dict))
+#    while not output_dict.get('status') == "Done":
+#        time.sleep(60)
+#        output_dict.update(js.check_progress(mutation.protein, mutation.mut))
+#    #TODO: There are better ways to handle job_ids (read files in finished/ folder),
+#    #but we don't need them for now...
+#    return output_dict
 
 
 def _run_pipeline_remotely(mutation, logger):
