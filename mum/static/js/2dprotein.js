@@ -229,6 +229,22 @@ function fixBarMut() {
         
 
 }
+function getY(i, svgdata) {
+    var h = 100;
+    var distanceisno = 20;
+    var noleft = (svgdata[i-1] === undefined || svgdata[i-1].x + distanceisno < svgdata[i].x) ? true : false;
+    var noright = (svgdata[i+1] === undefined || svgdata[i+1].x - distanceisno > svgdata[i].x) ? true : false;
+    if ((noright && noleft) || svgdata.length < 5) {
+        return 1;
+    } else if (svgdata.length < 10) {
+        return (i%2) ? 20 : 1;
+    } else if (svgdata.length < 30) {
+        return (i%3) ? ((i%2) ? 20 : 50) : 1;
+    } else {
+        return (i%Math.floor(svgdata.length/10))*20;
+    }
+}
+
 var lastMutTooltip;
 
 function fixBarMuts(muts) {
@@ -243,7 +259,7 @@ function fixBarMuts(muts) {
 		posLeft = -25,
 		labelBox, links;
 
-	var svgdata = []
+	var svgdata = [];
 
 	for (var key in muts) {
 		// Add vertical line.
@@ -252,7 +268,13 @@ function fixBarMuts(muts) {
 		$('.barmutations .line').last().css('left', pxMutnum);
 		// Add to data array to be drawn.
 		svgdata.push({x:pxMutnum-posLeft+1, y:5, text: muts[key][0][0]['m'], data: muts[key]});
+        console.log(key)
+        console.log(muts[key][0][0]['m'])
 	}
+    
+    for (var i = 0; i < svgdata.length; i++) {
+        svgdata[i].y = getY(i, svgdata);
+    }
 
 	svgdata.sort(function(a) { return -a.x });
 
@@ -267,21 +289,19 @@ function fixBarMuts(muts) {
 	}
 	var labelForce = d3.force_labels()
 		.linkDistance(function(d, i){
-			var distanceisno = 20;
-			var noleft = (svgdata[i-1] === undefined || svgdata[i-1].x + distanceisno < svgdata[i].x) ? true : false;
-			var noright = (svgdata[i+1] === undefined || svgdata[i+1].x - distanceisno > svgdata[i].x) ? true : false;
-			if ((noright && noleft) || svgdata.length < 5) {
-				svgHeight = Math.max(svgHeight, h * 4/10)
-				return 1;
-			} else if (svgdata.length < 10) {
-				svgHeight = Math.max(svgHeight, h * 7/10)
-				return (i%2) ? 20 : 1;
-			} else {
-				svgHeight = Math.max(svgHeight, h * 10/10)
-				return (i%3) ? ((i%2) ? 20 : 50) : 1;
-			}
+            if (svgdata.length < 5) {
+                svgHeight = Math.max(svgHeight, h * 4/10)
+            } else if (svgdata.length < 10) {
+                svgHeight = Math.max(svgHeight, h * 7/10)
+            } else if (svgdata.length < 30) {
+                svgHeight = Math.max(svgHeight, h * 10/10)
+            } else {
+                svgHeight = Math.max(svgHeight, h*(svgdata.length/20));
+            }
+            return getY(i, svgdata);
 		})
 		.size([w, 1000]).gravity(0.02).nodes([]).links([]).charge(-90);	
+    console.log('Drawn ' + svgdata.length + ' mutations.');
 
     var anchors = svg.selectAll(".anchor").data(svgdata);
 	var labels = svg.selectAll(".labels").data(svgdata);
@@ -290,7 +310,7 @@ function fixBarMuts(muts) {
 	anchors.enter().append("circle").attr("class","anchor").attr("r",1)
 	var newLabels = labels.enter().append("g").attr("class","labels")
 	labelBox = newLabels.append("g").attr("class","labelbox")
-	labelBox.append("text").attr("class","labeltext").attr("y",8)
+	labelBox.append("text").attr("class","labeltext").attr("y",function(d) { return d.y})
 	newLabels.append("line").attr("class","link")
 	links = svg.selectAll(".link")
 	
@@ -357,7 +377,7 @@ function fixBarMuts(muts) {
 	anchors.call(labelForce.update)
 
 	labelForce.start();
-	for (var i = n * n; i > 0; --i) labelForce.tick();
+	for (var i = n*n; i > 0; --i) labelForce.tick();
 	labelForce.stop();
 	
 	$('.protsvg').css('height', svgHeight + 'px');
