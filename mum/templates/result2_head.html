@@ -133,6 +133,7 @@ var chaininac = "{% if inInt %}{% if curdomain.0.13 %}{{ curdomain.0.13 }}{% els
             'dgmut': '{{ prot.0.19|floatformat:2 }}',
             'ddg': '{{ prot.0.20|floatformat:2 }}',
             'mutnum': {{ prot.0.21 }},
+            'pdb': '{{ prot.0.22|safe }}',
 			'homodimer': {{ prot.0.11|lower }},
 			'chainself': '{{ prot.0.12 }}',
 			'chaininac': '{{ prot.0.13 }}',

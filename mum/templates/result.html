@@ -188,6 +188,7 @@
 						<th>Protein</th>
 						<th>Mutation</th>
 						<th class="tdt">Type</th>
+                        <th class="tdpdb">Template</th>
 						<th class="tdsi">Seq iden</th>
 						<th class="tda">Align score</th>
 						<th class="tdd">Model</th>
@@ -268,6 +269,26 @@
 										{% endif %}
 									</span>
 								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+							</td>
+                            <!-- Template -->
+							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdi mono">
+							{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
+
+									{% if rmut.pdbtemp %}
+										<span>{{ rmut.pdbtemp|safe }}</span>
+									{% else %}<span>&nbsp</span>
+										{% if jm.mut.error %}
+											<span class="hidden">1000002</span>
+										{% else %}
+											{% ifequal jm.mut.status 'done' %}
+												<span class="hidden">1000000</span>
+											{% else %}
+												<span class="hidden">1000001</span>
+											{% endifequal %}
+										{% endif %}
+									{% endif %}
+
+							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
 							</td>
 							<!-- Sequence identity -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdi mono">

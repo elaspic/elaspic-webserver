@@ -250,6 +250,7 @@ def displayResult(request):
                 # Get alignment scores.
                 mut.alignscore = mut.model.template.getalignscore(chain)
                 mut.seqid = mut.model.template.getsequenceidentity(chain)
+                mut.pdbtemp = mut.model.template.getpdbtemplate(chain, link=False)
                 # Get interacting protein.
                 if m.mut.affectedType == 'IN':
                     d = mut.model.template.domain.getdomain(1 if chain == 2 else 2)
@@ -459,6 +460,7 @@ def displaySecondaryResult(request):
                     chaininac = intmuts[idx - 1]['mut'].model.getchain(1 if chain == 2 else 2)
                     # Get mutation info.
                     seqid = intmuts[idx - 1]['mut'].model.template.getsequenceidentity(chain)
+                    pdbtemp = intmuts[idx - 1]['mut'].model.template.getpdbtemplate(chain)
                     dopescore = intmuts[idx - 1]['mut'].model.dope_score
                     dgwt = intmuts[idx - 1]['mut'].dGwt()
                     dgmut = intmuts[idx - 1]['mut'].dGmut()
@@ -499,7 +501,8 @@ def displaySecondaryResult(request):
                             dgwt if idx and not didx else None,
                             dgmut if idx and not didx else None,
                             ddg if idx and not didx else None,
-                            pdbmutnum if idx and not didx else None])
+                            pdbmutnum if idx and not didx else None,
+                            pdbtemp if idx and not didx else None])
             #if prot.name.split('_')[0] == 'UBC':
                 #o += prot.name.split('_')[0] + ', '
             if pd.id == initialProtein and \
@@ -507,6 +510,7 @@ def displaySecondaryResult(request):
                 curdom = ds[idx]
                 curmut = intmuts[idx - 1]['mut']
                 curmut.seqid = seqid if idx and not didx else None
+                curmut.pdbtemp = pdbtemp if idx and not didx else None
     pxMutnum = mutNum / pSize * barSize - mutLineSize/2
     if pxMutnum < 0:
             pxMutnum = 0

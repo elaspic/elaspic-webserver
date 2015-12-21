@@ -79,6 +79,7 @@ function updateSecondary2dbar(protein, isdimer) {
 	$('#bar2 .enddesc').html(curDomainData['psize']);
 	$('#sbdom').html(curDomainData['dname']);
 	$('#sbseq').html(curDomainData['seqid']);
+    $('#sbpdb').html(curDomainData['pdb']);
 	$('#sbdop').html(curDomainData['dopescore']);
 	$('#sbdgwt').html(curDomainData['dgwt']);
 	$('#sbdgmut').html(curDomainData['dgmut']);
