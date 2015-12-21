@@ -9,7 +9,7 @@ from django.http import Http404, HttpResponseRedirect
 from django.conf import settings
 from django.utils.timezone import now
 
-from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, Domain
+from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, Domain, findInDatabase
 from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail, checkForCompletion
 # from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
 
@@ -576,6 +576,18 @@ def displaySecondaryResult(request):
             midtopheight = fullheight/2 - rightheight if leftside == 'down' else fullheight/2 - leftheight
             midbotheight = fullheight/2 - leftheight if leftside == 'down' else fullheight/2 - rightheight
 
+    # Find if mutation is in database.
+    mut_dbs = findInDatabase([data.mut.mut], data.mut.protein)
+    mut_dbs_html = ''
+    if mut_dbs[m.mut]:
+        mut_dbs_html = 'Mutation in database' + ('s' if len(mut_dbs[m.mut]) > 1 else '') + ': '
+        for i, db in enumerate(mut_dbs[m.mut]):
+            if i: 
+                mut_dbs_html += ' ,'
+            mut_dbs_html += '<a target="_blank" href="' + db['url'] + '">' + db['name'] + '</a>'
+    else:
+        mut_dbs_html = 'Mutation run by user'
+
     context = {
         'url': returnUrl,
         'current': 'result2',
@@ -602,6 +614,7 @@ def displaySecondaryResult(request):
         'inInt': not(inCore),
         'initialp': initialProtein,
         'initialh': initialHomodimer,
+        'mut_dbs_html': mut_dbs_html + '.',
         'protein2dinac': {'full_height': fullheight if not inCore else 0,
                           'mid_left': midleft if not inCore else 0,
                           'mid_width': midwidth if not inCore else 0,
