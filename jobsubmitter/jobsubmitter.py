@@ -190,7 +190,7 @@ def send_email(item, system_command, restarting=False):
 
 
 def remove_from_monitored_jobs(item):
-    if item.args.get('job_id') and item.args.get('job_email'):
+    if item.args.get('job_id'):
         job_key = (item.args.get('job_id'), item.args.get('job_email'))
         logger.debug(
             "Removing unique_id '{}' from monitored_jobs with key '{}..."
@@ -400,13 +400,15 @@ loop.create_task(qstat())
 async def finilize_finished_jobs():
     while True:
         logger.debug('finilize_finished_jobs')
+        logger.debug('monitored_jobs: {}'.format(monitored_jobs))
         if monitored_jobs:
             for job_key, job_set in monitored_jobs.items():
                 finished_jobs = []
                 if not job_set:
                     logger.debug("monitored_jobs with key '{}' is empty, finalizing..."
                                  .format(monitored_jobs))
-                    executor.submsubmit(functions.sendEmail, job_key, 'complete')
+                    if job_key[1]:  # job email was specified
+                        executor.submit(functions.sendEmail, job_key, 'complete')
                     await set_job_status(job_key)
                     finished_jobs.append(job_key)
                     await asyncio.sleep(SLEEP_FOR_LOOP)
@@ -658,7 +660,7 @@ async def main(data_in):
             else:
                 await pre_qsub_queue.put(mut)
             job_mutations.add(mut.unique_id)
-        if args.get('job_id') and args.get('job_email') and job_mutations:
+        if args.get('job_id') and job_mutations:
             job_key = (args.get('job_id'), args.get('job_email'))
             monitored_jobs[job_key].update(job_mutations)
 
