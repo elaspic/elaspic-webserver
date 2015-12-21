@@ -303,6 +303,11 @@ class Template(models.Model):
     def getalignscore(self, chain=1):
         return '%0.3f' % self.align_score
         
+    def getpdbtemplate(self, chain=1, link=True):
+        pdb = self.cath[:-3] + '_' + self.cath[-3]
+        if link:
+            return '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s</a>' % (self.cath[:-3], pdb)
+        return pdb
 
     def __unicode__(self):
         return '%d' % self.domain_id
@@ -349,6 +354,18 @@ class Itemplate(models.Model):
             return self.imodel.alignment_filename_1
         elif chain == 2:
             return self.imodel.alignment_filename_2
+
+    def getpdbtemplate(self, chain, link=True):
+        if link:
+            a1 = '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>' % (self.cath1[:-3], self.cath1[:-3], self.cath1[-3])
+            a2 = '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>' % (self.cath2[:-3], self.cath2[:-3], self.cath1[-3])
+        else:
+            a1 = self.cath1[:-3] + '_' + self.cath1[-3]
+            a2 = self.cath2[:-3] + '_' + self.cath2[-3]
+        if chain == 1:
+            return '%s, %s' % (a1, a2)
+        elif chain == 2:
+            return '%s, %s' % (a2, a1)
 
     def getsequenceidentity(self, chain):
         if chain == 1:

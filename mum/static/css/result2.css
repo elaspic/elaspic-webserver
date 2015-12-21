@@ -94,7 +94,7 @@
 	float: left;
 	margin-left: 40px;
 	margin-top: 36px;
-	height: 398px;
+	height: 418px;
 }
 #result_wrapper h4 {
 	font-size: 15px;
@@ -150,10 +150,10 @@
 	margin-right: 0px;
 }
 #result_wrapper p.br {
-	padding-top: 15px;
+	padding-top: 10px;
 }
 #result_wrapper p.ddg {
-	padding-top: 20px;
+	padding-top: 15px;
 }
 #result_wrapper p .small {
 	font-size: 12px;
@@ -179,7 +179,7 @@
 #result_wrapper .done, #result_wrapper .doneNO, #result_wrapper .error {
 	background-repeat: no-repeat;
 	background-position: 145px center;
-	margin-bottom: 15px;
+	margin-bottom: 12px;
 }
 #result_wrapper .done.inac, #result_wrapper .doneNO.inac, #result_wrapper .error.inac {
 	margin-bottom: 5px;
@@ -201,7 +201,7 @@
 }
 #appletplace {
 	width:596px;
-	height:396px;
+	height:416px;
 	padding: 1px;
 	border-width: 1px;
 	border-style: solid;
@@ -244,6 +244,10 @@
 .mutdb {
     text-align: center; 
     font-style:italic; 
-    padding-top: 15px !important;
+    padding-top: 12px !important;
 }
 
+#sbpdb a {
+    height: 13px;
+    color: #286692;
+}
