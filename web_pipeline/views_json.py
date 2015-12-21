@@ -1,9 +1,13 @@
 from re import sub
 from subprocess import Popen, PIPE
+from os import path, mkdir
+from shutil import copyfile
 import json
 import requests
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
+from random import randint
+import pickle
 
 from Bio.PDB.PDBParser import PDBParser
 
@@ -11,6 +15,8 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils import html
 from django.conf import settings
 from django.core.mail import EmailMessage
+
+from mum.settings import DB_PATH
 
 from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel, findInDatabase
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
@@ -200,9 +206,10 @@ def uploadFile(request):
     myfile = request.FILES['fileToUpload']
     
     filetype = request.POST['filetype']
+    user_path = ''
     
-    if myfile.size > 5000000:
-        jsonDict = {'msg': "File is too large (>5 MB)", 'error': 1}    
+    if myfile.size > 10000000:
+        jsonDict = {'msg': "File is too large (>10 MB)", 'error': 1}    
         return HttpResponse(json.dumps(jsonDict), content_type='application/json')
         
 
@@ -244,21 +251,37 @@ def uploadFile(request):
 
                 structure = PDBParser(QUIET=True).get_structure('uploadedPDB', temp_fh.name)
 
-            msg = sorted(pdb_template.get_structure_sequences(structure).items())
+                seq = sorted(pdb_template.get_structure_sequences(structure).items())
+                
+                if len(seq) < 1:
+                    jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
+                    return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+                    
+                # Save uploaded pdb if it is valid.
+                while True:
+                    randomID = "%06x" % randint(1,16777215)
+                    user_path = path.join(DB_PATH, 'user_input', randomID)
+                    if Job.objects.filter(jobID=randomID).count() == 0 and not path.exists(user_path):
+                        break
+                if not path.exists(user_path):
+                    mkdir(user_path)
+                copyfile(temp_fh.name, path.join(user_path, 'input.pdb'))
+            with open(path.join(user_path, 'pdb_parsed.pickle'), 'bw') as f:
+                f.write(pickle.dumps(dict(seq)))
             
-            print(len(msg[0][1]), len(msg[1][1]))
-            
-            if len(msg) < 1:
-                jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
-                return HttpResponse(json.dumps(jsonDict), content_type='application/json')
+            msg = seq
+                
+                
 
-        except Exception:
+        except Exception as e:
+            print(e)
             jsonDict = {'msg': "PDB could not be parsed. ", 'error': 1}
             return HttpResponse(json.dumps(jsonDict), content_type='application/json')
             
 
         
     jsonDict = {'inputfile': myfile.name or 'uploadedFile',
+                'userpath': user_path,
                 'msg': msg,
                 'error': 0}    
 
