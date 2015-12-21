@@ -12,7 +12,7 @@ from django.utils import html
 from django.conf import settings
 from django.core.mail import EmailMessage
 
-from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel
+from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel, findInDatabase
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
 from web_pipeline.tasks import cleanupServer
@@ -372,14 +372,27 @@ def getProtein(request):
         # Set already known mutations for protein.
         if knownmutsReq:
             mdict = {}
-            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
-            imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None)) + \
+                   list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
             
-            for m in (muts + imuts):
+            mut_dbs = findInDatabase([m.mut for m in muts], p.id)
+            
+            
+            for m in muts:
                 chain = m.findChain()
                 inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
                 isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
                 iId = inac.id if m.__class__.__name__ == 'Imutation' else None
+                
+                mut_dbs_html = ''
+                if mut_dbs[m.mut]:
+                    mut_dbs_html = 'Mutation in database' + ('s' if len(mut_dbs[m.mut]) > 1 else '') + ': '
+                    for i, db in enumerate(mut_dbs[m.mut]):
+                        if i: 
+                            mut_dbs_html += ' ,'
+                        mut_dbs_html += '<a target="_blank" href="' + db['url'] + '">' + db['name'] + '</a>'
+                else:
+                    mut_dbs_html = 'Mutation run by user'
                 
                 toAppend = {'i': isInt, 
                             'id': iId,
@@ -388,7 +401,8 @@ def getProtein(request):
                             'dw': m.dGwt(),
                             'dm': m.dGmut(),
                             'si': m.model.template.getsequenceidentity(chain),
-                            'sm': '%0.3f' % m.model.dope_score}
+                            'sm': '%0.3f' % m.model.dope_score,
+                            'db': mut_dbs_html}
                 if m.mut in mdict and mdict[m.mut][0]['i']:
                     mdict[m.mut].append(toAppend)
                 else:

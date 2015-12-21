@@ -241,5 +241,9 @@
 #pshowinac {
 	color: #AE7498;
 }
-
+.mutdb {
+    text-align: center; 
+    font-style:italic; 
+    padding-top: 15px !important;
+}
 

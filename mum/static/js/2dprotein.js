@@ -241,7 +241,7 @@ function getY(i, svgdata) {
     } else if (svgdata.length < 30) {
         return (i%3) ? ((i%2) ? 20 : 50) : 1;
     } else {
-        return (i%Math.floor(svgdata.length/10))*20;
+        return (i%Math.floor(svgdata.length/10))*40;
     }
 }
 
@@ -267,7 +267,7 @@ function fixBarMuts(muts) {
 		$('.barmutations').append('<div class="line"></div>');
 		$('.barmutations .line').last().css('left', pxMutnum);
 		// Add to data array to be drawn.
-		svgdata.push({x:pxMutnum-posLeft+1, y:5, text: muts[key][0][0]['m'], data: muts[key]});
+		svgdata.push({x:pxMutnum-posLeft+1, y:100, text: muts[key][0][0]['m'], data: muts[key]});
         console.log(key)
         console.log(muts[key][0][0]['m'])
 	}
@@ -287,20 +287,24 @@ function fixBarMuts(muts) {
 		    .attr("x2",function(d) { return Math.min(Math.max(20, d.labelPos.x), w - 20)})
 		    .attr("y2",function(d) { return Math.max(Math.min(d.labelPos.y - 5, svgHeight - 10), 5)})
 	}
+    var pgravity = 0.05;
 	var labelForce = d3.force_labels()
 		.linkDistance(function(d, i){
             if (svgdata.length < 5) {
                 svgHeight = Math.max(svgHeight, h * 4/10)
+                pgravity = 0.02;
             } else if (svgdata.length < 10) {
                 svgHeight = Math.max(svgHeight, h * 7/10)
+                pgravity = 0.02;
             } else if (svgdata.length < 30) {
+                pgravity = 0.03;
                 svgHeight = Math.max(svgHeight, h * 10/10)
             } else {
                 svgHeight = Math.max(svgHeight, h*(svgdata.length/20));
             }
             return getY(i, svgdata);
 		})
-		.size([w, 1000]).gravity(0.02).nodes([]).links([]).charge(-90);	
+		.size([w, 1000]).gravity(0.05).nodes([]).links([]).charge(-70);	
     console.log('Drawn ' + svgdata.length + ' mutations.');
 
     var anchors = svg.selectAll(".anchor").data(svgdata);
@@ -310,7 +314,7 @@ function fixBarMuts(muts) {
 	anchors.enter().append("circle").attr("class","anchor").attr("r",1)
 	var newLabels = labels.enter().append("g").attr("class","labels")
 	labelBox = newLabels.append("g").attr("class","labelbox")
-	labelBox.append("text").attr("class","labeltext").attr("y",function(d) { return d.y})
+	labelBox.append("text").attr("class","labeltext").attr("y",10)
 	newLabels.append("line").attr("class","link")
 	links = svg.selectAll(".link")
 	
@@ -377,7 +381,7 @@ function fixBarMuts(muts) {
 	anchors.call(labelForce.update)
 
 	labelForce.start();
-	for (var i = n*n; i > 0; --i) labelForce.tick();
+	for (var i = 10000; i > 0; --i) labelForce.tick();
 	labelForce.stop();
 	
 	$('.protsvg').css('height', svgHeight + 'px');
@@ -392,6 +396,7 @@ function fixMutPopupData(data, num) {
         // Set variables.
         var head = (data[num][i].i) ? 'Interaction with: <a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + data[num][i].id + '">' + (data[num][i].i) + '</a>' : 'Stability results';
         var sbddg = data[num][0].d,
+            sbmutdb = data[num][0].db,
             sbdgwt = data[num][0].dw,
             sbdgmut = data[num][0].dm,
             sbseq = data[num][0].si,
@@ -409,6 +414,7 @@ function fixMutPopupData(data, num) {
 		$('.muttooltip .ttext #sbdgwt').html(sbdgwt);
 		$('.muttooltip .ttext #sbdgmut').html(sbdgmut);
 		$('.muttooltip .ttext #sbddg').html(sbddg);
+        $('.muttooltip .ttext #dbs').html(sbmutdb + '.');
     }
     // Fix paddings for interactions.
     var mwidth = 200;

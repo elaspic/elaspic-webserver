@@ -2,6 +2,8 @@ from django.db import models
 
 from django.utils.timezone import localtime
 
+from collections import defaultdict
+
 #
 # To install: python /home/witvliet/Dropbox/django/mum/manage.py syncdb
 #
@@ -85,11 +87,9 @@ class JobToMut(models.Model):
     class Meta:
         db_table = 'job_to_mut'
 
-
-
 ############################################################################
 # Database: 'data'
-# Engine: PostgreSQL
+# Engine: MySQL
 
 class Protein(models.Model):
     id = models.CharField(max_length=50, primary_key=True, db_index=True, db_column='uniprot_id')
@@ -560,6 +560,65 @@ class Imutation(models.Model):
         
     class Meta:
         db_table = shema + 'uniprot_domain_pair_mutation'
+
+
+
+############################################################################
+# Database: 'elaspic_mutation'
+class DatabaseClinVar(models.Model):
+    
+    id = models.PositiveIntegerField(primary_key=True, db_column='id')
+    protein = models.CharField(max_length=50, db_column='uniprot_id')
+    mut = models.CharField(max_length=8, db_column='mutation')
+    
+    variation = models.CharField(max_length=50, db_column='variation_name')
+    
+    def makeLink(self):
+        return 'http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + self.variation
+    
+    class Meta:
+        db_table = shema + 'clinvar_mutation'
+        
+class DatabaseUniProt(models.Model):
+    
+    id = models.PositiveIntegerField(primary_key=True, db_column='id')
+    protein = models.CharField(max_length=50, db_column='uniprot_id')
+    mut = models.CharField(max_length=8, db_column='mutation')
+    
+    variation = models.CharField(max_length=50, db_column='variation_name')
+    
+    def makeLink(self):
+        return 'http://web.expasy.org/variant_pages/' + self.variation + '.html'
+
+    class Meta:
+        db_table = shema + 'uniprot_mutation'
+        
+class DatabaseCOSMIC(models.Model):
+    
+    id = models.PositiveIntegerField(primary_key=True, db_column='id')
+    protein = models.CharField(max_length=50, db_column='uniprot_id')
+    mut = models.CharField(max_length=8, db_column='mutation')
+    
+    variation = models.CharField(max_length=50, db_column='variation_name')
+    
+    def makeLink(self):
+        return 'http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + self.variation
+        
+    class Meta:
+        db_table = shema + 'cosmic_mutation'
+
+
+def findInDatabase(mutations, protein):
+    dbs = defaultdict(list)
+    
+    for db in (DatabaseClinVar, DatabaseUniProt, DatabaseCOSMIC):
+        for mut_db in db.objects.using('elaspic_mutation').filter(mut__in=mutations, protein=protein):
+            dbs[mut_db.mut].append({'name': mut_db.__class__.__name__[8:],
+                                    'url': mut_db.makeLink(),
+                                    'variation': mut_db.variation})
+        
+    return dbs
+        
 
 
 
