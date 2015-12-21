@@ -13,7 +13,6 @@ from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation
 from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail, checkForCompletion
 # from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
 
-from mum.settings import SITE_URL
 import urllib.parse
 import logging
 

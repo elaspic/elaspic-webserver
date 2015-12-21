@@ -146,6 +146,7 @@ function proteinReceived(result) {
         result.defs = [];
         result.inacs = [];
         $('#barbox').data('data-pdb', result.msg);
+        $('#barbox').data('data-userpath', result.userpath);
         $('#selectchaindiv').show();
         $('.first-switch').removeClass('first');
         for (var i = 0; i < result.msg.length; i++) {
@@ -158,6 +159,7 @@ function proteinReceived(result) {
         $('#selectchaindiv').hide();
         $('.first-switch').addClass('first');
     }
+    alert($('#barbox').data('data-userpath'));
     
 	// Print protein name and description.
 	$(".proteininfo .proteinname").text(protName);
