@@ -261,7 +261,9 @@
 													{% ifequal jm.mut.error.0 '1' %}
 														{{ SITE_NAME }} failed with the error: <i>{{ jm.mut.error|slice:"3:" }}</i>.
 													{% endifequal %}
+                                                    {% if job.localID|length > 0 %}
 													<div class="help erm" data-pnm="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}"></div>
+                                                    {% endif %}
 												{% endifequal %}
 											{% else %}
 												<span>&nbsp</span><span class="hidden">z</span>

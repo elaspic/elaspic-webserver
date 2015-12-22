@@ -656,7 +656,8 @@ class LocalModel(models.Model):
     
     class Meta:
         db_table = shema + 'local_model'
-        
+    
+    
 class LocalSequence(models.Model):
     
     id = models.IntegerField(primary_key=True, db_column='s_id')
