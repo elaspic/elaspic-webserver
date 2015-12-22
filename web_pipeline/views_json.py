@@ -206,7 +206,7 @@ def uploadFile(request):
     myfile = request.FILES['fileToUpload']
     
     filetype = request.POST['filetype']
-    user_path = ''
+    randomID = ''
     
     if myfile.size > 10000000:
         jsonDict = {'msg': "File is too large (>10 MB)", 'error': 1}    
@@ -281,7 +281,7 @@ def uploadFile(request):
 
         
     jsonDict = {'inputfile': myfile.name or 'uploadedFile',
-                'userpath': user_path,
+                'userpath': randomID,
                 'msg': msg,
                 'error': 0}    
 

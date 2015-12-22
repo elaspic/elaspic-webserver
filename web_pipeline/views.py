@@ -3,14 +3,17 @@ from tempfile import mkdtemp
 from shutil import copyfile
 from random import randint
 import requests
+import pickle
 
 from django.shortcuts import render
 from django.http import Http404, HttpResponseRedirect
 from django.conf import settings
 from django.utils.timezone import now
 
+from mum.settings import DB_PATH
+
 from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, Domain, findInDatabase
-from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail, checkForCompletion
+from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail
 # from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
 
 import urllib.parse
@@ -45,116 +48,157 @@ def runPipeline(request):
         raise Http404
     if not request.GET['proteins'].strip():
         return HttpResponseRedirect('/') # No protein input.
+    
+    # Check if running local pdb.
+    if 'jid' in request.GET and 'chain' in request.GET and request.GET['chain']:
+        local = True
+        mut = request.GET['proteins'].split('.')[-1]
+        filename = request.GET['fileToUpload']
 
-    # Generate list of valid proteins and mutations.
-    pnms = request.GET['proteins'].split(' ')[:10000]
-    validPnms = []
-    for pnm in pnms:
-        iden, mut = getPnM(pnm)
-        p = fetchProtein(iden)
-        if not p:
-            continue
-        if isInvalidMut(mut, p.seq):
-            continue
-        validPnms.append([p.id, mut, iden])
-    if not validPnms:
-        return HttpResponseRedirect('/') # No valid proteins.
+        randomID = request.GET['jid']
+        chain = request.GET['chain']
+        user_path = os.path.join(DB_PATH, 'user_input', randomID)
+        pdb_path = os.path.join(user_path, 'input.pdb')
+        seq_path = os.path.join(user_path, 'input.fasta')
+        with open(os.path.join(user_path, 'pdb_parsed.pickle'), 'rb') as f:
+            seq = pickle.load(f)[chain]
+        with open(seq_path, 'w') as f:
+            f.write('>input.pdb\n')
+            f.write(seq)
+            
+        if isInvalidMut(mut, seq):
+            return HttpResponseRedirect('/')
 
-    # Create job in database.
-    while True:
-        randomID = "%06x" % randint(1,16777215)
-        if Job.objects.filter(jobID=randomID).count() == 0:
-            break
-    j = Job.objects.create(jobID = randomID,
-                           email = request.GET['email'],
-                           browser = request.META['HTTP_USER_AGENT'])
+        j = Job.objects.create(jobID=randomID,
+                               email=request.GET['email'],
+                               browser=request.META['HTTP_USER_AGENT'])
+                               
+        m = Mut.objects.create(protein=randomID, mut=mut, status='running')
+                               
+        JobToMut.objects.create(job=j, mut=m, inputIdentifier=filename)
 
-    # Create mutations in database if not already there.
-    newMuts, doneMuts = [], []
-    for pnm in validPnms:
-        toRerun = False
-        m = list(Mut.objects.filter(protein=pnm[0], mut=pnm[1]))
-#        # Check for blacklisted uniprots and skip.
-#        if pnm[0] in blacklisted_uniprots:
-#            if m:
-#                mut = m[0]
-#                mut.status = 'error'
-#                mut.affectedType = ''
-#                mut.error = '5: Blacklisted'
-#                mut.save()
-#                doneMuts.append([mut, pnm[2]])
-#            else:
-#                doneMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1],
-#                                                    status='error',
-#                                                    error='5: Blaclisted'), pnm[2]])
-#            checkForCompletion(doneMuts[-1][0].jobs.all())
-#            continue
-
-        # Get potential results.
-        muts = list(Mutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
-        imuts = list(Imutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
-
-        if m:
-            mut = m[0]
-            typ = mut.affectedType
-
-            # Add rerun mutations to run list. Reasons:
-            # 1) Mutation data disappeared from ELASPIC database.
-            # 2) Mutation data changed from core to interface.
-            # 3) Mutation data changed from not in domain.
-            # 4) Pipeline crashed or ran out of time on last run.
-            if ((not typ) or  # AS
-                    (typ == 'CO' and not muts) or
-                    (typ == 'IN' and not imuts) or
-                    (typ == 'CO' and imuts) or
-                    (typ == 'NO' and (muts or imuts)) or
-                    (mut.error and (mut.error[0] != '1'))):
-                toRerun = True
-
-            # Add mutations to lists.
-            # if toRerun and not(mut.rerun):  # AS
-            if toRerun:
-                mut.rerun = True
-                mut.save()
-                newMuts.append([mut, pnm[2]])
+    else:
+        local = False
+        # Generate list of valid proteins and mutations.
+        pnms = request.GET['proteins'].split(' ')[:10000]
+        validPnms = []
+        for pnm in pnms:
+            iden, mut = getPnM(pnm)
+            p = fetchProtein(iden)
+            if not p:
+                continue
+            if isInvalidMut(mut, p.seq):
+                continue
+            validPnms.append([p.id, mut, iden])
+        if not validPnms:
+            return HttpResponseRedirect('/') # No valid proteins.
+    
+        # Create job in database.
+        while True:
+            randomID = "%06x" % randint(1,16777215)
+            user_path = os.path.join(DB_PATH, 'user_input', randomID)
+            if Job.objects.filter(jobID=randomID).count() == 0 and not os.path.exists(user_path):
+                break
+    
+        j = Job.objects.create(jobID = randomID,
+                               email = request.GET['email'],
+                               browser = request.META['HTTP_USER_AGENT'])
+    
+        # Create mutations in database if not already there.
+        for pnm in validPnms:
+            toRerun = False
+            m = list(Mut.objects.filter(protein=pnm[0], mut=pnm[1]))
+    #        # Check for blacklisted uniprots and skip.
+    #        if pnm[0] in blacklisted_uniprots:
+    #            if m:
+    #                mut = m[0]
+    #                mut.status = 'error'
+    #                mut.affectedType = ''
+    #                mut.error = '5: Blacklisted'
+    #                mut.save()
+    #                doneMuts.append([mut, pnm[2]])
+    #            else:
+    #                doneMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1],
+    #                                                    status='error',
+    #                                                    error='5: Blaclisted'), pnm[2]])
+    #            checkForCompletion(doneMuts[-1][0].jobs.all())
+    #            continue
+    
+            # Get potential results.
+            muts = list(Mutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
+            imuts = list(Imutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
+        
+            newMuts, doneMuts = [], []
+            if m:
+                mut = m[0]
+                typ = mut.affectedType
+    
+                # Add rerun mutations to run list. Reasons:
+                # 1) Mutation data disappeared from ELASPIC database.
+                # 2) Mutation data changed from core to interface.
+                # 3) Mutation data changed from not in domain.
+                # 4) Pipeline crashed or ran out of time on last run.
+                if ((not typ) or  # AS
+                        (typ == 'CO' and not muts) or
+                        (typ == 'IN' and not imuts) or
+                        (typ == 'CO' and imuts) or
+                        (typ == 'NO' and (muts or imuts)) or
+                        (mut.error and (mut.error[0] != '1'))):
+                    toRerun = True
+    
+                # Add mutations to lists.
+                # if toRerun and not(mut.rerun):  # AS
+                if toRerun:
+                    mut.rerun = True
+                    mut.save()
+                    newMuts.append([mut, pnm[2]])
+                else:
+                    doneMuts.append([mut, pnm[2]])
             else:
-                doneMuts.append([mut, pnm[2]])
-        else:
-            # Create new mutations if the result isn't already complete.
-            if (not(imuts) and muts and all([mut.ddG for mut in muts]))\
-              or (imuts and all([mut.ddG for mut in imuts])):
-                doneMuts.append([Mut.objects.create(protein=pnm[0],
-                                                    mut=pnm[1],
-                                                    status='done',
-                                                    affectedType='IN' if imuts else 'CO',
-                                                    dateFinished=now()), pnm[2]])
-            else:
-                newMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1]), pnm[2]])
-
-    # Link all mutations to job.
-    JobToMut.objects.bulk_create(
-        [JobToMut(job=j, mut=allMuts[0], inputIdentifier=allMuts[1])
-         for allMuts in doneMuts + newMuts]
-    )
-
+                # Create new mutations if the result isn't already complete.
+                if (not(imuts) and muts and all([mut.ddG for mut in muts]))\
+                  or (imuts and all([mut.ddG for mut in imuts])):
+                    doneMuts.append([Mut.objects.create(protein=pnm[0],
+                                                        mut=pnm[1],
+                                                        status='done',
+                                                        affectedType='IN' if imuts else 'CO',
+                                                        dateFinished=now()), pnm[2]])
+                else:
+                    newMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1]), pnm[2]])
+    
+        # Link all mutations to job.
+        JobToMut.objects.bulk_create(
+            [JobToMut(job=j, mut=allMuts[0], inputIdentifier=allMuts[1])
+             for allMuts in doneMuts + newMuts]
+        )
+    
     # ##### Run pipeline #####
 
-    # Run pipeline for new mutations.'
-    data_in = []
-    for m in newMuts:
-        mut = m[0]
-        mut.status = 'running'
-        # mut.taskId = p.task_ids
-        mut.save()
-        mutation = {
-            'job_id': j.jobID,
-            'job_email': j.email,
-            'job_type': 'database',
-            'protein_id': mut.protein,
-            'mutations': mut.mut,
-            'uniprot_domain_pair_ids': '',
-        }
-        data_in.append(mutation)
+    if local:
+        data_in = [{'job_id': randomID,
+                    'job_email': j.email,
+                    'job_type': 'local',
+                    'protein_id': randomID,
+                    'mutations': mut,
+                    'structure_file': 'input.pdb',
+                    'sequence_file': 'input.fasta'}]
+    else:
+        # Run pipeline for new mutations.'
+        data_in = []
+        for m in newMuts:
+            mut = m[0]
+            mut.status = 'running'
+            # mut.taskId = p.task_ids
+            mut.save()
+            mutation = {
+                'job_id': j.jobID,
+                'job_email': j.email,
+                'job_type': 'database',
+                'protein_id': mut.protein,
+                'mutations': mut.mut,
+                'uniprot_domain_pair_ids': '',
+            }
+            data_in.append(mutation)
 
     if data_in:
         status = None
@@ -188,17 +232,22 @@ def runPipeline(request):
 
     # ##### ############ #####
 
-    # Set job to done if all mutations are already done.
-    if all([(True if (m[0].status == 'done' or m[0].status == 'error') and \
-            not(m[0].rerun) else False) for m in newMuts + doneMuts]):
-        j.isDone = True
-        j.dateFinished = now()
-        j.save()
-        # Send completion email.
-        sendEmail(j, 'complete')
-    if not j.isDone:
-        # Send start email.
+
+    if local:
         sendEmail(j, 'started')
+    else:
+        # Set job to done if all mutations are already done.
+        if all([(True if (m[0].status == 'done' or m[0].status == 'error') and \
+                not(m[0].rerun) else False) for m in newMuts + doneMuts]):
+            j.isDone = True
+            j.dateFinished = now()
+            j.save()
+            # Send completion email.
+            sendEmail(j, 'complete')
+        if not j.isDone:
+            # Send start email.
+            sendEmail(j, 'started')
+
 
     # Redirect to result page.
     return HttpResponseRedirect('http://%s/result/%s/' % (request.get_host(), randomID))

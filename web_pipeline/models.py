@@ -52,6 +52,8 @@ class Job(models.Model):
     isDone = models.BooleanField(default=False)
     email = models.EmailField(blank=True)
     
+    localID = models.CharField(max_length=50, null=True, blank=True)
+    
     muts = models.ManyToManyField(Mut, through='JobToMut', related_name="jobs") #many-to-many
 
     browser = models.CharField(max_length=100, blank=True)
