@@ -582,6 +582,94 @@ class Imutation(models.Model):
 
 
 
+
+# Local pdb mutations.
+class LocalMutation(models.Model):
+    
+    id = models.IntegerField(primary_key=True, db_column='mut_id')
+    
+    unique_id = models.CharField(max_length=255)
+    idx = models.IntegerField()
+    idx2 = models.IntegerField()
+    
+    mutation = models.CharField(max_length=255, null=True, blank=True)
+    
+    model_filename_wt = models.TextField(null=True, blank=True)
+    model_filename_mut = models.TextField(null=True, blank=True)
+    
+    norm_dope = models.FloatField(null=True)
+    
+    alignment_coverage = models.FloatField(null=True)
+    alignment_identity = models.FloatField(null=True)
+    alignment_score = models.FloatField(null=True)
+    
+    stability_energy_wt = models.TextField(null=True)
+    stability_energy_mut = models.TextField(null=True)
+    analyse_complex_energy_wt = models.TextField(null=True)
+    analyse_complex_energy_mut = models.TextField(null=True)
+    
+    physchem_wt = models.CharField(max_length=255, null=True)
+    physchem_wt_ownchain = models.CharField(max_length=255, null=True)
+    physchem_mut = models.CharField(max_length=255, null=True)
+    physchem_mut_ownchain = models.CharField(max_length=255, null=True)
+    
+    secondary_structure_wt = models.CharField(max_length=1, null=True)    
+    secondary_structure_mut = models.CharField(max_length=1, null=True)
+    solvent_accessibility_wt = models.FloatField(null=True, blank=True)
+    solvent_accessibility_mut = models.FloatField(null=True, blank=True)
+    
+    contact_distance_wt = models.FloatField(null=True, blank=True)
+    contact_distance_mut = models.FloatField(null=True, blank=True)
+    
+    matrix_score = models.FloatField(null=True, blank=True)
+    provean_score = models.FloatField(null=True, blank=True)
+    
+    ddG = models.FloatField(null=True, blank=True, db_column='ddg')
+    
+    class Meta:
+        db_table = shema + 'local_mutation'
+        
+
+
+
+class LocalModel(models.Model):
+    
+    id = models.IntegerField(primary_key=True, db_column='m_id')
+    
+    unique_id = models.CharField(max_length=255)
+    idx = models.IntegerField()
+    idx2 = models.IntegerField()
+    
+    alignment_filename_1 = models.CharField(max_length=255, blank=True, db_column='alignment_file')
+    alignment_filename_2 = models.CharField(max_length=255, blank=True, db_column='alignment_file_2')
+    
+    aa1 = models.TextField(blank=True, db_column='interacting_residues_1')
+    aa2 = models.TextField(blank=True, db_column='interacting_residues_2')
+    
+    chain_ids = models.CharField(max_length=255, null=True)
+    
+    interface_area_hydrophobic = models.FloatField(null=True, blank=True)
+    interface_area_hydrophilic = models.FloatField(null=True, blank=True)
+    interface_area_total = models.FloatField(null=True, blank=True)
+    
+    mutation = models.CharField(max_length=255, null=True, blank=True)
+    
+    class Meta:
+        db_table = shema + 'local_model'
+        
+class LocalSequence(models.Model):
+    
+    id = models.IntegerField(primary_key=True, db_column='s_id')
+    
+    unique_id = models.CharField(max_length=255)
+    idx = models.IntegerField()
+    
+    sequence = models.TextField(null=True, blank=True)
+    
+    
+    class Meta:
+        db_table = shema + 'local_sequence'
+
 ############################################################################
 # Database: 'elaspic_mutation'
 class DatabaseClinVar(models.Model):

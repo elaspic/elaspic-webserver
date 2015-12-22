@@ -147,9 +147,9 @@ function proteinReceived(result) {
         result.defs = [];
         result.inacs = [];
         $('#barbox').data('data-pdb', result.msg);
-        $('#jid').attr('value', result.userpath);
+        $('#jid').val(result.userpath);
         $('#selectchaindiv').show();
-        $('#chain').attr('value', result.msg[0][0]);
+        $('#chain').val(result.msg[0][0]);
         $('.first-switch').removeClass('first');
         for (var i = 0; i < result.msg.length; i++) {
             var chain = result.msg[i][0];
@@ -305,7 +305,7 @@ $(document).ready(function(){
 
 	  // Get protein on change.
 	  $("#proteininput").anyChange(function() {
-          $('#chain').attr('value', "");
+          $('#chain').val("");
           $("#fakearea").val("");
 	      var newMut = $.trim( $("#proteininput").val() );
 	      $("#proteininput").val(newMut);
@@ -368,7 +368,7 @@ $(document).ready(function(){
         create2dBar(obj);
         
         $("#fakearea").val("");
-        $('#chain').attr('value', chainid);
+        $('#chain').val(chainid);
 
     });
     $(".allaa").change(function() {

@@ -32,8 +32,9 @@ def getResultData(jtom):
 
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
-
-    if aType == 'CO':
+    if j.localID:
+        MutResult = LocalMutation
+    elif aType == 'CO':
         MutResult = Mutation
     elif aType == 'IN':
         MutResult = Imutation
