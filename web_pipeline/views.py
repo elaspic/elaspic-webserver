@@ -58,11 +58,9 @@ def runPipeline(request):
         randomID = request.GET['jid']
         chain = request.GET['chain']
         user_path = os.path.join(DB_PATH, 'user_input', randomID)
-        pdb_path = os.path.join(user_path, 'input.pdb')
-        seq_path = os.path.join(user_path, 'input.fasta')
         with open(os.path.join(user_path, 'pdb_parsed.pickle'), 'rb') as f:
             seq = pickle.load(f)[chain]
-        with open(seq_path, 'w') as f:
+        with open(os.path.join(user_path, 'input.fasta'), 'w') as f:
             f.write('>input.pdb\n')
             f.write(seq)
             
@@ -269,16 +267,6 @@ def displayResult(request):
 
     # Fetch data
     data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
-
-    # AS this part is now done by the jobsubmitter
-#    if not job.isDone:
-#        all_mutations_done = all(
-#            (m.mut.status in ['done', 'error']) for m in data
-#        )
-#        if all_mutations_done:
-#            job.isDone = 1
-#            job.dateFinished = now()  # Todo: move this to the job finalizer script
-#            job.save()
 
     for m in data:
 

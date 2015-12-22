@@ -233,7 +233,7 @@
 								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
 							</td>
 							<!-- Type (core or interface) -->
-							<td {% ifnotequal jm.mut.status 'done' %}colspan="7" {% endifnotequal %}class="tdt">
+							<td {% ifnotequal jm.mut.status 'done' %}colspan="8" {% endifnotequal %}class="tdt">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
 									<span>
 										{% ifequal jm.mut.affectedType 'CO' %}Core{% endifequal %}
