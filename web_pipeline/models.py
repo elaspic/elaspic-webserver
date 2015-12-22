@@ -600,8 +600,8 @@ class LocalMutation(models.Model):
     norm_dope = models.FloatField(null=True)
     
     alignment_coverage = models.FloatField(null=True)
-    alignment_identity = models.FloatField(null=True)
-    alignment_score = models.FloatField(null=True)
+    seqid = models.FloatField(null=True, db_column='alignment_identity')
+    alignscore = models.FloatField(null=True, db_column='alignment_score')
     
     stability_energy_wt = models.TextField(null=True)
     stability_energy_mut = models.TextField(null=True)
@@ -613,7 +613,7 @@ class LocalMutation(models.Model):
     physchem_mut = models.CharField(max_length=255, null=True)
     physchem_mut_ownchain = models.CharField(max_length=255, null=True)
     
-    secondary_structure_wt = models.CharField(max_length=1, null=True)    
+    secondary_structure_wt = models.CharField(max_length=1, null=True)
     secondary_structure_mut = models.CharField(max_length=1, null=True)
     solvent_accessibility_wt = models.FloatField(null=True, blank=True)
     solvent_accessibility_mut = models.FloatField(null=True, blank=True)

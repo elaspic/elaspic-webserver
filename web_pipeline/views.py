@@ -13,7 +13,7 @@ from django.utils.timezone import now
 from mum.settings import DB_PATH
 
 from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, Domain, findInDatabase
-from web_pipeline.functions import getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail
+from web_pipeline.functions import getPnM, getResultData, getLocalData, isInvalidMut, fetchProtein, sendEmail
 # from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
 
 import urllib.parse
@@ -69,7 +69,8 @@ def runPipeline(request):
 
         j = Job.objects.create(jobID=randomID,
                                email=request.GET['email'],
-                               browser=request.META['HTTP_USER_AGENT'])
+                               browser=request.META['HTTP_USER_AGENT'],
+                               localID=randomID)
                                
         m = Mut.objects.create(protein=randomID, mut=mut, status='running')
                                
@@ -266,47 +267,60 @@ def displayResult(request):
 #        c.checkForStalledMuts(requestID)
 
     # Fetch data
-    data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
-
-    for m in data:
-
-        # Set mutation status temporarily as 'running' if its rerunning.
-#        if m.mut.rerun and not(job.isDone):
-#            if m.mut.rerun == 2:
-#                m.mut.status = 'running'
-#            else:
-#                m.mut.status = 'queued'
-
-        # Get additional data for result table.
-        doneInt, toRemove = [], []
-        if not m.realMutErr:
-            print(len(m.realMut))
-            for i, mut in enumerate(m.realMut):
-                chain = mut.findChain()
-                # Get alignment scores.
-                mut.alignscore = mut.model.template.getalignscore(chain)
-                mut.seqid = mut.model.template.getsequenceidentity(chain)
-                mut.pdbtemp = mut.model.template.getpdbtemplate(chain, link=False)
-                # Get interacting protein.
-                if m.mut.affectedType == 'IN':
-                    d = mut.model.template.domain.getdomain(1 if chain == 2 else 2)
-                    if d.protein.id == m.mut.protein:
-                        mut.inac = 'self'
-                    else:
-                        mut.inac = d.protein.getname()
-                            
-                    mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
-                    # Check for dublicates. Remove the last one.
-                    # This is a quick and dirty fix and should be fixed to pick
-                    # the highest sequence identity.
-                    dubkey = '%s.%s.%d' % (m.mut.protein, m.mut.mut, d.id)
-                    if dubkey in doneInt:
-                        toRemove.append(i)
-                    else:
-                        doneInt.append(dubkey)
-            for rem in toRemove:
-                m.realMut.remove(m.realMut[rem])
-
+    if job.localID:
+        m = getLocalData(job.jobtomut_set.first())
+        
+        if m.realMut:
+            # Alignscore and seqid are already there.
+            m.realMut[0].pdbtemp = m.inputIdentifier
+            # Get interacting protein.
+            ## TODO: Add interactions if there.
+            
+        data = [m]
+        
+    else:
+        data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
+    
+        for m in data:
+            
+    
+            # Set mutation status temporarily as 'running' if its rerunning.
+    #        if m.mut.rerun and not(job.isDone):
+    #            if m.mut.rerun == 2:
+    #                m.mut.status = 'running'
+    #            else:
+    #                m.mut.status = 'queued'
+    
+            # Get additional data for result table.
+            doneInt, toRemove = [], []
+            if not m.realMutErr:
+                print(len(m.realMut))
+                for i, mut in enumerate(m.realMut):
+                    chain = mut.findChain()
+                    # Get alignment scores.
+                    mut.alignscore = mut.model.template.getalignscore(chain)
+                    mut.seqid = mut.model.template.getsequenceidentity(chain)
+                    mut.pdbtemp = mut.model.template.getpdbtemplate(chain, link=False)
+                    # Get interacting protein.
+                    if m.mut.affectedType == 'IN':
+                        d = mut.model.template.domain.getdomain(1 if chain == 2 else 2)
+                        if d.protein.id == m.mut.protein:
+                            mut.inac = 'self'
+                        else:
+                            mut.inac = d.protein.getname()
+                                
+                        mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
+                        # Check for dublicates. Remove the last one.
+                        # This is a quick and dirty fix and should be fixed to pick
+                        # the highest sequence identity.
+                        dubkey = '%s.%s.%d' % (m.mut.protein, m.mut.mut, d.id)
+                        if dubkey in doneInt:
+                            toRemove.append(i)
+                        else:
+                            doneInt.append(dubkey)
+                for rem in toRemove:
+                    m.realMut.remove(m.realMut[rem])
+    
     context = {
         'url': 'http://%s/result/%s/' % (request.get_host(), requestID),
         'type': 'result',

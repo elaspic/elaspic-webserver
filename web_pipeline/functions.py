@@ -5,7 +5,7 @@ from django.utils.html import strip_tags
 from django.utils.timezone import now
 from django.db.models import Q
 
-from web_pipeline.models import Mutation, Imutation, Protein, HGNCIdentifier, UniprotIdentifier
+from web_pipeline.models import Mutation, Imutation, Protein, HGNCIdentifier, UniprotIdentifier, LocalMutation
 
 import logging
 from re import match
@@ -23,6 +23,29 @@ def checkForCompletion(jobs):
             sendEmail(j, 'complete')
 
 
+def getLocalData(jtom):
+    j = jtom.job
+    j.dateVisited = now()
+    j.save()
+
+    # Try to get data if not in web-server database yet.
+    aType = jtom.mut.affectedType
+    if not aType:
+        try: 
+            jtom.realMut = [LocalMutation.objects.using('data').get(unique_id=j.id)]
+            if jtom.realMut.idx2 == -1:
+                aType = jtom.mut.affectedType = 'CO'
+            else:
+                aType = jtom.mut.affectedType = 'IN'
+            jtom.mut.save()
+            
+    
+        except:
+            jtom.realMut = []
+            
+    return jtom
+        
+
 def getResultData(jtom):
 
     # Update job last visited to now.
@@ -32,9 +55,7 @@ def getResultData(jtom):
 
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
-    if j.localID:
-        MutResult = LocalMutation
-    elif aType == 'CO':
+    if aType == 'CO':
         MutResult = Mutation
     elif aType == 'IN':
         MutResult = Imutation
