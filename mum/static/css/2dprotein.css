@@ -8,6 +8,17 @@
 .protein2d div {
 	position: absolute;
 }
+.protein2d  .dominacs {
+	width: 100%;
+	height: 38px;
+}
+.protein2d  .dominacs div{
+    z-index: 3;
+    position: absolute;
+	top: 36px;
+	height: 10px;
+	cursor: pointer;
+}
 .protein2d .dombar {
 	width: 100%;
 	height: 8px;
@@ -33,14 +44,25 @@
 	border-width: 1px;
 	border-style: solid;
 	border-radius: 2px;
-	z-index: 3;
+	z-index: 4;
 	overflow: hidden;
 	
-	background-color: #eee;
+
 	border-color: #999;
 	text-align: center;
 	font-weight: 600;
 	cursor: pointer;
+}
+.protein2d .domain-bg{
+	top: 35px;
+	height: 38px;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 2px;
+    
+    border-color: #eee;
+	background-color: #eee;
+	z-index: 2;
 }
 .protein2d .domain span {
 	margin-left: 10px;

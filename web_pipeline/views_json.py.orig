@@ -1,27 +1,25 @@
 from re import sub
 from subprocess import Popen, PIPE
-from os import path, mkdir
-from shutil import copyfile
 import json
-import requests
+<<<<<<< HEAD
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
-from random import randint
-import pickle
 
 from Bio.PDB.PDBParser import PDBParser
+=======
+import requests
+>>>>>>> 93d4d1e943cf69a1e8fa2e85e25edb3e84af74ec
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils import html
 from django.conf import settings
 from django.core.mail import EmailMessage
 
-from mum.settings import DB_PATH
-
-from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel, findInDatabase
+from web_pipeline.models import Job, JobToMut, Domain, Mutation, Imutation, Imodel
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
 from web_pipeline.tasks import cleanupServer
+
 
 from web_pipeline.supl import pdb_template
 
@@ -47,10 +45,8 @@ from web_pipeline.supl import pdb_template
 #            success = True
 #        except:
 #            success = False
-#    
+#
 #    return HttpResponse(json.dumps({'success': success}), content_type='application/json')
-
-
 
 
 import logging
@@ -60,7 +56,7 @@ logName = "views_json"
 logger = logging.getLogger(logName)
 hdlr = logging.FileHandler('/home/kimadmin/mum/log/views_son.log')
 hdlr.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s'))
-logger.addHandler(hdlr) 
+logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
 logger.propagate = False
 
@@ -70,17 +66,17 @@ def rerunMut(request):
         raise Http404
     if not 'm' or not 'j' in request.GET:
         raise Http404
-    
+
     protein, mut = getPnM(request.GET['m'].upper())
     error = 0
-    
+
     try:
         jtom = JobToMut.objects.get(job_id=request.GET['j'], inputIdentifier=protein, mut__mut=mut)
     except JobToMut.DoesNotExist:
         error = 1
     else:
         j = jtom.job
-        j.isDone= False
+        j.isDone = False
         j.save()
         m = jtom.mut
         if not m.rerun:
@@ -112,13 +108,13 @@ def dlFile(request):
         raise Http404
     if not 'j' or not 'f' or not 'm' in request.GET:
         raise Http404
-    
+
     fm = FileManager(jobID=request.GET['j'], muts=request.GET['m'].split(' '))
 
     response = HttpResponse(fm.makeFile(fileToMake=request.GET['f']), content_type=fm.type)
-    
+
     del fm
-    
+
     response['Content-Disposition'] = 'attachment; filename=' + request.GET['f']
     return response
 
@@ -126,23 +122,23 @@ def dlFile(request):
 def prepareDownloadFiles(request):
     ''' Used on result page to check for available files, prepared files in
         archives, and to return their file sizes. '''
-    
+
     if not request.GET:
         raise Http404
     if not 'm' or not 'j' in request.GET:
         raise Http404
-    
-    files = ['simpleresults.txt', 'allresults.txt', 
+
+    files = ['simpleresults.txt', 'allresults.txt',
              'wtmodels-ori.zip', 'wtmodels-opt.zip', 'mutmodels.zip',
              'alignments.zip', 'sequences.zip']
 
     jsonDict = {}
     fm = FileManager(jobID=request.GET['j'], muts=request.GET['m'].split(' '))
-    
+
     for f in files:
         fm.makeFile(fileToMake=f)
         jsonDict[f.split('.')[0].replace("-", "")] = [fm.fileCount, fm.fileSize]
-    
+
     del fm
 
     return HttpResponse(json.dumps(jsonDict), content_type='application/json')
@@ -159,7 +155,7 @@ def checkIfJobIsReady(request):
         j = Job.objects.get(jobID=request.POST['j'])
     except Job.DoesNotExist:
         raise Http404
-        
+
     staList, seqList, idenList = [], [], []
     for jm in j.jobtomut_set.all():
         staList.append(jm.mut.status)
@@ -171,7 +167,7 @@ def checkIfJobIsReady(request):
                 'status': staList,
                 'seq': seqList,
                 'iden': idenList}
-    
+
     return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
 
@@ -197,23 +193,29 @@ def _correct_methylated_lysines(res):
 
 
 def uploadFile(request):
-    
+
     if not request.FILES:
         raise Http404
     if not 'fileToUpload' in request.FILES:
         raise Http404
-    
+
     myfile = request.FILES['fileToUpload']
+<<<<<<< HEAD
     
     filetype = request.POST['filetype']
-    randomID = ''
     
-    if myfile.size > 10000000:
-        jsonDict = {'msg': "File is too large (>10 MB)", 'error': 1}    
+    if myfile.size > 5000000:
+        jsonDict = {'msg': "File is too large (>5 MB)", 'error': 1}    
         return HttpResponse(json.dumps(jsonDict), content_type='application/json')
         
 
     try:
+=======
+
+    if myfile.size > 1000000:
+        msg = "File is too large (>1 MB)"
+    else:
+>>>>>>> 93d4d1e943cf69a1e8fa2e85e25edb3e84af74ec
         process = Popen(['/usr/bin/file', '-i', myfile.temporary_file_path()], stdout=PIPE)
         stdout, stderr = process.communicate()
     
@@ -243,6 +245,7 @@ def uploadFile(request):
     
     if filetype == 'pdb':
         try:
+<<<<<<< HEAD
         
             with NamedTemporaryFile(mode='w') as temp_fh:
                 temp_fh.write(myfile.read().decode())
@@ -251,56 +254,66 @@ def uploadFile(request):
 
                 structure = PDBParser(QUIET=True).get_structure('uploadedPDB', temp_fh.name)
 
-                seq = sorted(pdb_template.get_structure_sequences(structure).items())
-                
-                if len(seq) < 1:
-                    jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
-                    return HttpResponse(json.dumps(jsonDict), content_type='application/json')
-                    
-                # Save uploaded pdb if it is valid.
-                while True:
-                    randomID = "%06x" % randint(1,16777215)
-                    user_path = path.join(DB_PATH, 'user_input', randomID)
-                    if Job.objects.filter(jobID=randomID).count() == 0 and not path.exists(user_path):
-                        break
-                if not path.exists(user_path):
-                    mkdir(user_path)
-                copyfile(temp_fh.name, path.join(user_path, 'input.pdb'))
-            with open(path.join(user_path, 'pdb_parsed.pickle'), 'bw') as f:
-                f.write(pickle.dumps(dict(seq)))
+            msg = sorted(pdb_template.get_structure_sequences(structure).items())
             
-            msg = seq
-                
-                
+            print(len(msg[0][1]), len(msg[1][1]))
+            
+            if len(msg) < 1:
+                jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
+                return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
-        except Exception as e:
-            print(e)
+        except Exception:
             jsonDict = {'msg': "PDB could not be parsed. ", 'error': 1}
             return HttpResponse(json.dumps(jsonDict), content_type='application/json')
             
 
         
     jsonDict = {'inputfile': myfile.name or 'uploadedFile',
-                'userpath': randomID,
                 'msg': msg,
                 'error': 0}    
 
     
+=======
+            if stdout.decode().split(' ')[1].split('/')[0] == "text":
+                err = 0
+
+                # Remove white-spaces and empty lines.
+                lines = myfile.read().decode().split('\n')
+                trimmedLines = []
+                for idx, line in enumerate(lines):
+                    if idx >= 500:
+                        break
+                    newline = sub(r'\s+', '', line)
+                    if newline:
+                        trimmedLines.append(newline)
+                msg = "\n".join(trimmedLines)
+
+            else:
+                err = 1
+                msg = "Uploaded file has to be raw text (not '%s')" % stdout.split(' ')[1][:-1]
+        except:
+            err = 1
+            msg = "File could not be uploaded - try again"
+
+    jsonDict = {'msg': msg,
+                'error': err}
+
+>>>>>>> 93d4d1e943cf69a1e8fa2e85e25edb3e84af74ec
     return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
 
 
 def getProtein(request):
-    
-    
-    #return HttpResponse(json.dumps({'r': [{'seq': 'AAAAAAAAAAAAAAAAAAAAAAAA'}], 'e': False}), content_type='application/json')    
-    
+
+
+    #return HttpResponse(json.dumps({'r': [{'seq': 'AAAAAAAAAAAAAAAAAAAAAAAA'}], 'e': False}), content_type='application/json')
+
     # Check if the site was reached with GET method.
     if not request.GET:
         raise Http404
     if not 'p' in request.GET:
         raise Http404
-    
+
     # Parse requested input.
     inps = request.GET['p'].split()
     mutReq = True if 'm' in request.GET else False
@@ -309,20 +322,20 @@ def getProtein(request):
     domReq = True if 'd' in request.GET else False
     knownmutsReq = True if 'k' in request.GET else False
     errReq = True if 'e' in request.GET else False
-    
-    # Get all requested info from database.    
+
+    # Get all requested info from database.
     output, done = [], set()
     for idx, inp in enumerate(inps):
-        
-        output.append({'error': False, 
+
+        output.append({'error': False,
                        'emsg': None,
                        'iden': inp})
-        
+
         # Empty line.
         if inp == '':
             output[idx]['emsg'] = 'EMP'
             continue
-                
+
         # Set input identifier
         if mutReq:
             protein, mut = getPnM(inp.upper())
@@ -332,28 +345,28 @@ def getProtein(request):
             output[idx]['error'] = True
             output[idx]['emsg'] = 'SNX'
             continue
-        
-    
+
+
         # Get protein from database.
         p = fetchProtein(protein)
         if not p:
             output[idx]['error'] = True
             output[idx]['emsg'] = 'DNE'
             continue
-        
+
         # Set basic info.
         output[idx]['prot'] = p.id
         output[idx]['nothuman'] = False if p.organismName == 'Homo sapiens' else True
-            
+
         # Set sequence.
         if seqReq:
             output[idx]['seq'] = p.seq
-                
+
         # Set gene name.
         if nameReq:
             output[idx]['desc'] = p.desc()
             output[idx]['gene'] = p.id #p.identifier_set.get(identifierType='geneName').identifierID
-        
+
         # Set domains.
         if domReq:
             ds = list(Domain.objects.using('data').filter(protein_id=p.id))
@@ -365,6 +378,7 @@ def getProtein(request):
             for d in ds:
                 output[idx]['doms'].append(d.getname(''))
                 output[idx]['defs'].append(d.getdefs(1))
+<<<<<<< HEAD
                 
                 # Set interactions.
                 model1 = Imodel.objects.using('data').filter(template__domain__domain1=d)
@@ -392,45 +406,34 @@ def getProtein(request):
             output[idx]['inacsum'] = inacsum
 
         
+=======
+
+>>>>>>> 93d4d1e943cf69a1e8fa2e85e25edb3e84af74ec
         # Set already known mutations for protein.
         if knownmutsReq:
             mdict = {}
-            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None)) + \
-                   list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
-            
-            mut_dbs = findInDatabase([m.mut for m in muts], p.id)
-            
-            
-            for m in muts:
+            muts = list(Mutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+            imuts = list(Imutation.objects.using('data').filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+
+            for m in muts + imuts:
                 chain = m.findChain()
                 inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
                 isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
                 iId = inac.id if m.__class__.__name__ == 'Imutation' else None
-                
-                mut_dbs_html = ''
-                if mut_dbs[m.mut]:
-                    mut_dbs_html = 'Mutation in database' + ('s' if len(mut_dbs[m.mut]) > 1 else '') + ': '
-                    for i, db in enumerate(mut_dbs[m.mut]):
-                        if i: 
-                            mut_dbs_html += ' ,'
-                        mut_dbs_html += '<a target="_blank" href="' + db['url'] + '">' + db['name'] + '</a>'
-                else:
-                    mut_dbs_html = 'Mutation run by user'
-                
-                toAppend = {'i': isInt, 
+
+                toAppend = {'i': isInt,
                             'id': iId,
-                            'm': m.mut, 
+                            'm': m.mut,
                             'd': '%0.3f' % m.ddG,
                             'dw': m.dGwt(),
                             'dm': m.dGmut(),
                             'si': m.model.template.getsequenceidentity(chain),
-                            'sm': '%0.3f' % m.model.dope_score,
-                            'db': mut_dbs_html}
+                            'sm': '%0.3f' % m.model.dope_score}
                 if m.mut in mdict and mdict[m.mut][0]['i']:
                     mdict[m.mut].append(toAppend)
                 else:
                     mdict[m.mut] = [toAppend]
-            
+
             knMuts = {}
 
             for k in mdict:
@@ -439,27 +442,27 @@ def getProtein(request):
 
             # Sort mutations
             for k in knMuts:
-                knMuts[k] = sorted(knMuts[k], key=lambda x: int(x[0]['m'][1:-1]))
+                knMuts[k] = sorted(knMuts[k], key=lambda x: x[0]['m'])
 
             #output[idx]['prot'] = str(knMuts['537'])
             output[idx]['known'] = knMuts
 
-        
+
         # Set mutation.
         if mutReq:
             output[idx]['mut'] = mut
             output[idx]['muterr'] = isInvalidMut(mut, p.seq)
-        
+
             # Check for duplicate.
             l = len(done)
             done.add(p.id + mut)
             if l == len(done):
                 output[idx]['error'] = True
                 output[idx]['emsg'] = 'DUP'
-        
+
     # Create error lists.
     if errReq:
-       
+
        # Save and count all errors.
         errDict = {'SNX': {}, 'DNE': {}, 'SLF': {},
                    'DUP': {}, 'SYN': {}, 'OOB': {}}
@@ -478,11 +481,11 @@ def getProtein(request):
                 errDict[prot[idx]][prot['iden']] = 1
             else:
                 errDict[prot[idx]][prot['iden']] += 1
-        
+
         # Translate to list of format "PROT.MUT (1x)"
         errIdx = {'SNX': 0, 'DNE': 1, 'OOB': 2,
                   'SLF': 3, 'DUP': 4, 'SYN': 5}
-        err = {'errors': [[],[],[],[],[],[]], 'header': [], 'eclass': [], 
+        err = {'errors': [[],[],[],[],[],[]], 'header': [], 'eclass': [],
                'good': good, 'title': False}
         for eidx in errDict:
             err['errors'].append([])
@@ -491,8 +494,8 @@ def getProtein(request):
                     err['errors'][errIdx[eidx]].append('<b>%s</b>' % prot)
                 else:
                     err['errors'][errIdx[eidx]].append('<b>%s</b> (x%d)' % (prot, errDict[eidx][prot]))
-        
-        
+
+
         # Assign headeres to error lists.
         errLists = 0
         for idx, errls in enumerate(err['errors']):
@@ -526,7 +529,7 @@ def getProtein(request):
                         title = 'There are duplicate gene symbols.'
                     elif idx == 5:
                         title = 'There are duplicate gene symbols.'
-               
+
                 if idx == 0:
                     header = 'Invalid syntax'
                     myclass = 'error'
@@ -545,7 +548,7 @@ def getProtein(request):
                 elif idx == 5:
                     header = 'Synonyms'
                     myclass = 'warning'
-                    
+
 
                 err['header'][idx] = '%s (%d):' % (header, len(errls))
                 err['eclass'][idx] = myclass
@@ -557,45 +560,45 @@ def getProtein(request):
         err = None
 
     # Return.
-    return HttpResponse(json.dumps({'r': output, 'e': err}), 
+    return HttpResponse(json.dumps({'r': output, 'e': err}),
                                           content_type='application/json')
-    
+
 
 def sendContactMail(request):
-    
-    # Check if the page was reached legitimately. 
+
+    # Check if the page was reached legitimately.
     if not request.POST:
         raise Http404
     if not 'name' or not 'from' or not 'topic' or not 'msg' in request.POST:
         raise Http404
-        
+
     from_email = request.POST['from']
     subject = 'ELASPIC: ' + request.POST['topic']
-    
+
     message = '<i>From: ' + html.strip_tags(request.POST['name']) + '<br />'
     message += 'Email: ' + html.strip_tags(from_email) + '</i><br /><br />'
     message += 'Topic: <b>' + html.strip_tags(request.POST['topic']) + '</b><br /><br />'
     message += 'Message: <br /><b>'
     message += html.strip_tags(request.POST['msg']).replace('\n', '<br/>');
     message += '</b>';
-    
+
     email = EmailMessage(subject, message, 'ELASPIC-webserver@kimlab.org', [a[1] for a in settings.ADMINS])
     email.headers = {'Reply-To': from_email, 'From': 'ELASPIC-webserver@kimlab.org'}
     email.content_subtype = "html"
-    
+
     try:
         email.send()
     except Exception:
         error = True
-        response = 'Sorry, there was an error with your request. Please try again.'   
+        response = 'Sorry, there was an error with your request. Please try again.'
     else:
         error = False
         response = 'Your message has been successfully sent. Allow us 2 business days to get back to you.'
 
-    
+
     return HttpResponse(json.dumps({'response': response, 'error': error}), content_type='application/json')
-    
+
 def cleanup(request):
     cleanupServer.delay()
     return HttpResponseRedirect('/')
- 
+

@@ -10,7 +10,7 @@ from Bio.Alphabet import generic_protein
 
 from django.conf import settings
 
-from web_pipeline.models import Protein, Job, JobToMut, Imutation, Interaction
+from web_pipeline.models import Protein, Job, JobToMut, Imutation, Interaction, findInDatabase
 from web_pipeline.functions import getPnM, getResultData
 
 from elaspic.call_foldx import names_rows_stability as energyHeader
@@ -116,10 +116,22 @@ class FileManager(object):
 
                 
                 # Protein name, mutation, status, and type.
-                header = ['Input_identifier', 'UniProt_ID', 'Mutation', 'Status', 'Type']
+                db_cosmic = '-'
+                db_clinvar = '-'
+                db_uniprot = '-'
+                mut_dbs = findInDatabase([m.mut.mut], m.mut.protein)
+                for db in mut_dbs[m.mut.mut]:
+                    if 'ClinVar' == db['name']:
+                        db_clinvar = db['variation']
+                    elif 'COSMIC' == db['name']:
+                        db_cosmic = db['variation']
+                    elif 'UniProt' == db['name']:
+                        db_uniprot = db['variation']
+                header = ['Input_identifier', 'UniProt_ID', 'Mutation', 'Status', 'Type', 'COSMIC_mut_ID', 'ClinVar_mut_ID', 'UniProt_mut_ID']
                 bodyline = [m.inputIdentifier, m.mut.protein, m.mut.mut, 
                             m.mut.status if self.job.isDone or not(m.mut.rerun) else 'running', 
-                            mutTypes[m.mut.affectedType] if m.mut.affectedType else '-']
+                            mutTypes[m.mut.affectedType] if m.mut.affectedType else '-',
+                            db_cosmic, db_clinvar, db_uniprot]
                 
                 # Domain definitions IF allresults.
                 if filename == 'allresults' or al:
