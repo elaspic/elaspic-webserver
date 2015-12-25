@@ -1,7 +1,7 @@
 #!/bin/bash
 # Submission script for the ELASPIC pipeline
 # Requires `input_file` to be passed in as a variable
-# 
+#
 #$ -S /bin/bash
 #$ -N elaspic
 # #$ -pe smp 1
@@ -33,10 +33,10 @@ exec >"./pbs-output/${JOB_ID}.out" 2>"./pbs-output/${JOB_ID}.err"
 
 echo `hostname`
 source activate elaspic_2
-elaspic -c "../../config_file_mysql.ini" \
-  -p "${pdb_file}" -s "${sequence_file}" -m "${mutations}" -t ${elaspic_run_type}
+elaspic run -c "../../config_file_mysql.ini" \
+  -p "${structure_file}" -s "${sequence_file}" -m "${mutations}" -n 2 -t ${elaspic_run_type}
 
-python "${SCRIPTS_DIR}/local.py" -u "${uniprot_id}" -m "${mutations}" -t ${run_type}
+python "${SCRIPTS_DIR}/local.py" -u "${protein_id}" -m "${mutations}" -t ${run_type}
 
 echo "Finished successfully!"
 
