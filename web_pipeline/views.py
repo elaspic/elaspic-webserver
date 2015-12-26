@@ -40,6 +40,7 @@ def inp(request, p):
 
 
 def runPipeline(request):
+    logger.debug('request: {}'.format(request.GET))
 
     # Check for valid request.
     if not request.GET:
@@ -48,7 +49,7 @@ def runPipeline(request):
         raise Http404
     if not request.GET['proteins'].strip():
         return HttpResponseRedirect('/') # No protein input.
-    
+
     # Check if running local pdb.
     if 'jid' in request.GET and 'chain' in request.GET and request.GET['chain']:
         local = True
@@ -63,7 +64,7 @@ def runPipeline(request):
         with open(os.path.join(user_path, 'input.fasta'), 'w') as f:
             f.write('>input.pdb\n')
             f.write(seq)
-            
+
         if isInvalidMut(mut, seq):
             return HttpResponseRedirect('/')
 
@@ -71,9 +72,9 @@ def runPipeline(request):
                                email=request.GET['email'],
                                browser=request.META['HTTP_USER_AGENT'],
                                localID=randomID)
-                               
+
         m = Mut.objects.create(protein=randomID, mut=mut, status='running')
-                               
+
         JobToMut.objects.create(job=j, mut=m, inputIdentifier=filename)
 
     else:
@@ -91,18 +92,18 @@ def runPipeline(request):
             validPnms.append([p.id, mut, iden])
         if not validPnms:
             return HttpResponseRedirect('/') # No valid proteins.
-    
+
         # Create job in database.
         while True:
             randomID = "%06x" % randint(1,16777215)
             user_path = os.path.join(DB_PATH, 'user_input', randomID)
             if Job.objects.filter(jobID=randomID).count() == 0 and not os.path.exists(user_path):
                 break
-    
+
         j = Job.objects.create(jobID = randomID,
                                email = request.GET['email'],
                                browser = request.META['HTTP_USER_AGENT'])
-    
+
         # Create mutations in database if not already there.
         for pnm in validPnms:
             toRerun = False
@@ -122,16 +123,16 @@ def runPipeline(request):
     #                                                    error='5: Blaclisted'), pnm[2]])
     #            checkForCompletion(doneMuts[-1][0].jobs.all())
     #            continue
-    
+
             # Get potential results.
             muts = list(Mutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
             imuts = list(Imutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
-        
+
             newMuts, doneMuts = [], []
             if m:
                 mut = m[0]
                 typ = mut.affectedType
-    
+
                 # Add rerun mutations to run list. Reasons:
                 # 1) Mutation data disappeared from ELASPIC database.
                 # 2) Mutation data changed from core to interface.
@@ -144,7 +145,7 @@ def runPipeline(request):
                         (typ == 'NO' and (muts or imuts)) or
                         (mut.error and (mut.error[0] != '1'))):
                     toRerun = True
-    
+
                 # Add mutations to lists.
                 # if toRerun and not(mut.rerun):  # AS
                 if toRerun:
@@ -164,13 +165,13 @@ def runPipeline(request):
                                                         dateFinished=now()), pnm[2]])
                 else:
                     newMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1]), pnm[2]])
-    
+
         # Link all mutations to job.
         JobToMut.objects.bulk_create(
             [JobToMut(job=j, mut=allMuts[0], inputIdentifier=allMuts[1])
              for allMuts in doneMuts + newMuts]
         )
-    
+
     # ##### Run pipeline #####
 
     if local:
@@ -178,7 +179,7 @@ def runPipeline(request):
                     'job_email': j.email,
                     'job_type': 'local',
                     'protein_id': randomID,
-                    'mutations': mut,
+                    'mutations': '{}_{}'.format(chain, mut),
                     'structure_file': 'input.pdb',
                     'sequence_file': 'input.fasta'}]
     else:
@@ -269,28 +270,28 @@ def displayResult(request):
     # Fetch data
     if job.localID:
         m = getLocalData(job.jobtomut_set.first())
-        
+
         if m.realMut:
             # Alignscore and seqid are already there.
             m.realMut[0].pdbtemp = m.inputIdentifier
             # Get interacting protein.
             ## TODO: Add interactions if there.
-            
+
         data = [m]
-        
+
     else:
         data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
-    
+
         for m in data:
-            
-    
+
+
             # Set mutation status temporarily as 'running' if its rerunning.
     #        if m.mut.rerun and not(job.isDone):
     #            if m.mut.rerun == 2:
     #                m.mut.status = 'running'
     #            else:
     #                m.mut.status = 'queued'
-    
+
             # Get additional data for result table.
             doneInt, toRemove = [], []
             if not m.realMutErr:
@@ -308,7 +309,7 @@ def displayResult(request):
                             mut.inac = 'self'
                         else:
                             mut.inac = d.protein.getname()
-                                
+
                         mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
                         # Check for dublicates. Remove the last one.
                         # This is a quick and dirty fix and should be fixed to pick
@@ -320,7 +321,7 @@ def displayResult(request):
                             doneInt.append(dubkey)
                 for rem in toRemove:
                     m.realMut.remove(m.realMut[rem])
-    
+
     context = {
         'url': 'http://%s/result/%s/' % (request.get_host(), requestID),
         'type': 'result',
@@ -636,7 +637,7 @@ def displaySecondaryResult(request):
     if mut_dbs[m.mut]:
         mut_dbs_html = 'Mutation in database' + ('s' if len(mut_dbs[m.mut]) > 1 else '') + ': '
         for i, db in enumerate(mut_dbs[m.mut]):
-            if i: 
+            if i:
                 mut_dbs_html += ' ,'
             mut_dbs_html += '<a target="_blank" href="' + db['url'] + '">' + db['name'] + '</a>'
     else:

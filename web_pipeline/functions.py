@@ -31,20 +31,20 @@ def getLocalData(jtom):
     # Try to get data if not in web-server database yet.
     aType = jtom.mut.affectedType
     if not aType:
-        try: 
+        try:
             jtom.realMut = [LocalMutation.objects.using('data').get(unique_id=j.id)]
             if jtom.realMut.idx2 == -1:
                 aType = jtom.mut.affectedType = 'CO'
             else:
                 aType = jtom.mut.affectedType = 'IN'
             jtom.mut.save()
-            
-    
+
+
         except:
             jtom.realMut = []
-            
+
     return jtom
-        
+
 
 def getResultData(jtom):
 
@@ -63,7 +63,10 @@ def getResultData(jtom):
         jtom.realMutErr = 'NOT' # Not in core or in interface.
         jtom.realMut = [{}]
         return jtom
-    jtom.realMut = list(MutResult.objects.using('data').filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein))
+    jtom.realMut = (
+        list(MutResult.objects.using('data')
+             .filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein))
+        )
     if not jtom.realMut:
         jtom.realMutErr = 'DNE' # Does not exists.
         jtom.realMut = [{}]
