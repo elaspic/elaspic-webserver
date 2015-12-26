@@ -108,8 +108,10 @@ QSUB_OPTIONS = {
 QSUB_SYSTEM_COMMAND = """\
 qsub -pe smp {num_cores} -l s_rt={s_rt} -l h_rt={h_rt} -l s_vmem={s_vmem} -l h_vmem={h_vmem} \
 -v lock_filename="{lock_filename}" -v lock_filename_finished="{lock_filename_finished}" \
--v uniprot_id="{protein_id}" -v mutations="{mutations}" \
+-v protein_id="{protein_id}" -v mutations="{mutations}" \
 -v uniprot_domain_pair_ids="{uniprot_domain_pair_ids}" \
+-v structure_file="{structure_file}" \
+-v sequence_file="{sequence_file}" \
 -v SCRIPTS_DIR="{SCRIPTS_DIR}" \
 -v run_type={run_type} -v elaspic_run_type={elaspic_run_type} \
 {SCRIPTS_DIR}/{job_type}.sh \
@@ -156,8 +158,8 @@ def get_log_paths(job_type, job_id, protein_id):
     else:
         # Local
         args = dict(data_dir=DATA_DIR, protein_id=protein_id, job_id=job_id)
-        stdout_path = "{data_dir}/user_input/{protein_id}/pbs-output/{job_id}.out"
-        stderr_path = "{data_dir}/user_input/{protein_id}/pbs-output/{job_id}.err"
+        stdout_path = "{data_dir}/user_input/{protein_id}/pbs-output/{job_id}.out".format(**args)
+        stderr_path = "{data_dir}/user_input/{protein_id}/pbs-output/{job_id}.err".format(**args)
     return stdout_path, stderr_path
 
 
@@ -190,8 +192,8 @@ def send_email(item, system_command, restarting=False):
 
 
 def remove_from_monitored_jobs(item):
-    if item.args.get('job_id'):
-        job_key = (item.args.get('job_id'), item.args.get('job_email'))
+    if item.args.get('webserver_job_id'):
+        job_key = (item.args.get('webserver_job_id'), item.args.get('webserver_job_email'))
         logger.debug(
             "Removing unique_id '{}' from monitored_jobs with key '{}..."
             .format(item.unique_id, job_key)
@@ -627,7 +629,7 @@ async def main(data_in):
         Each dict should have the following elements:
         - job_type  (all)
         - protein_id  (all)
-        - pdb_file  (local)
+        - structure_file  (local)
         - sequence_file  (local)
         - mutations  (all)
             Can be a comma-separated list of mutations, e.g. M1A,G2A
@@ -660,14 +662,14 @@ async def main(data_in):
             else:
                 await pre_qsub_queue.put(mut)
             job_mutations.add(mut.unique_id)
-        if args.get('job_id') and job_mutations:
-            job_key = (args.get('job_id'), args.get('job_email'))
+        if args.get('webserver_job_id') and job_mutations:
+            job_key = (args.get('webserver_job_id'), args.get('webserver_job_email'))
             monitored_jobs[job_key].update(job_mutations)
 
 
 def validate_args(args):
     logger.debug('validate_args')
-    # Make sure we have all the required arguments
+    # Make sure the job_type is specified and fail gracefully if it isn't
     if 'job_type' not in args:
         reason = (
             "Don't know whether running a local or a database mutation. args:\n{}"
@@ -675,17 +677,27 @@ def validate_args(args):
         )
         # raise aiohttp.web.HTTPBadRequest(reason=reason)
         raise Exception(reason)
+    # Fill in defaults:
+    args['sequence_file'] = args.get('sequence_file', None)
+    args['uniprot_domain_pair_ids'] = args.get('uniprot_domain_pair_ids', None)
+    # Make sure we have all the required arguments for the given job type
     if args['job_type'] == 'local':
-        args['sequence_file'] = args.get('sequence_file', None)
-        if not all(c in args for c in ['protein_id', 'pdb_file', 'mutations', 'sequence_file']):
+        local_opts = [
+            'protein_id', 'structure_file', 'mutations', 'sequence_file'
+        ]
+
+        if not all(c in args for c in local_opts):
             reason = (
                 "Wrong arguments for '{}' jobtype:\n{}".format(args['job_type'], args)
             )
             # raise aiohttp.web.HTTPBadRequest(reason=reason)
             raise Exception(reason)
     elif args['job_type'] == 'database':
-        args['uniprot_domain_pair_ids'] = args.get('uniprot_domain_pair_ids', None)
-        if not all(c in args for c in ['protein_id', 'mutations', 'uniprot_domain_pair_ids']):
+        database_opts = [
+            'protein_id', 'mutations', 'uniprot_domain_pair_ids'
+        ]
+
+        if not all(c in args for c in database_opts):
             reason = (
                 "Wrong arguments for '{}' jobtype:\n{}".format(args['job_type'], args)
             )
