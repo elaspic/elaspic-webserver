@@ -3,15 +3,27 @@ import os
 import os.path as op
 import argparse
 import json
+import time
 
 import MySQLdb
 import numpy as np
 import pandas as pd
+import sqlalchemy as sa
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
 
+DB_SCHEMA = 'elaspic_webserver_3'
+
+PROTEIN_SEQUENCE_TABLE = 'elaspic_protein_sequence_local'
+CORE_MODEL_TABLE = 'elaspic_core_model_local'
+CORE_MUTATION_TABLE = 'elaspic_core_mutation_local'
+INTERFACE_MODEL_TABLE = 'elaspic_interface_model_local'
+INTERFACE_MUTATION_TABLE = 'elaspic_interface_mutation_local'
+
+
+# %% Helper functions
 def parse_args():
     """
     """
@@ -32,40 +44,115 @@ def apply_notnull(df, column, fn):
     df.loc[df[column].notnull(), column] = df.loc[df[column].notnull(), column].apply(fn)
 
 
+def upload_data(connection, df, table_name):
+    with connection.cursor() as cur:
+        columns = ','.join(df.columns)
+        db_command = (
+            "replace into elaspic_webserver_3.{} ({}) values ({});".format(
+                table_name, columns,
+                ','.join(['%s' for _ in range(len(df.columns))]))
+        )
+        print(db_command)
+        cur.executemany(db_command, list(df.to_records(index=False)))
+        print('Done!')
+    connection.commit()
+
+
+def get_domain_id_lookup(connection, unique_id):
+    sql_query = """\
+select protein_id, domain_idx, domain_id
+from elaspic_webserver_3.{}
+where protein_id = '{}';
+""".format(CORE_MODEL_TABLE, unique_id)
+    with connection.cursor() as cur:
+        cur.execute(sql_query)
+        result = cur.fetchall()
+    print('result:\n{}'.format(result))
+    domain_id_lookup = {tuple(x[:2]): x[2] for x in result}
+    print('domain_id_lookup:\n{}'.format(domain_id_lookup))
+    return domain_id_lookup
+
+
+def get_interface_id_lookup(connection, unique_id):
+    sql_query = """\
+select protein_id_1, domain_idx_1, protein_id_2, domain_idx_2, interface_id
+from elaspic_webserver_3.{}
+where protein_id = '{}';
+""".format(INTERFACE_MODEL_TABLE, unique_id)
+    with connection.cursor() as cur:
+        cur.execute(sql_query)
+        result = cur.fetchall()
+    print('result:\n{}'.format(result))
+    interface_id_lookup = {tuple(x[:4]): x[4] for x in result}
+    print('interface_id_lookup:\n{}'.format(interface_id_lookup))
+    return interface_id_lookup
+
+
+def format_columns(df, column_dict):
+    for to_column, mod in column_dict.items():
+        if mod:
+            from_columns, fn = mod
+            if from_columns == '':
+                df[to_column] = fn()
+            elif from_columns and fn:
+                df[to_column] = df[from_columns].apply(fn)
+            elif from_columns:
+                df[to_column] = df[from_columns]
+            elif fn:
+                df[to_column] = df[to_column].apply(fn)
+            else:
+                raise RuntimeError
+        if to_column not in df.columns:
+            print("Missing: '{}'".format(to_column))
+
+
+def drop_columns(df, column_dict):
+    df = df.drop([c for c in df.columns if c not in column_dict], axis=1)
+    df = df.where(df.notnull(), None)
+    return df
+
+
+# %%
 def upload_sequence(unique_id, data_dir):
     """
     """
     print('upload_sequence({}, {})'.format(unique_id, data_dir))
-    db_columns = dict(
-        unique_id=None,
-        idx=None,
+    #
+    elaspic_sequence_columns = dict(
         protein_id=None,
-        provean_supset_exists=int,
+        protein_name=None,
+        description=None,
+        organism_name=None,
+        # gene_name=None,
+        # isoforms=None,
+        # sequence_version=None,
+        # db=None,
+        sequence=None,
         provean_supset_file=None,
         provean_supset_length=None,
-        sequence=None,
-        sequence_file=None,
     )
     #
     sequence_result = pd.read_json(op.join(data_dir, 'sequence.json'))
-    sequence_result['unique_id'] = unique_id
-    for column, fn in db_columns.items():
-        if fn is not None:
-            apply_notnull(sequence_result, column, fn)
+    print("sequence_result:\n'{}'".format(sequence_result))
+    sequence_result = sequence_result.rename(columns={'protein_id': 'protein_name'})
+    sequence_result['protein_id'] = unique_id
+    sequence_result['description'] = 'User submitted'
+    sequence_result['organism_name'] = 'unknown'
+
     sequence_result = sequence_result.drop(
-        [c for c in sequence_result.columns if c not in db_columns], axis=1)
+        [c for c in sequence_result.columns if c not in elaspic_sequence_columns], axis=1)
     sequence_result = sequence_result.where(sequence_result.notnull(), None)
     print(sequence_result)
 
     # Save to database
     connection = MySQLdb.connect(
-        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic',
-        db='elaspic_webserver_2',
+        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic', db=DB_SCHEMA,
     )
     try:
         with connection.cursor() as cur:
             db_command = (
-                "replace into elaspic.local_sequence ({}) values ({});".format(
+                "replace into elaspic_webserver_3.elaspic_sequence_local ({}) values ({});"
+                .format(
                     ','.join(sequence_result.columns),
                     ','.join(['%s' for _ in range(len(sequence_result.columns))]))
             )
@@ -76,162 +163,273 @@ def upload_sequence(unique_id, data_dir):
         connection.close()
 
 
+# %%
 def upload_model(unique_id, data_dir):
     """
     """
     print('upload_model({}, {})'.format(unique_id, data_dir))
-    db_columns = dict(
-        unique_id=None,
-        chain_ids=','.join,
-        idx=None,
-        idx_2=None,
-        interacting_residues_1=lambda x: ','.join(str(i) for i in x),
-        interacting_residues_2=lambda x: ','.join(str(i) for i in x),
-        interface_area_hydrophilic=None,
-        interface_area_hydrophobic=None,
-        interface_area_total=None,
-        model_id=None,
-        modeller_chain_ids=','.join,
-        modeller_results=json.dumps,
-        modeller_results_file=None,
-        model_sequence_file=None,  # model.sequence_file
-        model_sequence_id=None,  # model.sequence_id
-        model_structure_file=None,  # model.structure_file
-        model_structure_id=None,  # model.structure_id
-        #
-        core_or_interface=None,
-        knotted=int,
-        model_file=None,
-        raw_model_file=None,
-        sasa_score=lambda x: ','.join(str(f) for f in x),
-        pir_alignment_file=None,
-        #
-        alignment_file=lambda x: x[0],  # alignment_files
-        alignment_file_2=lambda x: x[1] if len(x) > 1 else None,  # alignment_files
-        domain_def_offset=lambda x:
-            ':'.join(str(i) for i in x[0]),  # domain_def_offsets
-        domain_def_offset_2=lambda x:
-            ':'.join(str(i) for i in x[1]) if len(x) > 1 else None,  # domain_def_offsets
-    )
-
     #
-    model_result = pd.read_json(op.join(data_dir, 'model.json'))
-    model_result['unique_id'] = unique_id
-    model_result['alignment_file'] = model_result['alignment_files']
-    model_result['alignment_file_2'] = model_result['alignment_files']
-    model_result['domain_def_offset'] = model_result['domain_def_offsets']
-    model_result['domain_def_offset_2'] = model_result['domain_def_offsets']
-    if 'idxs' in model_result.columns:
-        model_result['idx_2'] = model_result['idxs'].apply(
-            lambda x: x[1] if pd.notnull(x) and len(x) > 1 else -1)
-    else:
-        model_result['idx_2'] = -1
+    core_model_columns = dict(
+        # domain
+        protein_id=None,  # unique_id
+        domain_id=None,  # autoincrement
+        domain_idx=('idx', None),
+        #
+        pfam_clan=('structure_id', None),
+        pdbfam_name=('structure_id', None),
+        alignment_def=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
+        path_to_data=('structure_file', lambda x: op.dirname(x)),
 
-    for column in ['sequence_file', 'sequence_id', 'structure_file', 'structure_id']:
-        model_result['model_' + column] = model_result[column]
-    for column, fn in db_columns.items():
-        if column in model_result.columns:
-            if fn is not None:
-                apply_notnull(model_result, column, fn)
-        else:
-            model_result[column] = None
-    print(model_result)
+        # template
+        template_errors=('', lambda: None),
+        domain_def=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
+        cath_id=('structure_id', None),
+        alignment_identity=('alignment_stats', lambda x: x[0][0]),
+        alignment_coverage=('alignment_stats', lambda x: x[0][1]),
+        alignment_score=('alignment_stats', lambda x: x[0][2]),
 
-    model_result = model_result.drop(
-        [c for c in model_result.columns if c not in db_columns], axis=1)
-    model_result = model_result.where(model_result.notnull(), None)
-
-    # Save to database
-    connection = MySQLdb.connect(
-        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic',
-        db='elaspic_webserver_2',
+        # model
+        model_errors=('', lambda: None),
+        norm_dope=None,
+        model_filename=('model_file', None),
+        alignment_filename=('alignment_files', lambda x: x[0]),
+        chain=('chain_ids', lambda x: x[0]),
+        model_domain_def=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
     )
-    try:
-        with connection.cursor() as cur:
-            columns = ','.join(model_result.columns)
-            db_command = (
-                "replace into elaspic.local_model ({}) values ({});".format(
-                    columns,
-                    ','.join(['%s' for _ in range(len(model_result.columns))]))
-            )
-            cur.executemany(db_command, list(model_result.to_records(index=False)))
-        connection.commit()
-    finally:
+
+    interface_model_columns = dict(
+        interface_id=None,
+        protein_id_1=('protein_id', None),
+        domain_id_1=None,
+        domain_idx_1=('idxs', lambda x: x[0]),
+        protein_id_2=('protein_id', None),
+        domain_id_2=None,
+        domain_idx_2=('idxs', lambda x: x[1]),
+
+        # domain pair
+        path_to_data=('structure_file', lambda x: op.dirname(x)),
+
+        # template
+        template_errors=('', lambda: None),
+        cath_id_1=('structure_id', lambda x: x[:-1]),
+        cath_id_2=('structure_id', lambda x: x[:-2] + x[-1]),
+        alignment_identity_1=('alignment_stats', lambda x: x[0][0]),
+        alignment_identity_2=('alignment_stats', lambda x: x[1][0]),
+        alignment_coverage_1=('alignment_stats', lambda x: x[0][1]),
+        alignment_coverage_2=('alignment_stats', lambda x: x[1][1]),
+        alignment_score_1=('alignment_stats', lambda x: x[0][2]),
+        alignment_score_2=('alignment_stats', lambda x: x[1][2]),
+
+        # model
+        model_errors=('', lambda: None),
+        norm_dope=None,
+        model_filename=('model_file', None),
+        alignment_filename_1=('alignment_files', lambda x: x[0]),
+        alignment_filename_2=('alignment_files', lambda x: x[0]),
+        interacting_aa_1=(None, lambda x: ','.join(str(i) for i in x)),
+        interacting_aa_2=(None, lambda x: ','.join(str(i) for i in x)),
+        chain_1=('chain_ids', lambda x: x[0]),
+        chain_2=('chain_ids', lambda x: x[1]),
+        interface_area_hydrophobic=None,
+        interface_area_hydrophilic=None,
+        interface_area_total=None,
+        model_domain_def_1=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
+        model_domain_def_2=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[1])),
+    )
+    # Load data
+    model_result = pd.read_json(op.join(data_dir, 'model.json'))
+    print("model_result:\n'{}'".format(model_result))
+    model_result['protein_id'] = unique_id
+
+    if 'idxs' in model_result.columns:
+        model_result_core = model_result[model_result['idxs'].isnull()]
+        print("model_result_core:\n'{}'".format(model_result_core))
+        model_result_interface = model_result[model_result['idxs'].notnull()]
+        print("model_result_interface:\n'{}'".format(model_result_interface))
+    else:
+        model_result_core = model_result
+        model_result_interface = None
+
+    # Connect to DB
+    connection = MySQLdb.connect(
+        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic', db=DB_SCHEMA,
+    )
+
+    # CORE Upload
+    format_columns(model_result_core, core_model_columns)
+
+    model_result_core = drop_columns(model_result_core, core_model_columns)
+    upload_data(connection, model_result_core, CORE_MODEL_TABLE)
+
+    if not model_result_interface:
         connection.close()
+        return
+
+    # INTERFACE
+    format_columns(model_result_interface, interface_model_columns)
+
+    domain_id_lookup = get_domain_id_lookup(connection, unique_id)
+
+    interface_model_columns['domain_id_1'] = (
+        interface_model_columns[['protein_id_1', 'domain_idx_1']]
+        .apply(lambda x: domain_id_lookup[tuple(x)])
+    )
+    interface_model_columns['domain_id_2'] = (
+        interface_model_columns[['protein_id_2', 'domain_idx_2']]
+        .apply(lambda x: domain_id_lookup[tuple(x)])
+    )
+
+    # Upload
+    model_result_interface = drop_columns(model_result_interface, interface_model_columns)
+    upload_data(connection, model_result_interface, INTERFACE_MODEL_TABLE)
+
+    connection.close()
+    return
 
 
+# %%
 def upload_mutation(unique_id, mutation, data_dir):
     """
     """
     print('upload_mutation({}, {}, {})'.format(unique_id, mutation, data_dir))
-    db_columns = dict(
-        unique_id=None,
-        idx=None,
-        idx_2=None,
+    #
+    core_mutation_columns = dict(
+        domain_id=None,
+        protein_id=None,  # unique_id
+        domain_idx=('idx', None),
         mutation=None,
-        alignment_coverage=None,
-        alignment_identity=None,
-        alignment_score=None,
-        analyse_complex_energy_mut=None,
-        analyse_complex_energy_wt=None,
-        contact_distance_mut=None,
-        contact_distance_wt=None,
-        ddg=None,
-        matrix_score=None,
-        model_filename_mut=None,
-        model_filename_wt=None,
-        norm_dope=None,
-        physchem_mut=None,
-        physchem_mut_ownchain=None,
+
+        # mutation
+        model_filename_wt=('model_file_wt', None),
+        model_filename_mut=('model_file_mut', None),
+        mutation_errors=('', lambda: None),
+        chain_modeller=None,
+        mutation_modeller=None,
+        stability_energy_wt=None,
+        stability_energy_mut=None,
         physchem_wt=None,
         physchem_wt_ownchain=None,
-        provean_score=None,
-        secondary_structure_mut=None,
+        physchem_mut=None,
+        physchem_mut_ownchain=None,
         secondary_structure_wt=None,
-        solvent_accessibility_mut=None,
+        secondary_structure_mut=None,
         solvent_accessibility_wt=None,
-        stability_energy_mut=None,
+        solvent_accessibility_mut=None,
+        matrix_score=None,
+        provean_score=None,
+        ddg=None,
+        mut_date_modified=('', lambda: time.strftime('%Y-%m-%d %H:%M:%S')),
+    )
+    interface_mutation_columns = dict(
+        interface_id=None,
+        # protein_id_1=None,
+        # domain_id_1=None,
+        # domain_idx_1=('idxs', lambda x: x[0]),
+        # protein_id_2=None,
+        # domain_id_2=None,
+        # domain_idx_2=('idxs', lambda x: x[1]),
+        protein_id=None,  # unique_id
+        chain_idx=None,
+        mutation=None,
+
+        # mutation
+        model_filename_wt=('model_file_wt', None),
+        model_filename_mut=('model_file_mut', None),
+        mutation_errors=('', lambda: None),
+        chain_modeller=None,
+        mutation_modeller=None,
         stability_energy_wt=None,
+        stability_energy_mut=None,
+        analyse_complex_energy_wt=None,
+        analyse_complex_energy_mut=None,
+        physchem_wt=None,
+        physchem_wt_ownchain=None,
+        physchem_mut=None,
+        physchem_mut_ownchain=None,
+        secondary_structure_wt=None,
+        secondary_structure_mut=None,
+        solvent_accessibility_wt=None,
+        solvent_accessibility_mut=None,
+        contact_distance_wt=None,
+        contact_distance_mut=None,
+        matrix_score=None,
+        provean_score=None,
+        ddg=None,
+        mut_date_modified=('', lambda: time.strftime('%Y-%m-%d %H:%M:%S')),
     )
-
-    #
+    # Load data
     mutation_result = pd.read_json(op.join(data_dir, 'mutation_{}.json'.format(mutation)))
-    mutation_result['unique_id'] = unique_id
-    mutation_result['mutation'] = mutation
+    print("mutation_result:\n'{}'".format(mutation_result))
+
     if 'idxs' in mutation_result.columns:
-        mutation_result['idx_2'] = mutation_result['idxs'].apply(
-            lambda x: x[1] if pd.notnull(x) and len(x) > 1 else -1)
+        mutation_result_core = mutation_result[mutation_result['idxs'].isnull()]
+        mutation_result_core['protein_id'] = unique_id
+        print("mutation_result_core:\n'{}'".format(mutation_result_core))
+
+        mutation_result_interface = mutation_result[mutation_result['idxs'].notnull()]
+        mutation_result_core['protein_id'] = (
+            mutation_result_core[['chain_idx', 'protein_id_1', 'protein_id_2']]
+            .apply(lambda x: x[1] if x[0] == 0 else x[2])
+        )
+        print("mutation_result_interface:\n'{}'".format(mutation_result_interface))
     else:
-        mutation_result['idx_2'] = -1
+        mutation_result_core = mutation_result
+        mutation_result_core['protein_id'] = unique_id
+        print("mutation_result_core:\n'{}'".format(mutation_result_core))
 
-    for column, fn in db_columns.items():
-        if fn is not None:
-            apply_notnull(mutation_result, column, fn)
-    mutation_result = mutation_result.drop(
-        [c for c in mutation_result.columns if c not in db_columns], axis=1)
-    mutation_result = mutation_result.where(mutation_result.notnull(), None)
-    print(mutation_result)
+        mutation_result_interface = None
 
-    # Save to database
+    # Connect to DB
     connection = MySQLdb.connect(
-        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic',
-        db='elaspic_webserver_2',
+        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic', db=DB_SCHEMA,
     )
-    try:
-        with connection.cursor() as cur:
-            # core
-            columns = ','.join(mutation_result.columns)
-            db_command = (
-                "replace into elaspic.local_mutation ({}) values ({});".format(
-                    columns,
-                    ','.join(['%s' for _ in range(len(mutation_result.columns))]))
-            )
-            cur.executemany(db_command, list(mutation_result.to_records(index=False)))
-        connection.commit()
-    finally:
+
+    # CORE
+    format_columns(mutation_result_core, core_mutation_columns)
+
+    domain_id_lookup = get_domain_id_lookup(connection, unique_id)
+    mutation_result_core['domain_id'] = (
+        mutation_result_core[['protein_id', 'domain_idx']]
+        .apply(lambda x: domain_id_lookup[tuple(x)], axis=1)
+    )
+
+    # Upload
+    mutation_result_core = drop_columns(mutation_result_core, core_mutation_columns)
+    upload_data(connection, mutation_result_core, CORE_MUTATION_TABLE)
+
+    if not mutation_result_interface:
         connection.close()
+        return
+
+    # INTERFACE
+    format_columns(mutation_result_interface, interface_mutation_columns)
+
+    interface_id_lookup = get_interface_id_lookup(connection, unique_id)
+
+    mutation_result_interface['protein_id_1'] = unique_id
+    mutation_result_interface['protein_id_2'] = unique_id
+    mutation_result_interface['domain_idx_1'] = (
+        mutation_result_interface['idxs'].apply(lambda x: x[0])
+    )
+    mutation_result_interface['domain_idx_2'] = (
+        mutation_result_interface['idxs'].apply(lambda x: x[1])
+    )
+
+    mutation_result_interface['interface_id'] = (
+        mutation_result_interface
+        [['protein_id_1', 'domain_idx_1', 'protein_id_2', 'domain_idx_2']]
+        .apply(lambda x: interface_id_lookup[tuple(x)], axis=1)
+    )
+
+    # Upload
+    mutation_result_interface = drop_columns(mutation_result_interface, interface_mutation_columns)
+    upload_data(connection, mutation_result_interface, INTERFACE_MUTATION_TABLE)
+
+    connection.close()
+    return
 
 
+# %%
 if __name__ == '__main__':
     args = parse_args()
     validate_args(args)

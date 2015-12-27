@@ -5,8 +5,12 @@ from django.utils.html import strip_tags
 from django.utils.timezone import now
 from django.db.models import Q
 
-from web_pipeline.models import Mutation, Imutation, Protein, HGNCIdentifier, UniprotIdentifier, LocalMutation
-
+from web_pipeline.models import (
+    HGNCIdentifier, UniprotIdentifier,
+    Protein, ProteinLocal,
+    CoreMutation, CoreMutationLocal,
+    InterfaceMutation, InterfaceMutationLocal,
+)
 import logging
 from re import match
 
@@ -15,7 +19,9 @@ logger = logging.getLogger(__name__)
 
 def checkForCompletion(jobs):
     for j in jobs:
-        jms = list(j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2)))
+        jms = list(
+            j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2))
+        )
         if not(jms) and not(j.isDone):
             j.isDone = True
             j.dateFinished = now()
@@ -23,30 +29,27 @@ def checkForCompletion(jobs):
             sendEmail(j, 'complete')
 
 
-def getLocalData(jtom):
-    j = jtom.job
-    j.dateVisited = now()
-    j.save()
-
-    # Try to get data if not in web-server database yet.
-    aType = jtom.mut.affectedType
-    if not aType:
-        try:
-            jtom.realMut = [LocalMutation.objects.using('data').get(unique_id=j.id)]
-            if jtom.realMut.idx2 == -1:
-                aType = jtom.mut.affectedType = 'CO'
-            else:
-                aType = jtom.mut.affectedType = 'IN'
-            jtom.mut.save()
-
-
-        except:
-            jtom.realMut = []
-
-    return jtom
+# def getLocalData(jtom):
+#    j = jtom.job
+#    j.dateVisited = now()
+#    j.save()
+#
+#    # Try to get data if not in web-server database yet.
+#    aType = jtom.mut.affectedType
+#    if not aType:
+#        try:
+#            jtom.realMut = [CoreMutation.objects.get(unique_id=j.id)]
+#            if jtom.realMut.idx2 == -1:
+#                aType = jtom.mut.affectedType = 'CO'
+#            else:
+#                aType = jtom.mut.affectedType = 'IN'
+#            jtom.mut.save()
+#        except:
+#            jtom.realMut = []
+#    return jtom
 
 
-def getResultData(jtom):
+def getResultData(jtom, local=False):
 
     # Update job last visited to now.
     j = jtom.job
@@ -56,19 +59,18 @@ def getResultData(jtom):
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
     if aType == 'CO':
-        MutResult = Mutation
+        MutResult = CoreMutationLocal if local else CoreMutation
     elif aType == 'IN':
-        MutResult = Imutation
+        MutResult = InterfaceMutationLocal if local else InterfaceMutation
     else:
-        jtom.realMutErr = 'NOT' # Not in core or in interface.
+        jtom.realMutErr = 'NOT'  # Not in core or in interface.
         jtom.realMut = [{}]
         return jtom
-    jtom.realMut = (
-        list(MutResult.objects.using('data')
-             .filter(mut=jtom.mut.mut, protein_id=jtom.mut.protein))
-        )
+    jtom.realMut = list(
+        MutResult.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
+    )
     if not jtom.realMut:
-        jtom.realMutErr = 'DNE' # Does not exists.
+        jtom.realMutErr = 'DNE'  # Does not exists.
         jtom.realMut = [{}]
         return jtom
     if aType == 'CO':
@@ -76,10 +78,10 @@ def getResultData(jtom):
             # With overlapping domains, pick first highest sequence identity,
             # then lowest model score.
             # jtom.realMutErr = 'MOR'
-            muts = sorted(jtom.realMut, key=lambda m: m.model.template.seq_id, reverse=True)
+            muts = sorted(jtom.realMut, key=lambda m: m.model.seq_id, reverse=True)
             highestSeqID = []
             for m in muts:
-                if m.model.template.seq_id < muts[0].model.template.seq_id:
+                if m.model.seq_id < muts[0].model.seq_id:
                     break
                 else:
                     highestSeqID.append(m)
@@ -89,7 +91,7 @@ def getResultData(jtom):
         jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
         return jtom
 
-    jtom.realMutErr = 'OTH' # Other.
+    jtom.realMutErr = 'OTH'  # Other.
     return jtom
 
 
@@ -124,9 +126,8 @@ def sendEmail(j, sendType):
     try:
         msg.send()
         return 1
-    except Exception:
-        logger.error('The following exception occured while trying to send mail: {}'
-                     .format(e))
+    except Exception as e:
+        logger.error('The following exception occured while trying to send mail: {}'.format(e))
         return 0
 
 
@@ -139,7 +140,7 @@ def getPnM(p):
     return protnMut.group(1).upper(), protnMut.group(2).upper()
 
 
-def fetchProtein(pid):
+def fetchProtein(pid, local=False):
     ''' Tries to find protein in ELASPIC database, in the order:
 
         1) Uniprot ID.
@@ -148,18 +149,20 @@ def fetchProtein(pid):
 
     '''
     pid = pid.upper()
+    if local:
+        return ProteinLocal.objects.get(protein_id=pid)
     try:
         # 1)
-        return Protein.objects.using('uniprot').get(id=pid)
+        return Protein.objects.get(protein_id=pid)
     except Protein.DoesNotExist:
         try:
             # 2)
-            iden = HGNCIdentifier.objects.using('uniprot').get(identifierID=pid)
-            return Protein.objects.using('uniprot').get(id=iden.uniprotID)
+            iden = HGNCIdentifier.objects.get(identifierID=pid)
+            return Protein.objects.get(protein_id=iden.uniprotID)
         except (HGNCIdentifier.DoesNotExist, Protein.DoesNotExist):
             try:
                 # 3)
-                iden = list(UniprotIdentifier.objects.using('uniprot').filter(identifierID=pid))
+                iden = list(UniprotIdentifier.objects.filter(identifierID=pid))
                 if iden:
                     # If more than one identifier is found, return the most
                     # important one determined by the following dict:
@@ -174,8 +177,10 @@ def fetchProtein(pid):
                                         'LegioList', 'Leproma', 'mycoCLAP', 'PseudoCAP'],
                            'secondaryIds': ['GeneID', 'EnsemblGenome']}
 
-                    iden = sorted(iden, key=lambda i: ([i.identifierType not in Ids[key] for key in Ids]))
-                    return Protein.objects.using('uniprot').get(id=iden[0].uniprotID)
+                    iden = sorted(
+                        iden, key=lambda i: ([i.identifierType not in Ids[key] for key in Ids])
+                    )
+                    return Protein.objects.get(protein_id=iden[0].uniprotID)
                 else:
                     raise UniprotIdentifier.DoesNotExist
 
@@ -183,8 +188,8 @@ def fetchProtein(pid):
                 return None
 
     return None
-## The entire uniprot ID list would be:
-#['Allergome', 'ArachnoServer', 'BioCyc', 'BioGrid', 'CGD', 'ChEMBL', 'CleanEx',
+# The entire uniprot ID list would be:
+# ['Allergome', 'ArachnoServer', 'BioCyc', 'BioGrid', 'CGD', 'ChEMBL', 'CleanEx',
 # 'ConoServer', 'CYGD', 'dictyBase', 'DIP', 'DisProt', 'DMDM', 'DNASU',
 # 'DrugBank', 'EchoBASE', 'EcoGene', 'eggNOG', 'EMBL', 'EMBL-CDS', 'Ensembl',
 # 'Ensembl_PRO', 'Ensembl_TRS', 'EnsemblGenome', 'EnsemblGenome_PRO',
@@ -199,6 +204,7 @@ def fetchProtein(pid):
 # 'UniParc', 'UniPathway', 'UniProtKB-ID', 'UniRef100', 'UniRef50', 'UniRef90',
 # 'VectorBase', 'World-2DPAGE', 'WormBase', 'WormBase_PRO', 'WormBase_TRS',
 # 'Xenbase', 'ZFIN']
+
 
 def isInvalidMut(mut, seq):
     ''' Validates mutation of the format X001Y

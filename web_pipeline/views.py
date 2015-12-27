@@ -12,11 +12,19 @@ from django.utils.timezone import now
 
 from mum.settings import DB_PATH
 
-from web_pipeline.models import Job, JobToMut, Mut, Protein, Mutation, Imutation, Domain, findInDatabase
-from web_pipeline.functions import getPnM, getResultData, getLocalData, isInvalidMut, fetchProtein, sendEmail
-# from web_pipeline.tasks import sleepabit, runPipelineWrapper, jobsubmitter
+from web_pipeline.models import (
+    Job, JobToMut, Mut, findInDatabase,
+    Protein, ProteinLocal,
+    CoreModel, CoreModelLocal,
+    CoreMutation, CoreMutationLocal,
+    InterfaceModel, InterfaceModelLocal,
+    InterfaceMutation, InterfaceMutationLocal
+)
 
-import urllib.parse
+from web_pipeline.functions import (
+    getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail
+)
+
 import logging
 
 logger = logging.getLogger()
@@ -27,7 +35,6 @@ try:
     from pipeline.code.elaspic import blacklisted_uniprots
 except ImportError:
     blacklisted_uniprots = []
-
 
 
 def inp(request, p):
@@ -45,10 +52,10 @@ def runPipeline(request):
     # Check for valid request.
     if not request.GET:
         raise Http404
-    if not 'proteins' in request.GET or not 'email' in request.GET:
+    if not ('proteins' in request.GET) or not ('email' in request.GET):
         raise Http404
     if not request.GET['proteins'].strip():
-        return HttpResponseRedirect('/') # No protein input.
+        return HttpResponseRedirect('/')  # No protein input.
 
     # Check if running local pdb.
     if 'jid' in request.GET and 'chain' in request.GET and request.GET['chain']:
@@ -61,9 +68,9 @@ def runPipeline(request):
         user_path = os.path.join(DB_PATH, 'user_input', randomID)
         with open(os.path.join(user_path, 'pdb_parsed.pickle'), 'rb') as f:
             seq = pickle.load(f)[chain]
-        with open(os.path.join(user_path, 'input.fasta'), 'w') as f:
-            f.write('>input.pdb\n')
-            f.write(seq)
+        # with open(os.path.join(user_path, 'input.fasta'), 'w') as f:
+        #     f.write('>input.pdb\n')
+        #     f.write(seq)
 
         if isInvalidMut(mut, seq):
             return HttpResponseRedirect('/')
@@ -91,18 +98,18 @@ def runPipeline(request):
                 continue
             validPnms.append([p.id, mut, iden])
         if not validPnms:
-            return HttpResponseRedirect('/') # No valid proteins.
+            return HttpResponseRedirect('/')  # No valid proteins.
 
         # Create job in database.
         while True:
-            randomID = "%06x" % randint(1,16777215)
+            randomID = "%06x" % randint(1, 16777215)
             user_path = os.path.join(DB_PATH, 'user_input', randomID)
             if Job.objects.filter(jobID=randomID).count() == 0 and not os.path.exists(user_path):
                 break
 
-        j = Job.objects.create(jobID = randomID,
-                               email = request.GET['email'],
-                               browser = request.META['HTTP_USER_AGENT'])
+        j = Job.objects.create(jobID=randomID,
+                               email=request.GET['email'],
+                               browser=request.META['HTTP_USER_AGENT'])
 
         # Create mutations in database if not already there.
         for pnm in validPnms:
@@ -125,8 +132,8 @@ def runPipeline(request):
     #            continue
 
             # Get potential results.
-            muts = list(Mutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
-            imuts = list(Imutation.objects.using('data').filter(protein_id=pnm[0], mut=pnm[1]))
+            muts = list(CoreMutation.objects.filter(protein_id=pnm[0], mut=pnm[1]))
+            imuts = list(InterfaceMutation.objects.filter(protein_id=pnm[0], mut=pnm[1]))
 
             newMuts, doneMuts = [], []
             if m:
@@ -175,13 +182,15 @@ def runPipeline(request):
     # ##### Run pipeline #####
 
     if local:
-        data_in = [{'job_id': randomID,
-                    'job_email': j.email,
-                    'job_type': 'local',
-                    'protein_id': randomID,
-                    'mutations': '{}_{}'.format(chain, mut),
-                    'structure_file': 'input.pdb',
-                    'sequence_file': 'input.fasta'}]
+        data_in = [{
+            'job_id': randomID,
+            'job_email': j.email,
+            'job_type': 'local',
+            'protein_id': randomID,
+            'mutations': '{}_{}'.format(chain, mut),
+            'structure_file': 'input.pdb',
+            # 'sequence_file': 'input.fasta'
+        }]
     else:
         # Run pipeline for new mutations.'
         data_in = []
@@ -222,22 +231,18 @@ def runPipeline(request):
 #            mut.taskId = p.task_id
 #            mut.save()
 
-    #p = runPipelineWrapper.delay([m[0] for m in newMuts], randomID)
+    # p = runPipelineWrapper.delay([m[0] for m in newMuts], randomID)
 #    for m in newMuts:
 #        mut = m[0]
 #        p = runPipelineWrapper.delay(mut, randomID)
 #        mut.taskId = p.task_id
 #        mut.save()
 
-
-    # ##### ############ #####
-
-
     if local:
         sendEmail(j, 'started')
     else:
         # Set job to done if all mutations are already done.
-        if all([(True if (m[0].status == 'done' or m[0].status == 'error') and \
+        if all([(True if (m[0].status == 'done' or m[0].status == 'error') and
                 not(m[0].rerun) else False) for m in newMuts + doneMuts]):
             j.isDone = True
             j.dateFinished = now()
@@ -247,7 +252,6 @@ def runPipeline(request):
         if not j.isDone:
             # Send start email.
             sendEmail(j, 'started')
-
 
     # Redirect to result page.
     return HttpResponseRedirect('http://%s/result/%s/' % (request.get_host(), randomID))
@@ -268,66 +272,64 @@ def displayResult(request):
 #        c.checkForStalledMuts(requestID)
 
     # Fetch data
-    if job.localID:
-        m = getLocalData(job.jobtomut_set.first())
+    local = True if job.localID else False
 
-        if m.realMut:
-            # Alignscore and seqid are already there.
-            m.realMut[0].pdbtemp = m.inputIdentifier
-            # Get interacting protein.
-            ## TODO: Add interactions if there.
+#    if job.localID:
+#        m = getLocalData(job.jobtomut_set.first())
+#        if m.realMut:
+#            # Alignscore and seqid are already there.
+#            m.realMut[0].pdbtemp = m.inputIdentifier
+#            # Get interacting protein.
+#            # TODO: Add interactions if there.
+#        data = [m]
 
-        data = [m]
+    data = [getResultData(jtom, local) for jtom in job.jobtomut_set.all()]
 
-    else:
-        data = [getResultData(jtom) for jtom in job.jobtomut_set.all()]
+    for m in data:
+        doneInt, toRemove = [], []
 
-        for m in data:
+        # Set mutation status temporarily as 'running' if its rerunning.
+#            if m.mut.rerun and not(job.isDone):
+#                if m.mut.rerun == 2:
+#                    m.mut.status = 'running'
+#                else:
+#                    m.mut.status = 'queued'
 
+        # Get additional data for result table.
+        if not m.realMutErr:
+            print(len(m.realMut))
+            for i, mut in enumerate(m.realMut):
+                chain = mut.findChain()
+                # Get alignment scores.
+                mut.alignscore = mut.model.getalignscore(chain)
+                mut.seqid = mut.model.getsequenceidentity(chain)
+                mut.pdbtemp = mut.model.getpdbtemplate(chain, link=False)
+                # Get interacting protein.
+                if m.mut.affectedType == 'IN':
+                    d = mut.model.domain.getdomain(1 if chain == 2 else 2)
+                    if d.protein.id == m.mut.protein:
+                        mut.inac = 'self'
+                    else:
+                        mut.inac = d.protein.getname()
 
-            # Set mutation status temporarily as 'running' if its rerunning.
-    #        if m.mut.rerun and not(job.isDone):
-    #            if m.mut.rerun == 2:
-    #                m.mut.status = 'running'
-    #            else:
-    #                m.mut.status = 'queued'
-
-            # Get additional data for result table.
-            doneInt, toRemove = [], []
-            if not m.realMutErr:
-                print(len(m.realMut))
-                for i, mut in enumerate(m.realMut):
-                    chain = mut.findChain()
-                    # Get alignment scores.
-                    mut.alignscore = mut.model.template.getalignscore(chain)
-                    mut.seqid = mut.model.template.getsequenceidentity(chain)
-                    mut.pdbtemp = mut.model.template.getpdbtemplate(chain, link=False)
-                    # Get interacting protein.
-                    if m.mut.affectedType == 'IN':
-                        d = mut.model.template.domain.getdomain(1 if chain == 2 else 2)
-                        if d.protein.id == m.mut.protein:
-                            mut.inac = 'self'
-                        else:
-                            mut.inac = d.protein.getname()
-
-                        mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
-                        # Check for dublicates. Remove the last one.
-                        # This is a quick and dirty fix and should be fixed to pick
-                        # the highest sequence identity.
-                        dubkey = '%s.%s.%d' % (m.mut.protein, m.mut.mut, d.id)
-                        if dubkey in doneInt:
-                            toRemove.append(i)
-                        else:
-                            doneInt.append(dubkey)
-                for rem in toRemove:
-                    m.realMut.remove(m.realMut[rem])
+                    mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
+                    # Check for dublicates. Remove the last one.
+                    # This is a quick and dirty fix and should be fixed to pick
+                    # the highest sequence identity.
+                    dubkey = '%s.%s.%d' % (m.mut.protein, m.mut.mut, d.id)
+                    if dubkey in doneInt:
+                        toRemove.append(i)
+                    else:
+                        doneInt.append(dubkey)
+            for rem in toRemove:
+                m.realMut.remove(m.realMut[rem])
 
     context = {
         'url': 'http://%s/result/%s/' % (request.get_host(), requestID),
         'type': 'result',
         'current': 'result',
         'isRunning': not(job.isDone),
-        'job': job, #{'jobID': 'asd'},
+        'job': job,  # {'jobID': 'asd'},
         'data': data,
     }
     return render(request, 'result.html', context)
@@ -339,7 +341,10 @@ def displaySecondaryResult(request):
     if request.GET:
         if 'j' in request.GET:
             request.session['jmol'] = request.GET['j']
-            url = request.path if not 'p' in request.GET else request.path + '?p=' + request.GET['p']
+            url = (
+                request.path if not ('p' in request.GET) else
+                request.path + '?p=' + request.GET['p']
+            )
             return HttpResponseRedirect(url)
 
     # Check jmol mode.
@@ -353,7 +358,7 @@ def displaySecondaryResult(request):
     curmut, curdom = None, None
 
     # Get protein and mutation from url request.
-    currentIDs = request.path.split('/') # Job[2], Mut[3]
+    currentIDs = request.path.split('/')  # Job[2], Mut[3]
     job = currentIDs[2]
     iden, mut = getPnM(currentIDs[3])
     returnUrl = 'http://%s/result/%s/' % (request.get_host(), job)
@@ -365,6 +370,8 @@ def displaySecondaryResult(request):
         return HttpResponseRedirect(returnUrl)
     m = jtom[0].mut
     j = Job.objects.get(jobID=job)
+    local = True if job.localID else False
+
     if m.status != 'done':
         # Mutation is not done.
         return HttpResponseRedirect(returnUrl)
@@ -398,7 +405,7 @@ def displaySecondaryResult(request):
         if inCore:
             # Transfer PDBs if not done before.
             copyfrom = os.path.join(settings.DB_PATH,
-                                 data.realMut[0].model.template.domain.data_path)
+                                    data.realMut[0].model.domain.data_path)
             if not os.path.exists(os.path.join(pdbpath, 'wt.pdb')):
                 try:
                     copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_wt),
@@ -417,7 +424,7 @@ def displaySecondaryResult(request):
             for i, mu in enumerate(data.realMut):
                 # Get interacting domain.
                 chain = 2 if mu.findChain() == 1 else 1
-                d = mu.model.template.domain.getdomain(chain)
+                d = mu.model.domain.getdomain(chain)
 
                 # Check for dublicates. Remove the last one.
                 # This is a quick and dirty fix and should be fixed to pick
@@ -433,7 +440,7 @@ def displaySecondaryResult(request):
                                 'domain': d})
                 # Transfer PDBs if not done before.
                 copyfrom = os.path.join(settings.DB_PATH,
-                                     mu.model.template.domain.data_path)
+                                        mu.model.domain.data_path)
                 copyto = os.path.join(pdbpath, str(d.id))
                 if not os.path.exists(copyto + 'wt.pdb'):
                     try:
@@ -463,7 +470,10 @@ def displaySecondaryResult(request):
         p = data.realMut[0].protein
     # Load domains if mutation failed.
     elif not loadEverything:
-        p = Protein.objects.using('uniprot').get(id=m.protein)
+        p = (
+            ProteinLocal.objects.get(protein_id=m.protein) if local else
+            Protein.objects.get(protein_id=m.protein)
+        )
 
     pSize = len(p.seq) + 0.0
 
@@ -473,9 +483,13 @@ def displaySecondaryResult(request):
     mutLineSize = 2
     mutDescSize = 70
     ds, domainName, proteinToDomainID = [], '', {}
-    for idx, prot in enumerate([p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])):
+    for idx, prot in (
+            enumerate([p] + ([mu['domain'].protein for mu in intmuts] if intmuts else []))):
 
-        pds = list(Domain.objects.using('data').filter(protein_id=prot.id))
+        pds = (
+            list(CoreModelLocal.objects.filter(protein_id=prot.id)) if local else
+            list(CoreModel.objects.filter(protein_id=prot.id))
+        )
 
         # Check if homodimer with self.
         homodimer = True if prot == p else False
@@ -502,7 +516,9 @@ def displaySecondaryResult(request):
             else:
                 # Check if protein is already in list.
                 if not didx:
-                    notUnique = proteinToDomainID[prot.id] if prot.id in proteinToDomainID else False
+                    notUnique = (
+                        proteinToDomainID[prot.id] if prot.id in proteinToDomainID else False
+                    )
                     if not notUnique:
                         proteinToDomainID[prot.id] = intmuts[idx - 1]['domain'].id
                     # Get chains for coloring.
@@ -510,8 +526,8 @@ def displaySecondaryResult(request):
                     chainself = intmuts[idx - 1]['mut'].model.getchain(chain)
                     chaininac = intmuts[idx - 1]['mut'].model.getchain(1 if chain == 2 else 2)
                     # Get mutation info.
-                    seqid = intmuts[idx - 1]['mut'].model.template.getsequenceidentity(chain)
-                    pdbtemp = intmuts[idx - 1]['mut'].model.template.getpdbtemplate(chain)
+                    seqid = intmuts[idx - 1]['mut'].model.getsequenceidentity(chain)
+                    pdbtemp = intmuts[idx - 1]['mut'].model.getpdbtemplate(chain)
                     dopescore = intmuts[idx - 1]['mut'].model.dope_score
                     dgwt = intmuts[idx - 1]['mut'].dGwt()
                     dgmut = intmuts[idx - 1]['mut'].dGmut()
@@ -521,7 +537,6 @@ def displaySecondaryResult(request):
                 # Color if interacting with protein 1.
                 index = intmuts[idx - 1]['domain'].id
                 isInDomain = True if index == pd.id else False
-
 
             # Decrease domain name if it does not fit.
             if len(pd.name) * 7 < pxSize:
@@ -554,10 +569,11 @@ def displaySecondaryResult(request):
                             ddg if idx and not didx else None,
                             pdbmutnum if idx and not didx else None,
                             pdbtemp if idx and not didx else None])
-            #if prot.name.split('_')[0] == 'UBC':
-                #o += prot.name.split('_')[0] + ', '
-            if pd.id == initialProtein and \
-                    intmuts[idx - 1]['mut'].model.template.domain.getdomain(1 if chain == 2 else 2).id == initialProtein:
+            # if prot.name.split('_')[0] == 'UBC':
+            # o += prot.name.split('_')[0] + ', '
+            if (pd.id == initialProtein and
+                    intmuts[idx - 1]['mut'].model.domain
+                    .getdomain(1 if chain == 2 else 2).id == initialProtein):
                 curdom = ds[idx]
                 curmut = intmuts[idx - 1]['mut']
                 curmut.seqid = seqid if idx and not didx else None
@@ -570,7 +586,7 @@ def displaySecondaryResult(request):
         curdom = None if inCore else ds[1]
 
     if loadEverything:
-        if not '[' in curmut.pdb_mut:
+        if not ('[' in curmut.pdb_mut):
             pdbMutNum = int(curmut.pdb_mut[1:-1])
         else:
             pdbMutNum = int(curmut.pdb_mut[2:-2])
@@ -628,8 +644,12 @@ def displaySecondaryResult(request):
         else:
             leftheight = (fullheight * first_d[4] / (midwidth + first_d[4])) / 2
             rightheight = (fullheight * last_d[4] / (midwidth + last_d[4])) / 2
-            midtopheight = fullheight/2 - rightheight if leftside == 'down' else fullheight/2 - leftheight
-            midbotheight = fullheight/2 - leftheight if leftside == 'down' else fullheight/2 - rightheight
+            midtopheight = (
+                fullheight/2 - rightheight if leftside == 'down' else fullheight/2 - leftheight
+            )
+            midbotheight = (
+                fullheight/2 - leftheight if leftside == 'down' else fullheight/2 - rightheight
+            )
 
     # Find if mutation is in database.
     mut_dbs = findInDatabase([data.mut.mut], data.mut.protein)
@@ -651,7 +671,7 @@ def displaySecondaryResult(request):
         'domains': ds,
         'curdomain': curdom,
         'curmut': curmut,
-        #'type': 'result',
+        # 'type': 'result',
         'barsize': barSize,
         'mutnum': pdbMutNum if loadEverything else 0,
         'mutnumdiff': mutNum - pdbMutNum if loadEverything else 0,
@@ -660,12 +680,12 @@ def displaySecondaryResult(request):
         'domainname': domainName,
         'wtpdb': '4BHB',
         'mutpdb': '4BHC_R37L',
-        'selectrange': range(0,11),
+        'selectrange': range(0, 11),
         'data': data,
         'reverselabel': 'true' if m.mut[-1] == 'G' else 'false',
         'jmolmode': mode,
         'loadeverything': loadEverything,
-        #'intmuts': intmuts,
+        # 'intmuts': intmuts,
         'inInt': not(inCore),
         'initialp': initialProtein,
         'initialh': initialHomodimer,
@@ -685,14 +705,13 @@ def displaySecondaryResult(request):
                           'self_start': d1[3] if not inCore else 0,
                           'self_width': d1[4] if not inCore else 0}
     }
-#<i>, name, popup, pxstart, pxsize, start, end, status, psize
+# <i>, name, popup, pxstart, pxsize, start, end, status, psize
 
     return render(request, 'result2.html', context)
 
 
 def jsmolpopup(request):
     return render(request, 'jmolpopup.html', {})
-
 
 
 def genericSite(request, site):
@@ -708,8 +727,6 @@ def genericSite(request, site):
     elif site == 'contact':
         pass
 
-
-
     return render(request, 'generic.html', context)
 
-#return render(request, 'test.html', {'msg': 'test'})
+# return render(request, 'test.html', {'msg': 'test'})
