@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile, mkdtemp
 from time import sleep
 from random import randint
 
-from celery.exceptions import SoftTimeLimitExceeded
+# from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 from django.utils.timezone import now, localtime
@@ -20,7 +20,7 @@ from django.template.loader import get_template
 
 from mum.celeryapp import app
 from web_pipeline.functions import checkForCompletion
-from web_pipeline.models import Mutation, Imutation
+# from web_pipeline.models import Mutation, Imutation
 from web_pipeline.cleanupmanager import CleanupManager
 
 os.environ['MPLCONFIGDIR'] = mkdtemp()
@@ -204,13 +204,16 @@ def runPipelineWrapper(mutation, jid):
 
     else:
         # Fetch completed mutations.
-        mut = list(Mutation.objects.using('data').filter(protein_id=mutation.protein, mut=mutation.mut))
-        imut = list(Imutation.objects.using('data').filter(protein_id=mutation.protein, mut=mutation.mut))
+        mut = list(Mutation.objects.filter(protein_id=mutation.protein, mut=mutation.mut))
+        imut = list(Imutation.objects.filter(protein_id=mutation.protein, mut=mutation.mut))
 
         # Check if an error occoured.
         coreOrInt, muts = ('IN', imut) if imut else ('CO', mut)
         if mut + imut:
-            mutErrs = None if any([not(m.mut_errors) for m in muts]) else '1: ' + ', '.join([str(m.mut_errors) for m in muts])
+            mutErrs = (
+                None if any([not(m.mut_errors) for m in muts])
+                else '1: ' + ', '.join([str(m.mut_errors) for m in muts])
+            )
             ddGmissing = any([not(m.ddG) for m in muts])
             # Update mutation with data.
             if mutErrs or ddGmissing:
@@ -226,7 +229,7 @@ def runPipelineWrapper(mutation, jid):
             # Check if mutation falls out of domain.
 #            try:
 #                inDomain = False
-#                domains = list(Domain.objects.using('data').filter(protein_id=mutation.protein))
+#                domains = list(Domain.objects.filter(protein_id=mutation.protein))
 #                mut_num = int(mutation.mut[1:-1])
 #                for d in domains:
 #                    d_start, d_end = d.getdefs().split(':')
@@ -386,8 +389,8 @@ def runPipelineWrapperAll(mutations, jid):
         # Fetch completed mutations.
         logger.debug("Going over every mutation to check if it's been calculcated correctly...")
         for mutation in mutations:
-            mut = list(Mutation.objects.using('data').filter(protein_id=mutation.protein, mut=mutation.mut))
-            imut = list(Imutation.objects.using('data').filter(protein_id=mutation.protein, mut=mutation.mut))
+            mut = list(Mutation.objects.filter(protein_id=mutation.protein, mut=mutation.mut))
+            imut = list(Imutation.objects.filter(protein_id=mutation.protein, mut=mutation.mut))
 
             # Check if an error occoured.
             coreOrInt, muts = ('IN', imut) if imut else ('CO', mut)
