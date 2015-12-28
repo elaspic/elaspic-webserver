@@ -258,7 +258,8 @@ def runPipeline(request):
 
 
 def displayResult(request):
-
+    logger.debug("displayResult({})".format(request))
+    
     # Check if request ID is legit.
     requestID = request.path.split('/')[2]
     try:
@@ -306,13 +307,14 @@ def displayResult(request):
                 mut.pdbtemp = mut.model.getpdbtemplate(chain, link=False)
                 # Get interacting protein.
                 if m.mut.affectedType == 'IN':
-                    d = mut.model.domain.getdomain(1 if chain == 2 else 2)
-                    if d.protein.id == m.mut.protein:
+                    d = mut.model.getdomain(1 if chain == 2 else 2)
+                    if d.protein_id == m.mut.protein:
                         mut.inac = 'self'
                     else:
                         mut.inac = d.protein.getname()
 
-                    mut.inacd = 'h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id
+                    # AS: don't know what's going on here but errors so skip...
+                    mut.inacd = ('h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id)
                     # Check for dublicates. Remove the last one.
                     # This is a quick and dirty fix and should be fixed to pick
                     # the highest sequence identity.
@@ -332,11 +334,13 @@ def displayResult(request):
         'job': job,  # {'jobID': 'asd'},
         'data': data,
     }
+    logger.debug('context: {}'.format(context))
     return render(request, 'result.html', context)
 
 
 def displaySecondaryResult(request):
-
+    logger.debug("displaySecondaryResult({})".format(request))
+    
     # Check URL for session change.
     if request.GET:
         if 'j' in request.GET:
@@ -355,6 +359,9 @@ def displaySecondaryResult(request):
     if 'p' in request.GET:
         initialProtein = int(request.GET['p'][1:])
         initialHomodimer = True if request.GET['p'][0] == 'h' else False
+    logger.debug("initialProtein: {}".format(initialProtein))
+    logger.debug("initialHomodimer: {}".format(initialHomodimer))
+    
     curmut, curdom = None, None
 
     # Get protein and mutation from url request.
@@ -370,7 +377,7 @@ def displaySecondaryResult(request):
         return HttpResponseRedirect(returnUrl)
     m = jtom[0].mut
     j = Job.objects.get(jobID=job)
-    local = True if job.localID else False
+    local = True if j.localID else False
 
     if m.status != 'done':
         # Mutation is not done.
@@ -381,7 +388,7 @@ def displaySecondaryResult(request):
     # Load structure data if mutation was successful.
     intmuts = []
     inCore = True if m.affectedType == 'CO' or m.affectedType == 'NO' else False
-    data = getResultData(jtom[0])
+    data = getResultData(jtom[0], local)
 
     if loadEverything:
         if data.realMutErr == 'DNE':
@@ -405,7 +412,7 @@ def displaySecondaryResult(request):
         if inCore:
             # Transfer PDBs if not done before.
             copyfrom = os.path.join(settings.DB_PATH,
-                                    data.realMut[0].model.domain.data_path)
+                                    data.realMut[0].model.data_path)
             if not os.path.exists(os.path.join(pdbpath, 'wt.pdb')):
                 try:
                     copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_wt),
@@ -424,7 +431,7 @@ def displaySecondaryResult(request):
             for i, mu in enumerate(data.realMut):
                 # Get interacting domain.
                 chain = 2 if mu.findChain() == 1 else 1
-                d = mu.model.domain.getdomain(chain)
+                d = mu.model.getdomain(chain)
 
                 # Check for dublicates. Remove the last one.
                 # This is a quick and dirty fix and should be fixed to pick
@@ -436,11 +443,10 @@ def displaySecondaryResult(request):
                 else:
                     doneInt.append(dubkey)
 
-                intmuts.append({'mut': mu,
-                                'domain': d})
+                intmuts.append({'mut': mu, 'domain': d})
+
                 # Transfer PDBs if not done before.
-                copyfrom = os.path.join(settings.DB_PATH,
-                                        mu.model.domain.data_path)
+                copyfrom = os.path.join(settings.DB_PATH, mu.model.data_path)
                 copyto = os.path.join(pdbpath, str(d.id))
                 if not os.path.exists(copyto + 'wt.pdb'):
                     try:
@@ -471,8 +477,8 @@ def displaySecondaryResult(request):
     # Load domains if mutation failed.
     elif not loadEverything:
         p = (
-            ProteinLocal.objects.get(protein_id=m.protein) if local else
-            Protein.objects.get(protein_id=m.protein)
+            ProteinLocal.objects.get(id=m.protein) if local else
+            Protein.objects.get(id=m.protein)
         )
 
     pSize = len(p.seq) + 0.0
@@ -517,7 +523,8 @@ def displaySecondaryResult(request):
                 # Check if protein is already in list.
                 if not didx:
                     notUnique = (
-                        proteinToDomainID[prot.id] if prot.id in proteinToDomainID else False
+                        proteinToDomainID[prot.id]
+                        if prot.id in proteinToDomainID else False
                     )
                     if not notUnique:
                         proteinToDomainID[prot.id] = intmuts[idx - 1]['domain'].id
@@ -556,7 +563,7 @@ def displaySecondaryResult(request):
             protName = prot.getname()
             ds[idx].append([index, dname, dpopup, int(defstart / dpSize * barSize),
                             int(pxSize), defstart, defend, isInDomain,
-                            int(dpSize), prot.id, prot.desc,
+                            int(dpSize), prot.id, prot.desc(),
                             homodimer if idx else None,
                             chainself if idx and not didx else None,
                             chaininac if idx and not didx else None,
@@ -571,8 +578,9 @@ def displaySecondaryResult(request):
                             pdbtemp if idx and not didx else None])
             # if prot.name.split('_')[0] == 'UBC':
             # o += prot.name.split('_')[0] + ', '
+            # AS
             if (pd.id == initialProtein and
-                    intmuts[idx - 1]['mut'].model.domain
+                    intmuts[idx - 1]['mut'].model
                     .getdomain(1 if chain == 2 else 2).id == initialProtein):
                 curdom = ds[idx]
                 curmut = intmuts[idx - 1]['mut']
@@ -581,8 +589,11 @@ def displaySecondaryResult(request):
     pxMutnum = mutNum / pSize * barSize - mutLineSize/2
     if pxMutnum < 0:
             pxMutnum = 0
+    logger.debug('data.realMut: {}'.format(data.realMut))
+    logger.debug('ds: {}'.format(ds))
+    
     if not curmut:
-        curmut = data.realMut[0] if inCore else data.realMut[1]
+        curmut = data.realMut[0] # if inCore else data.realMut[1]  # AS: indexerror?
         curdom = None if inCore else ds[1]
 
     if loadEverything:
@@ -592,7 +603,7 @@ def displaySecondaryResult(request):
             pdbMutNum = int(curmut.pdb_mut[2:-2])
     else:
         data = {'inputIdentifier': iden,
-                'mut': {'mut': mut, 'desc': p.desc}}
+                'mut': {'mut': mut, 'desc': p.desc()}}
 
     # Get the domains interacting.
     d2 = None
@@ -705,6 +716,8 @@ def displaySecondaryResult(request):
                           'self_start': d1[3] if not inCore else 0,
                           'self_width': d1[4] if not inCore else 0}
     }
+    logger.debug("context:\n{}".format(context))
+    
 # <i>, name, popup, pxstart, pxsize, start, end, status, psize
 
     return render(request, 'result2.html', context)
