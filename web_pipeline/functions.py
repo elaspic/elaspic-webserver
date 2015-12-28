@@ -150,15 +150,15 @@ def fetchProtein(pid, local=False):
     '''
     pid = pid.upper()
     if local:
-        return ProteinLocal.objects.get(protein_id=pid)
+        return ProteinLocal.objects.get(id=pid)
     try:
         # 1)
-        return Protein.objects.get(protein_id=pid)
+        return Protein.objects.get(id=pid)
     except Protein.DoesNotExist:
         try:
             # 2)
             iden = HGNCIdentifier.objects.get(identifierID=pid)
-            return Protein.objects.get(protein_id=iden.uniprotID)
+            return Protein.objects.get(id=iden.uniprotID)
         except (HGNCIdentifier.DoesNotExist, Protein.DoesNotExist):
             try:
                 # 3)
@@ -180,7 +180,7 @@ def fetchProtein(pid, local=False):
                     iden = sorted(
                         iden, key=lambda i: ([i.identifierType not in Ids[key] for key in Ids])
                     )
-                    return Protein.objects.get(protein_id=iden[0].uniprotID)
+                    return Protein.objects.get(id=iden[0].uniprotID)
                 else:
                     raise UniprotIdentifier.DoesNotExist
 

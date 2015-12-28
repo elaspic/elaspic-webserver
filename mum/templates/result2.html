@@ -199,10 +199,10 @@
 						
 						<!-- Scores -->
 						<p class="whole br">
-							PDB template{% if inInt %}s{% endif %} used: <span id="sbpdb" class="mono">{% if inInt %}{{ curmut.pdbtemp|safe }}{% else %}{{ curmut.model.template.getpdbtemplate|safe }}{% endif %}</span>
+							PDB template{% if inInt %}s{% endif %} used: <span id="sbpdb" class="mono">{% if inInt %}{{ curmut.pdbtemp|safe }}{% else %}{{ curmut.model.getpdbtemplate|safe }}{% endif %}</span>
 						</p>
 						<p class="whole">
-							<span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.template.getsequenceidentity }}{% endif %}</span></span>
+							<span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.getsequenceidentity }}{% endif %}</span></span>
 							<span class="half hright">Model score: <span id="sbdop" class="mono">{{ curmut.model.dope_score|floatformat:3 }}</span></span>
 						</p>
 						<p class="whole">

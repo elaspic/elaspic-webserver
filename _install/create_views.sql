@@ -49,6 +49,7 @@ SELECT
 -- domain
 ud.uniprot_id protein_id,
 ud.uniprot_domain_id domain_id,
+ud.pdbfam_idx domain_idx,
 ud.pfam_clan,
 ud.pdbfam_name,
 ud.alignment_def,
@@ -63,8 +64,6 @@ udt.cath_id,
 udt.alignment_identity,
 
 -- model
-udmut.model_filename_wt model_file_wt,
-udmut.model_filename_mut model_file_mut,
 udm.model_errors,
 udm.norm_dope,
 udm.model_filename,
@@ -83,9 +82,12 @@ CREATE OR REPLACE VIEW elaspic_core_mutation AS
 SELECT 
 ud.uniprot_domain_id domain_id,
 ud.uniprot_id protein_id,
+ud.pdbfam_idx domain_idx,
 udmut.mutation,
 
 -- mutation
+udmut.model_filename_wt,
+udmut.model_filename_mut,
 udmut.mut_date_modified,
 udmut.mutation_errors,
 udmut.chain_modeller,
@@ -134,8 +136,6 @@ udpt.identical_2 alignment_identity_2,
 udpt.template_errors,
 
 -- model
-udpmut.model_filename_wt model_file_wt,
-udpmut.model_filename_mut model_file_mut,
 udpm.model_errors,
 udpm.norm_dope,
 udpm.model_filename,
@@ -170,6 +170,8 @@ udpmut.mutation,
 IF(udpmut.chain_modeller = 'A', 0, 1) chain_idx,
 
 -- mutation
+udpmut.model_filename_wt,
+udpmut.model_filename_mut,
 udpmut.mut_date_modified,
 udpmut.mutation_errors,
 udpmut.chain_modeller,

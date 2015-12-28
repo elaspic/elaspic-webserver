@@ -201,10 +201,10 @@ def upload_model(unique_id, data_dir):
         interface_id=None,
         protein_id_1=('protein_id', None),
         domain_id_1=None,
-        domain_idx_1=('idxs', lambda x: x[0]),
+        # domain_idx_1=('idxs', lambda x: x[0]),
         protein_id_2=('protein_id', None),
         domain_id_2=None,
-        domain_idx_2=('idxs', lambda x: x[1]),
+        # domain_idx_2=('idxs', lambda x: x[1]),
 
         # domain pair
         path_to_data=('structure_file', lambda x: op.dirname(x)),
@@ -269,6 +269,13 @@ def upload_model(unique_id, data_dir):
     format_columns(model_result_interface, interface_model_columns)
 
     domain_id_lookup = get_domain_id_lookup(connection, unique_id)
+
+    model_result_interface['domain_idx_1'] = (
+        model_result_interface['idxs'].apply(lambda x: x[0])
+    )
+    model_result_interface['domain_idx_2'] = (
+        model_result_interface['idxs'].apply(lambda x: x[1])
+    )
 
     interface_model_columns['domain_id_1'] = (
         interface_model_columns[['protein_id_1', 'domain_idx_1']]

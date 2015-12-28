@@ -58,7 +58,7 @@ class FileManager(object):
             isInterface = True if '_' in mut else False
             if isInterface:
                 mut, interfaceID = mut.split('_')
-                inac = self.IM.objects.get(interface_id=interfaceID)
+                inac = self.IM.objects.get(id=interfaceID)
                 model = inac.model
 
             # Get local mutation data.
@@ -112,7 +112,6 @@ class FileManager(object):
                     logger.info(m.realMut)
                     rm = m.realMut[0]
                     mo = rm.model
-                    d = mo.domain
                     c = rm.findChain()
 
                 def r(x):
@@ -156,16 +155,16 @@ class FileManager(object):
                                'Template_cath_id',
                                'Template_sequence_identity',
                                'Alignment_score']
-                    bodyline += [d.getname(c),
-                                 d.getclan(c),
-                                 d.getdefs(c),
+                    bodyline += [mo.getname(c),
+                                 mo.getclan(c),
+                                 mo.getdefs(c),
                                  mo.getcath(c),
                                  mo.getSeqId(c),
                                  mo.getAlnSc(c)] if mutCompleted else r(6)
 
                 # Interactor protein name.
                 header += ['Interactor_UniProt_ID']
-                bodyline += [d.getprot(ic).id] if inInterface and mutCompleted else r(1)
+                bodyline += [mo.getprot(ic).id] if inInterface and mutCompleted else r(1)
 
                 # Interactor domain definitions IF allresults.
                 if filename == 'allresults' or al:
@@ -175,9 +174,9 @@ class FileManager(object):
                                'Interactor_template_cath_id',
                                'Interactor_template_sequence_identity',
                                'Interactor_alignment_score']
-                    bodyline += [d.getname(ic),
-                                 d.getclan(ic),
-                                 d.getdefs(ic),
+                    bodyline += [mo.getname(ic),
+                                 mo.getclan(ic),
+                                 mo.getdefs(ic),
                                  mo.getcath(ic),
                                  mo.getSeqId(ic),
                                  mo.getAlnSc(ic)] if inInterface and mutCompleted else r(6)
@@ -280,7 +279,7 @@ class FileManager(object):
                 tempfiles = []
                 for m in self.muts:
                     try:
-                        p = self.P.objects.get(protein_id=m.mut.protein_id)
+                        p = self.P.objects.get(id=m.mut.protein)
                     except (self.P.DoesNotExist, self.P.MultipleObjectsReturned):
                         continue
                     fname = m.inputIdentifier + '.fasta'
@@ -304,14 +303,14 @@ class FileManager(object):
                     # chain = rm.findChain()
                     try:
                         chain = rm.findChain()
-                        mpath = rm.model.domain.data_path
-                        defs = rm.model.domain.getdefs(chain).replace(":", "-")
+                        mpath = rm.model.data_path
+                        defs = rm.model.getdefs(chain).replace(":", "-")
                     except Exception:
                         continue
                     if m.mut.affectedType == 'IN':
                         inacChain = 2 if chain == 1 else 1
-                        inacprot = rm.model.domain.getprot(inacChain).id
-                        inacdefs = rm.model.domain.getdefs(inacChain).replace(":", "-")
+                        inacprot = rm.model.getprot(inacChain).id
+                        inacdefs = rm.model.getdefs(inacChain).replace(":", "-")
                         extratext = ' with %s_%s' % (inacprot, inacdefs)
                     else:
                         extratext = ''
@@ -348,17 +347,17 @@ class FileManager(object):
                     rm = m.realMut[0]
                     chain = rm.findChain()
                     try:
-                        mpath = rm.model.domain.data_path
+                        mpath = rm.model.data_path
                     except Exception:
                         continue
                     apath = rm.model.getAlnFi(chain)
                     if apath:
-                        defs = rm.model.domain.getdefs(chain).replace(":", "-")
+                        defs = rm.model.getdefs(chain).replace(":", "-")
                         if m.mut.affectedType == 'IN':
                             # Interface.
                             inacChain = 2 if chain == 1 else 1
-                            inacprot = rm.model.domain.getprot(inacChain).id
-                            inacdefs = rm.model.domain.getdefs(inacChain).replace(":", "-")
+                            inacprot = rm.model.getprot(inacChain).id
+                            inacdefs = rm.model.getdefs(inacChain).replace(":", "-")
                             fname = '%s_%s (with %s_%s).aln' % (m.inputIdentifier,
                                                                 defs,
                                                                 inacprot,
