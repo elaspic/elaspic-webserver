@@ -318,7 +318,10 @@ async def set_db_errors(error_queue):
 
     async def helper(item):
         remove_from_monitored_jobs(item)
-        db_command = "CALL update_muts('{}', '{}')".format(item.protein_id, item.mutations)
+        db_command = (
+            "CALL update_muts('{}', '{}')"
+            .format(item.args['protein_id'], item.args['mutations'])
+        )
         await cur.execute(db_command)
 
     async with aiomysql.connect(
@@ -548,7 +551,7 @@ async def qsub():
             continue
 
         except Exception as e:
-            logger.error('Unexpected exception occured!\n{}'.format(e))
+            logger.error('Unexpected exception occured!\n{}: {}'.format(type(e), e))
             try:
                 os.remove(item.lock_path)
             except FileNotFoundError:
@@ -683,9 +686,8 @@ def validate_args(args):
     # Make sure we have all the required arguments for the given job type
     if args['job_type'] == 'local':
         local_opts = [
-            'protein_id', 'structure_file', 'mutations', 'sequence_file'
+            'protein_id', 'mutations', 'structure_file', 'sequence_file'
         ]
-
         if not all(c in args for c in local_opts):
             reason = (
                 "Wrong arguments for '{}' jobtype:\n{}".format(args['job_type'], args)
@@ -696,7 +698,7 @@ def validate_args(args):
         database_opts = [
             'protein_id', 'mutations', 'uniprot_domain_pair_ids'
         ]
-
+        args['structure_file'] = args.get('structure_file', None)
         if not all(c in args for c in database_opts):
             reason = (
                 "Wrong arguments for '{}' jobtype:\n{}".format(args['job_type'], args)
