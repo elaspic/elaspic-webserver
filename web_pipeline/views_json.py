@@ -286,6 +286,8 @@ def uploadFile(request):
 
 
 def getProtein(request):
+    logger.debug("getProtein({})".format(request))
+
     # return HttpResponse(
     #    json.dumps({'r': [{'seq': 'AAAAAAAAAAAAAAAAAAAAAAAA'}], 'e': False}),
     #    content_type='application/json')
@@ -336,7 +338,7 @@ def getProtein(request):
             continue
 
         # Set basic info.
-        output[idx]['prot'] = p.protein_id
+        output[idx]['prot'] = p.id
         output[idx]['nothuman'] = False if p.organism_name == 'Homo sapiens' else True
 
         # Set sequence.
@@ -347,11 +349,11 @@ def getProtein(request):
         if nameReq:
             output[idx]['desc'] = p.desc()
             # p.identifier_set.get(identifierType='geneName').identifierID
-            output[idx]['gene'] = p.protein_id
+            output[idx]['gene'] = p.id
 
         # Set domains.
         if domReq:
-            ds = list(CoreModel.objects.filter(protein_id=p.protein_id))
+            ds = list(CoreModel.objects.filter(protein_id=p.id))
             output[idx]['doms'], output[idx]['defs'] = [], []
 
             inacs = defaultdict(set)
@@ -395,12 +397,12 @@ def getProtein(request):
             mdict = {}
             muts = (
                 list(CoreMutation.objects
-                     .filter(protein_id=p.protein_id, mut_errors=None).exclude(ddG=None)) +
+                     .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None)) +
                 list(InterfaceMutation.objects
-                     .filter(protein_id=p.protein_id, mut_errors=None).exclude(ddG=None))
+                     .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
             )
 
-            mut_dbs = findInDatabase([m.mut for m in muts], p.protein_id)
+            mut_dbs = findInDatabase([m.mut for m in muts], p.id)
 
             for m in muts:
                 chain = m.findChain()
@@ -456,7 +458,7 @@ def getProtein(request):
 
             # Check for duplicate.
             l = len(done)
-            done.add(p.protein_id + mut)
+            done.add(p.id + mut)
             if l == len(done):
                 output[idx]['error'] = True
                 output[idx]['emsg'] = 'DUP'
