@@ -259,7 +259,7 @@ def runPipeline(request):
 
 def displayResult(request):
     logger.debug("displayResult({})".format(request))
-    
+
     # Check if request ID is legit.
     requestID = request.path.split('/')[2]
     try:
@@ -284,8 +284,26 @@ def displayResult(request):
 #            # TODO: Add interactions if there.
 #        data = [m]
 
-    data = [getResultData(jtom, local) for jtom in job.jobtomut_set.all()]
+    jtoms = job.jobtomut_set.all()
+    j = jtoms[0].job
+    if not j.isDone:
+        job_is_done = True
+        for jtom in jtoms:
+            running_time = jtom.mut.dateAdded - now()
+            if running_time.total_seconds() > 86400:  # 1 day
+                jtom.mut.status = 'error'
+                jtom.mut.error = '3: OUTATIME'
+                jtom.mut.save()
+            if jtom.mut.status not in ['done', 'error']:
+                job_is_done = False
+        if job_is_done:
+            j.isDone = True
+            j.dateFinished = now()
+            j.save()
 
+    data = [getResultData(jtom, local) for jtom in jtoms]
+
+    job_is_done = True
     for m in data:
         doneInt, toRemove = [], []
 
@@ -300,6 +318,8 @@ def displayResult(request):
         if not m.realMutErr:
             print(len(m.realMut))
             for i, mut in enumerate(m.realMut):
+                if not mut.ddG and not mut.mut_error:
+                    job_is_done = False
                 chain = mut.findChain()
                 # Get alignment scores.
                 mut.alignscore = mut.model.getalignscore(chain)
@@ -340,7 +360,7 @@ def displayResult(request):
 
 def displaySecondaryResult(request):
     logger.debug("displaySecondaryResult({})".format(request))
-    
+
     # Check URL for session change.
     if request.GET:
         if 'j' in request.GET:
@@ -361,7 +381,7 @@ def displaySecondaryResult(request):
         initialHomodimer = True if request.GET['p'][0] == 'h' else False
     logger.debug("initialProtein: {}".format(initialProtein))
     logger.debug("initialHomodimer: {}".format(initialHomodimer))
-    
+
     curmut, curdom = None, None
 
     # Get protein and mutation from url request.
@@ -591,7 +611,7 @@ def displaySecondaryResult(request):
             pxMutnum = 0
     logger.debug('data.realMut: {}'.format(data.realMut))
     logger.debug('ds: {}'.format(ds))
-    
+
     if not curmut:
         curmut = data.realMut[0] # if inCore else data.realMut[1]  # AS: indexerror?
         curdom = None if inCore else ds[1]
@@ -717,7 +737,7 @@ def displaySecondaryResult(request):
                           'self_width': d1[4] if not inCore else 0}
     }
     logger.debug("context:\n{}".format(context))
-    
+
 # <i>, name, popup, pxstart, pxsize, start, end, status, psize
 
     return render(request, 'result2.html', context)
