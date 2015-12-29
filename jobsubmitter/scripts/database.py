@@ -2,6 +2,8 @@
 import MySQLdb
 import argparse
 
+DB_SCHEMA = 'elaspic_webserver_3'
+
 
 def parse_args():
     """
@@ -16,8 +18,7 @@ def parse_args():
 
 def upload_mutation(uniprot_id, mutation):
     connection = MySQLdb.connect(
-        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic',
-        db='elaspic_webserver_2',
+        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic', db=DB_SCHEMA,
     )
     try:
         with connection.cursor() as cur:

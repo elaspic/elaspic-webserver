@@ -48,7 +48,8 @@ def upload_data(connection, df, table_name):
     with connection.cursor() as cur:
         columns = ','.join(df.columns)
         db_command = (
-            "replace into elaspic_webserver_3.{} ({}) values ({});".format(
+            "replace into {}.{} ({}) values ({});".format(
+                DB_SCHEMA,
                 table_name, columns,
                 ','.join(['%s' for _ in range(len(df.columns))]))
         )
@@ -61,9 +62,9 @@ def upload_data(connection, df, table_name):
 def get_domain_id_lookup(connection, unique_id):
     sql_query = """\
 select protein_id, domain_idx, domain_id
-from elaspic_webserver_3.{}
+from {}.{}
 where protein_id = '{}';
-""".format(CORE_MODEL_TABLE, unique_id)
+""".format(DB_SCHEMA, CORE_MODEL_TABLE, unique_id)
     with connection.cursor() as cur:
         cur.execute(sql_query)
         result = cur.fetchall()
@@ -76,9 +77,9 @@ where protein_id = '{}';
 def get_interface_id_lookup(connection, unique_id):
     sql_query = """\
 select protein_id_1, domain_idx_1, protein_id_2, domain_idx_2, interface_id
-from elaspic_webserver_3.{}
+from {}.{}
 where protein_id = '{}';
-""".format(INTERFACE_MODEL_TABLE, unique_id)
+""".format(DB_SCHEMA, INTERFACE_MODEL_TABLE, unique_id)
     with connection.cursor() as cur:
         cur.execute(sql_query)
         result = cur.fetchall()
@@ -151,8 +152,9 @@ def upload_sequence(unique_id, data_dir):
     try:
         with connection.cursor() as cur:
             db_command = (
-                "replace into elaspic_webserver_3.elaspic_sequence_local ({}) values ({});"
+                "replace into {}.elaspic_sequence_local ({}) values ({});"
                 .format(
+                    DB_SCHEMA,
                     ','.join(sequence_result.columns),
                     ','.join(['%s' for _ in range(len(sequence_result.columns))]))
             )
