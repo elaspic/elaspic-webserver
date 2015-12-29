@@ -20,10 +20,10 @@
 				<div id="notreadyyet">
 					<p class="wheeltext wheelon"> 
 						Your {% ifequal data.0.job.muts.count 1 %}mutation is{% else %}{{ data.0.job.muts.count }}
-						mutations are{% endifequal %} still being processed. A job takes
-						on average 10 minutes per human mutation, but can take hours for custom structures.
+						mutations are{% endifequal %} still being processed. 
 					</p>
-					<p> This page automatically reloads every 10 seconds.
+					<p> A job takes on average 10 minutes per human mutation, but can take hours for custom structures.
+					    This page automatically reloads every 10 seconds.
 					</p>
 					<p> You can safely close this window and come back at any time to check
 						your results. You will be notified by email when your job is fully completed. 
