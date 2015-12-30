@@ -57,20 +57,30 @@ def getResultData(jtom):
     j.save()
 
     local = True if j.localID else False
-
+    CM = CoreMutationLocal if local else CoreMutation
+    IM = InterfaceMutationLocal if local else InterfaceMutation
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
     if aType == 'CO':
-        MutResult = CoreMutationLocal if local else CoreMutation
+        jtom.realMut = list(
+            CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
+        )
     elif aType == 'IN':
-        MutResult = InterfaceMutationLocal if local else InterfaceMutation
+        # TODO: Would be nice to give both a core and an interface result, but too many chages.
+        # if local:
+        #     jtom.realMut = (
+        #         list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)) +
+        #         list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
+        #     )
+        # else:
+        jtom.realMut = (
+            # list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)) +
+            list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
+        )
     else:
         jtom.realMutErr = 'NOT'  # Not in core or in interface.
         jtom.realMut = [{}]
         return jtom
-    jtom.realMut = list(
-        MutResult.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
-    )
     if not jtom.realMut:
         jtom.realMutErr = 'DNE'  # Does not exists.
         jtom.realMut = [{}]

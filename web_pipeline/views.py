@@ -325,7 +325,7 @@ def displayResult(request):
                 mut.pdbtemp = mut.model.getpdbtemplate(chain, link=False)
                 # Get interacting protein.
                 if m.mut.affectedType == 'IN':
-                    d = mut.model.getdomain(1 if chain == 2 else 2)
+                    d = mut.getdomain(1 if chain == 2 else 2)
                     if d.protein_id == m.mut.protein:
                         mut.inac = 'self'
                     else:
@@ -515,11 +515,14 @@ def displaySecondaryResult(request):
     )
     logger.debug("prots: '{}'".format(prots))
     for idx, prot in enumerate(prots):
-        pds = (
-            # list(CoreModelLocal.objects.filter(protein_id=prot.id, domain_idx=data.realMut[0].model.domain_idx)) if local else
-            list(CoreModelLocal.objects.filter(protein_id=prot.id)) if local else
-            list(CoreModel.objects.filter(protein_id=prot.id))
-        )
+
+        if local:
+            chain_pos = 1 if not idx else 2
+            pds = [m.getdomain(chain_pos) for m in data.realMut]
+            # pds = list(CoreModelLocal.objects.filter(protein_id=prot.id))
+        else:
+            pds = list(CoreModel.objects.filter(protein_id=prot.id))
+
         logger.debug("pds: '{}'".format(pds))
 
         # Check if homodimer with self.
@@ -604,16 +607,26 @@ def displaySecondaryResult(request):
             # if prot.name.split('_')[0] == 'UBC':
             # o += prot.name.split('_')[0] + ', '
             # AS
+            logger.debug('idx: {}, didx: {}'.format(idx, didx))
+            logger.debug('initialProtein: {}'.format(initialProtein))
+            logger.debug('pd.protein_id: {}'.format(pd.id))
+            try:
+                logger.debug(
+                    'intmuts...: {}'.format(intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id)
+                )
+            except IndexError:
+                    logger.debug('intmuts...: None')
             if (pd.id == initialProtein and
-                    intmuts[idx - 1]['mut'].model
-                    .getdomain(1 if chain == 2 else 2).id == initialProtein):
+                    intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id == initialProtein):
                 curdom = ds[idx]
                 curmut = intmuts[idx - 1]['mut']
                 curmut.seqid = seqid if idx and not didx else None
                 curmut.pdbtemp = pdbtemp if idx and not didx else None
-    pxMutnum = mutNum / pSize * barSize - mutLineSize/2
+    pxMutnum = mutNum / pSize * barSize - mutLineSize / 2
     if pxMutnum < 0:
-            pxMutnum = 0
+        pxMutnum = 0
+
+    logger.debug('curmut: {}'.format(curmut))
     logger.debug('data.realMut: {}'.format(data.realMut))
     logger.debug('ds: {}'.format(ds))
 

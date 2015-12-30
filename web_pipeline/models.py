@@ -272,15 +272,6 @@ class _CoreModel(models.Model):
     def getalignscore(self, chain=1):
         return '%0.3f' % self.align_score
 
-    def getpdbtemplate(self, chain=1, link=True):
-        pdb = self.cath[:-3] + '_' + self.cath[-3]
-        if link:
-            return (
-                '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s</a>'
-                % (self.cath[:-3], pdb)
-            )
-        return pdb
-
     @property
     def error(self):
         if self.model_errors:
@@ -317,6 +308,15 @@ class CoreModel(_CoreModel):
     interactions = models.ManyToManyField(
         'self', symmetrical=False, through='InterfaceModel', blank=True)
 
+    def getpdbtemplate(self, chain=1, link=True):
+        pdb = self.cath[:-3] + '_' + self.cath[-3]
+        if link:
+            return (
+                '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s</a>'
+                % (self.cath[:-3], pdb)
+            )
+        return pdb
+
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
         self.protein = Protein.objects.get(id=self.protein_id)
@@ -331,6 +331,9 @@ class CoreModelLocal(_CoreModel):
 
     interactions = models.ManyToManyField(
         'self', symmetrical=False, through='InterfaceModelLocal', blank=True)
+
+    def getpdbtemplate(self, chain=1, link=True):
+        return self.cath
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
@@ -376,6 +379,9 @@ class _CoreMutation(models.Model):
     provean_score = models.FloatField(null=True, blank=True)
 
     ddG = models.FloatField(null=True, blank=True, db_column='ddg')
+
+    def getdomain(self, chain=1):
+        return self.model
 
     def dGwt(self):
         return self.stability_energy_wt.split(',')[0] if self.stability_energy_wt else None
@@ -518,24 +524,6 @@ class _InterfaceModel(models.Model):
         elif chain == 2:
             return self.alignment_filename_2
 
-    def getpdbtemplate(self, chain, link=True):
-        if link:
-            a1 = (
-                '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>'
-                % (self.cath1[:-3], self.cath1[:-3], self.cath1[-3])
-            )
-            a2 = (
-                '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>'
-                % (self.cath2[:-3], self.cath2[:-3], self.cath1[-3])
-            )
-        else:
-            a1 = self.cath1[:-3] + '_' + self.cath1[-3]
-            a2 = self.cath2[:-3] + '_' + self.cath2[-3]
-        if chain == 1:
-            return '%s, %s' % (a1, a2)
-        elif chain == 2:
-            return '%s, %s' % (a2, a1)
-
     def getsequenceidentity(self, chain):
         if chain == 1:
             return '%0.3f, %0.3f' % (self.seq_id1, self.seq_id2)
@@ -592,12 +580,36 @@ class InterfaceModel(_InterfaceModel):
     domain2 = models.ForeignKey(
         CoreModel, db_index=True, related_name='p2', db_column='domain_id_2')
 
+    def getpdbtemplate(self, chain, link=True):
+        if link:
+            a1 = (
+                '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>'
+                % (self.cath1[:-3], self.cath1[:-3], self.cath1[-3])
+            )
+            a2 = (
+                '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>'
+                % (self.cath2[:-3], self.cath2[:-3], self.cath1[-3])
+            )
+        else:
+            a1 = self.cath1[:-3] + '_' + self.cath1[-3]
+            a2 = self.cath2[:-3] + '_' + self.cath2[-3]
+        if chain == 1:
+            return '%s, %s' % (a1, a2)
+        elif chain == 2:
+            return '%s, %s' % (a2, a1)
+
     class Meta(_InterfaceModel.Meta):
         db_table = 'elaspic_interface_model'
         managed = False
 
 
 class InterfaceModelLocal(_InterfaceModel):
+
+    def getpdbtemplate(self, chain, link=True):
+        if chain == 1:
+            return '{}, {}'.format(self.cath1, self.cath2)
+        elif chain == 2:
+            return '{}, {}'.format(self.cath2, self.cath1)
 
     domain1 = models.ForeignKey(
         CoreModelLocal, db_index=True, related_name='p1', db_column='domain_id_1')
@@ -654,6 +666,9 @@ class _InterfaceMutation(models.Model):
 
     ddG = models.FloatField(null=True, blank=True, db_column='ddg')
 
+    def getdomain(self, chain):
+        return self.model.getdomain(chain)
+
     def dGwt(self):
         try:
             dGwt = self.analyse_complex_energy_wt.split(',')[2]
@@ -680,6 +695,8 @@ class _InterfaceMutation(models.Model):
             return 1
         elif self.protein_id == self.model.protein_id_2:
             return 2
+        else:
+            raise ValueError('self.chain_idx: {}, self.protein_id: {}'.format(self.chain_idx, self.protein_id))
 
     def getinacprot(self, chain=None):
         c = chain or self.findChain()
