@@ -2,7 +2,7 @@
 import MySQLdb
 import argparse
 
-DB_SCHEMA = 'elaspic_webserver_3'
+DB_SCHEMA = 'elaspic_webserver'
 
 
 def parse_args():
