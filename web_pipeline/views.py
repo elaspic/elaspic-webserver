@@ -27,7 +27,7 @@ from web_pipeline.functions import (
 
 import logging
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 try:
@@ -66,13 +66,14 @@ def runPipeline(request):
         randomID = request.GET['jid']
         chain = request.GET['chain']
         user_path = os.path.join(DB_PATH, 'user_input', randomID)
-        with open(os.path.join(user_path, 'pdb_parsed.pickle'), 'rb') as f:
-            seq = pickle.load(f)[chain]
-        # with open(os.path.join(user_path, 'input.fasta'), 'w') as f:
-        #     f.write('>input.pdb\n')
-        #     f.write(seq)
 
+        with open(os.path.join(user_path, 'pdb_parsed.pickle'), 'rb') as f:
+            seq = pickle.load(f)[int(chain)][1]  # list of (chain_id, chain_seq)
+        with open(os.path.join(user_path, 'input.fasta'), 'w') as f:
+            f.write('>input.pdb\n')
+            f.write(seq)
         if isInvalidMut(mut, seq):
+            logger.debug("Mutation '{}' if not valid for sequence '{}'".format(mut, seq))
             return HttpResponseRedirect('/')
 
         j = Job.objects.create(jobID=randomID,
@@ -187,7 +188,7 @@ def runPipeline(request):
             'job_email': j.email,
             'job_type': 'local',
             'protein_id': randomID,
-            'mutations': '{}_{}'.format(chain, mut),
+            'mutations': '{}_{}'.format(int(chain) + 1, mut),
             'structure_file': 'input.pdb',
             # 'sequence_file': 'input.fasta'
         }]
@@ -301,9 +302,8 @@ def displayResult(request):
             j.dateFinished = now()
             j.save()
 
-    data = [getResultData(jtom, local) for jtom in jtoms]
+    data = [getResultData(jtom) for jtom in jtoms]
 
-    job_is_done = True
     for m in data:
         doneInt, toRemove = [], []
 
@@ -318,8 +318,6 @@ def displayResult(request):
         if not m.realMutErr:
             print(len(m.realMut))
             for i, mut in enumerate(m.realMut):
-                if not mut.ddG and not mut.mut_error:
-                    job_is_done = False
                 chain = mut.findChain()
                 # Get alignment scores.
                 mut.alignscore = mut.model.getalignscore(chain)
@@ -408,7 +406,8 @@ def displaySecondaryResult(request):
     # Load structure data if mutation was successful.
     intmuts = []
     inCore = True if m.affectedType == 'CO' or m.affectedType == 'NO' else False
-    data = getResultData(jtom[0], local)
+    data = getResultData(jtom[0])
+    logger.debug("data: '{}'".format(data))
 
     if loadEverything:
         if data.realMutErr == 'DNE':
@@ -494,6 +493,7 @@ def displaySecondaryResult(request):
                                                     'dbError': True})
 
         p = data.realMut[0].protein
+        logger.debug('p: {}'.format(p))
     # Load domains if mutation failed.
     elif not loadEverything:
         p = (
@@ -509,13 +509,18 @@ def displaySecondaryResult(request):
     mutLineSize = 2
     mutDescSize = 70
     ds, domainName, proteinToDomainID = [], '', {}
-    for idx, prot in (
-            enumerate([p] + ([mu['domain'].protein for mu in intmuts] if intmuts else []))):
-
+    prots = (
+        [p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])
+        # [p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])
+    )
+    logger.debug("prots: '{}'".format(prots))
+    for idx, prot in enumerate(prots):
         pds = (
+            # list(CoreModelLocal.objects.filter(protein_id=prot.id, domain_idx=data.realMut[0].model.domain_idx)) if local else
             list(CoreModelLocal.objects.filter(protein_id=prot.id)) if local else
             list(CoreModel.objects.filter(protein_id=prot.id))
         )
+        logger.debug("pds: '{}'".format(pds))
 
         # Check if homodimer with self.
         homodimer = True if prot == p else False
@@ -613,7 +618,7 @@ def displaySecondaryResult(request):
     logger.debug('ds: {}'.format(ds))
 
     if not curmut:
-        curmut = data.realMut[0] # if inCore else data.realMut[1]  # AS: indexerror?
+        curmut = data.realMut[0] if inCore else data.realMut[1]  # AS: indexerror?
         curdom = None if inCore else ds[1]
 
     if loadEverything:
@@ -634,6 +639,10 @@ def displaySecondaryResult(request):
     for dom in ds[0]:
         if dom[7]:
             d1 = dom
+
+    logger.debug("curdom: {}".format(curdom))
+    logger.debug("d2: {}".format(d2))
+    logger.debug("d1: {}".format(d1))
 
     # Get domain interaction values for 2dbar.
     if d2:

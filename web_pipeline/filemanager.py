@@ -47,8 +47,8 @@ class FileManager(object):
             self.IM = InterfaceModel
             self.IMut = InterfaceMutation
 
-        logger.info(jobID)
-        logger.info(muts)
+        logger.info("jobID: '{}'".format(jobID))
+        logger.info("muts: '{}'".format(muts))
 
         # Save mutation list.
         for pnm in muts:
@@ -58,8 +58,12 @@ class FileManager(object):
             isInterface = True if '_' in mut else False
             if isInterface:
                 mut, interfaceID = mut.split('_')
-                inac = self.IM.objects.get(id=interfaceID)
-                model = inac.model
+
+                # AS
+                # inac = self.IM.objects.get(id=interfaceID)
+                # model = inac.model
+                model = self.IM.objects.get(id=interfaceID)
+
 
             # Get local mutation data.
             jtom = list(JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=jobID))
@@ -109,7 +113,7 @@ class FileManager(object):
                 mutCompleted = True if (m.mut.status == 'done' and m.mut.affectedType != 'NO') \
                                     and (self.job.isDone or not(m.mut.rerun)) else False
                 if mutCompleted:
-                    logger.info(m.realMut)
+                    logger.info("m.realMut: {}".format(m.realMut))
                     rm = m.realMut[0]
                     mo = rm.model
                     c = rm.findChain()
@@ -268,7 +272,7 @@ class FileManager(object):
 
             # Result text files.
             if al:
-                temp2 = NamedTemporaryFile()
+                temp2 = NamedTemporaryFile(mode='w+')
                 temp2.write('\t'.join(header) + '\r\n')
                 temp2.write('\r\n'.join(body))
                 temp2.flush()
@@ -280,7 +284,8 @@ class FileManager(object):
                 for m in self.muts:
                     try:
                         p = self.P.objects.get(id=m.mut.protein)
-                    except (self.P.DoesNotExist, self.P.MultipleObjectsReturned):
+                    except (self.P.DoesNotExist, self.P.MultipleObjectsReturned) as e:
+                        logger.error("Failed to get protein with error: '{}: {}'".format(type(e), e))
                         continue
                     fname = m.inputIdentifier + '.fasta'
                     if not (fname in files['sequences']):

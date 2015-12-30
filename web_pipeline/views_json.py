@@ -29,7 +29,7 @@ from web_pipeline.models import (
 )
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 from web_pipeline.filemanager import FileManager
-from web_pipeline.tasks import cleanupServer
+from web_pipeline.cleanupmanager import CleanupManager
 
 from web_pipeline.supl import pdb_template
 
@@ -107,6 +107,7 @@ def rerunMut(request):
 
 
 def dlFile(request):
+    logger.debug("dlFile({})".format(request))
     if not request.GET:
         raise Http404
     if not ('j' in request.GET) or not ('f' in request.GET) or not ('m' in request.GET):
@@ -123,6 +124,7 @@ def dlFile(request):
 
 
 def prepareDownloadFiles(request):
+    logger.debug("prepareDownloadFiles({})".format(request))
     ''' Used on result page to check for available files, prepared files in
         archives, and to return their file sizes. '''
 
@@ -268,7 +270,7 @@ def uploadFile(request):
                     mkdir(user_path)
                 copyfile(temp_fh.name, path.join(user_path, 'input.pdb'))
             with open(path.join(user_path, 'pdb_parsed.pickle'), 'bw') as f:
-                f.write(pickle.dumps(dict(seq)))
+                f.write(pickle.dumps(seq))
 
             msg = seq
 
@@ -562,6 +564,8 @@ def getProtein(request):
         err = None
 
     # Return.
+    logger.debug("output:\n{}".format(output))
+    logger.debug("err:\n{}".format(err))
     return HttpResponse(json.dumps({'r': output, 'e': err}), content_type='application/json')
 
 
@@ -603,6 +607,25 @@ def sendContactMail(request):
         json.dumps({'response': response, 'error': error}), content_type='application/json')
 
 
+def cleanupServer():
+
+    c = CleanupManager()
+
+    # Remove jobs last visited too long ago.
+    c.removeOldJobs()
+
+#    c.checkForStalledMuts()
+
+    # Restart stalled jobs, and delete orphan mutations still running/queued.
+#    m_runAgain = c.checkForStalledJobs()
+#    for m in m_runAgain:
+#        runPipelineWrapper.delay(m[0], m[1])
+
+    # Send crash logs to admins.
+    c.sendCrashLogs()
+
+
 def cleanup(request):
-    cleanupServer.delay()
+    # TODO: Send this to a different thread
+    cleanupServer()
     return HttpResponseRedirect('/')
