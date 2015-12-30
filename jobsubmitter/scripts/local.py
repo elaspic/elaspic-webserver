@@ -188,12 +188,12 @@ def upload_model(unique_id, data_dir):
         #
         pfam_clan=('structure_id', None),
         pdbfam_name=('structure_id', None),
-        alignment_def=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
+        alignment_def=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[0])),
         path_to_data=('structure_file', lambda x: op.dirname(x)),
 
         # template
         template_errors=('', lambda: None),
-        domain_def=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
+        domain_def=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[0])),
         cath_id=('structure_id', None),
         alignment_identity=('alignment_stats', lambda x: x[0][0]),
         alignment_coverage=('alignment_stats', lambda x: x[0][1]),
@@ -421,9 +421,9 @@ def upload_mutation(unique_id, mutation, data_dir):
     def get_chain_idx(x):
         idx, idxs = x
         if idx == idxs[0]:
-             return 1
+             return 0
         elif idx == idxs[1]:
-            return  2
+            return  1
         else:
             raise ValueError("idx '{}' not in idxs '{}'".format(idx, idxs))
 
