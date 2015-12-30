@@ -13,8 +13,7 @@ import sqlalchemy as sa
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
-
-DB_SCHEMA = 'elaspic_webserver_3'
+DB_SCHEMA = 'elaspic_webserver'
 
 PROTEIN_SEQUENCE_TABLE = 'elaspic_protein_sequence_local'
 CORE_MODEL_TABLE = 'elaspic_core_model_local'
@@ -55,8 +54,18 @@ def upload_data(connection, df, table_name):
         )
         print(db_command)
         cur.executemany(db_command, list(df.to_records(index=False)))
-        print('Done!')
+        print('Uploaded data.')
     connection.commit()
+
+
+def finalize_mutation(connection, unique_id, mutation):
+    mutation = mutation.split('_')[-1]
+    with connection.cursor() as cur:
+        sql_command = "CALL update_muts('{}', '{}');".format(unique_id, mutation)
+        print(sql_command)
+        cur.execute(sql_command)
+    connection.commit()
+    print('Finalized mutation!')
 
 
 def get_domain_id_lookup(connection, unique_id):
@@ -76,15 +85,15 @@ where protein_id = '{}';
 
 def get_interface_id_lookup(connection, unique_id):
     sql_query = """\
-select protein_id_1, domain_idx_1, protein_id_2, domain_idx_2, interface_id
-from {}.{}
-where protein_id = '{}';
+select domain_id_1, domain_id_2, interface_id
+from {0}.{1}
+where protein_id_1 = '{2}' or protein_id_2 = '{2}';
 """.format(DB_SCHEMA, INTERFACE_MODEL_TABLE, unique_id)
     with connection.cursor() as cur:
         cur.execute(sql_query)
         result = cur.fetchall()
     print('result:\n{}'.format(result))
-    interface_id_lookup = {tuple(x[:4]): x[4] for x in result}
+    interface_id_lookup = {tuple(x[:2]): x[2] for x in result}
     print('interface_id_lookup:\n{}'.format(interface_id_lookup))
     return interface_id_lookup
 
@@ -113,7 +122,7 @@ def drop_columns(df, column_dict):
     return df
 
 
-# %%
+# %% Sequence
 def upload_sequence(unique_id, data_dir):
     """
     """
@@ -165,7 +174,7 @@ def upload_sequence(unique_id, data_dir):
         connection.close()
 
 
-# %%
+# %% Model
 def upload_model(unique_id, data_dir):
     """
     """
@@ -196,7 +205,7 @@ def upload_model(unique_id, data_dir):
         model_filename=('model_file', None),
         alignment_filename=('alignment_files', lambda x: x[0]),
         chain=('chain_ids', lambda x: x[0]),
-        model_domain_def=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
+        model_domain_def=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[0])),
     )
 
     interface_model_columns = dict(
@@ -235,8 +244,8 @@ def upload_model(unique_id, data_dir):
         interface_area_hydrophobic=None,
         interface_area_hydrophilic=None,
         interface_area_total=None,
-        model_domain_def_1=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[0])),
-        model_domain_def_2=('domain_def_offsets', lambda x: ':'.join(str(i) for i in x[1])),
+        model_domain_def_1=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[0])),
+        model_domain_def_2=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[1])),
     )
     # Load data
     model_result = pd.read_json(op.join(data_dir, 'model.json'))
@@ -244,13 +253,13 @@ def upload_model(unique_id, data_dir):
     model_result['protein_id'] = unique_id
 
     if 'idxs' in model_result.columns:
-        model_result_core = model_result[model_result['idxs'].isnull()]
+        model_result_core = model_result[model_result['idxs'].isnull()].copy()
         print("model_result_core:\n'{}'".format(model_result_core))
-        model_result_interface = model_result[model_result['idxs'].notnull()]
+        model_result_interface = model_result[model_result['idxs'].notnull()].copy()
         print("model_result_interface:\n'{}'".format(model_result_interface))
     else:
         model_result_core = model_result
-        model_result_interface = None
+        model_result_interface = pd.DataFrame()
 
     # Connect to DB
     connection = MySQLdb.connect(
@@ -263,7 +272,7 @@ def upload_model(unique_id, data_dir):
     model_result_core = drop_columns(model_result_core, core_model_columns)
     upload_data(connection, model_result_core, CORE_MODEL_TABLE)
 
-    if not model_result_interface:
+    if model_result_interface.empty:
         connection.close()
         return
 
@@ -279,13 +288,13 @@ def upload_model(unique_id, data_dir):
         model_result_interface['idxs'].apply(lambda x: x[1])
     )
 
-    interface_model_columns['domain_id_1'] = (
-        interface_model_columns[['protein_id_1', 'domain_idx_1']]
-        .apply(lambda x: domain_id_lookup[tuple(x)])
+    model_result_interface['domain_id_1'] = (
+        model_result_interface[['protein_id_1', 'domain_idx_1']]
+        .apply(lambda x: domain_id_lookup[tuple(x)], axis=1)
     )
-    interface_model_columns['domain_id_2'] = (
-        interface_model_columns[['protein_id_2', 'domain_idx_2']]
-        .apply(lambda x: domain_id_lookup[tuple(x)])
+    model_result_interface['domain_id_2'] = (
+        model_result_interface[['protein_id_2', 'domain_idx_2']]
+        .apply(lambda x: domain_id_lookup[tuple(x)], axis=1)
     )
 
     # Upload
@@ -296,7 +305,7 @@ def upload_model(unique_id, data_dir):
     return
 
 
-# %%
+# %% Mutation
 def upload_mutation(unique_id, mutation, data_dir):
     """
     """
@@ -371,22 +380,19 @@ def upload_mutation(unique_id, mutation, data_dir):
     print("mutation_result:\n'{}'".format(mutation_result))
 
     if 'idxs' in mutation_result.columns:
-        mutation_result_core = mutation_result[mutation_result['idxs'].isnull()]
+        mutation_result_core = mutation_result[mutation_result['idxs'].isnull()].copy()
         mutation_result_core['protein_id'] = unique_id
         print("mutation_result_core:\n'{}'".format(mutation_result_core))
 
-        mutation_result_interface = mutation_result[mutation_result['idxs'].notnull()]
-        mutation_result_core['protein_id'] = (
-            mutation_result_core[['chain_idx', 'protein_id_1', 'protein_id_2']]
-            .apply(lambda x: x[1] if x[0] == 0 else x[2])
-        )
+        mutation_result_interface = mutation_result[mutation_result['idxs'].notnull()].copy()
+        mutation_result_interface['protein_id'] = unique_id
         print("mutation_result_interface:\n'{}'".format(mutation_result_interface))
     else:
         mutation_result_core = mutation_result
         mutation_result_core['protein_id'] = unique_id
         print("mutation_result_core:\n'{}'".format(mutation_result_core))
 
-        mutation_result_interface = None
+        mutation_result_interface = pd.DataFrame()
 
     # Connect to DB
     connection = MySQLdb.connect(
@@ -406,27 +412,51 @@ def upload_mutation(unique_id, mutation, data_dir):
     mutation_result_core = drop_columns(mutation_result_core, core_mutation_columns)
     upload_data(connection, mutation_result_core, CORE_MUTATION_TABLE)
 
-    if not mutation_result_interface:
+    if mutation_result_interface.empty:
+        finalize_mutation(connection, unique_id, mutation)
         connection.close()
         return
 
     # INTERFACE
+    def get_chain_idx(x):
+        idx, idxs = x
+        if idx == idxs[0]:
+             return 1
+        elif idx == idxs[1]:
+            return  2
+        else:
+            raise ValueError("idx '{}' not in idxs '{}'".format(idx, idxs))
+
+    mutation_result_interface['chain_idx'] = (
+            mutation_result_interface[['idx', 'idxs']].apply(get_chain_idx, axis=1)
+    )
     format_columns(mutation_result_interface, interface_mutation_columns)
 
     interface_id_lookup = get_interface_id_lookup(connection, unique_id)
 
+    # protein id
     mutation_result_interface['protein_id_1'] = unique_id
     mutation_result_interface['protein_id_2'] = unique_id
+    # protein idx
     mutation_result_interface['domain_idx_1'] = (
         mutation_result_interface['idxs'].apply(lambda x: x[0])
     )
     mutation_result_interface['domain_idx_2'] = (
         mutation_result_interface['idxs'].apply(lambda x: x[1])
     )
-
+    # domain id
+    mutation_result_interface['domain_id_1'] = (
+        mutation_result_interface[['protein_id_1', 'domain_idx_1']]
+        .apply(lambda x: domain_id_lookup[tuple(x)], axis=1)
+    )
+    mutation_result_interface['domain_id_2'] = (
+        mutation_result_interface[['protein_id_2', 'domain_idx_2']]
+        .apply(lambda x: domain_id_lookup[tuple(x)], axis=1)
+    )
+    # interface id
     mutation_result_interface['interface_id'] = (
         mutation_result_interface
-        [['protein_id_1', 'domain_idx_1', 'protein_id_2', 'domain_idx_2']]
+        [['domain_id_1', 'domain_id_2']]
         .apply(lambda x: interface_id_lookup[tuple(x)], axis=1)
     )
 
@@ -434,6 +464,7 @@ def upload_mutation(unique_id, mutation, data_dir):
     mutation_result_interface = drop_columns(mutation_result_interface, interface_mutation_columns)
     upload_data(connection, mutation_result_interface, INTERFACE_MUTATION_TABLE)
 
+    finalize_mutation(connection, unique_id, mutation)
     connection.close()
     return
 
