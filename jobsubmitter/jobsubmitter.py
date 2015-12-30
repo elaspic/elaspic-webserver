@@ -40,6 +40,7 @@ SLEEP_FOR_QSUB = 0.01
 SLEEP_FOR_LOOP = 0.01
 
 DATA_DIR = '/home/kimlab1/database_data/elaspic_v2'
+DB_SCHEMA = 'elaspic_webserver'
 
 # SCRIPTS_DIR is for beagle01
 # SCRIPTS_DIR = op.join(config.BASE_DIR, 'scripts')
@@ -300,10 +301,10 @@ async def set_job_status(j):
     # Update database
     async with aiomysql.connect(
             host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
-            db='elaspic_webserver_2', loop=loop) as conn:
+            db=DB_SCHEMA, loop=loop) as conn:
         async with conn.cursor() as cur:
             db_command = (
-                "update elaspic_webserver_2.jobs "
+                "update jobs "
                 "set isDone = 1, dateFinished = now() "
                 "where jobID = '{}';"
                 .format(job_id)
@@ -316,8 +317,10 @@ async def set_job_status(j):
 async def set_db_errors(error_queue):
     logger.debug('set_db_errors: '.format(error_queue))
 
-    async def helper(item):
+    async def helper(cur, item):
         remove_from_monitored_jobs(item)
+        protein_id = item.args['protein_id']
+        mutation = item.args['mutations'].split('_')[-1]
         db_command = (
             "CALL update_muts('{}', '{}')"
             .format(item.args['protein_id'], item.args['mutations'])
@@ -326,16 +329,16 @@ async def set_db_errors(error_queue):
 
     async with aiomysql.connect(
             host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
-            db='elaspic_webserver_2', loop=loop) as conn:
+            db=DB_SCHEMA, loop=loop) as conn:
         async with conn.cursor() as cur:
             try:
                 if isinstance(error_queue, asyncio.Queue):
                     while not error_queue.empty():
                         item = await error_queue.get()
-                        await helper(item)
+                        await helper(cur, item)
                 else:
                     for item in error_queue:
-                        await helper(item)
+                        await helper(cur, item)
                 await conn.commit()
             except Exception as e:
                 logger.error(

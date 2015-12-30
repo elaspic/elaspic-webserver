@@ -108,6 +108,18 @@ def getResultData(jtom):
 
 
 def sendEmail(j, sendType):
+    """
+    Used by the jobsubmitter. Do not remove!
+
+    Parameters
+    ----------
+    j : job | tuple
+    sendType
+
+    Returns
+    -------
+
+    """
     if isinstance(j, (list, tuple)):
         job_id, job_email = j
     else:
@@ -135,8 +147,10 @@ def sendEmail(j, sendType):
     msg.attach_alternative(html_content, "text/html")
 
     # Send email.
+    logger.debug('Sending email...')
     try:
         msg.send()
+        logger.debug('Email sent successfully! :)')
         return 1
     except Exception as e:
         logger.error('The following exception occured while trying to send mail: {}'.format(e))
