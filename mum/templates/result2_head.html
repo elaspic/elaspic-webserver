@@ -250,12 +250,12 @@ cyoption = {
 		fit: true,
 		ready: undefined, 
 		stop: undefined,
-		padding: 10, 
-		startAngle: 3/2 * Math.PI, 
+		padding: 10,
+		startAngle: 3/2 * Math.PI,
 		counterclockwise: false, 
 		minNodeSpacing: 40,
-		height: undefined, 
-		width: undefined, 
+		height: 0,
+		width: 0,
 		concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
 		  return this.degree();
 		},
