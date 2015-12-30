@@ -325,6 +325,7 @@ async def set_db_errors(error_queue):
             "CALL update_muts('{}', '{}')"
             .format(item.args['protein_id'], item.args['mutations'])
         )
+        logger.debug(db_command)
         await cur.execute(db_command)
 
     async with aiomysql.connect(
@@ -405,13 +406,13 @@ loop.create_task(qstat())
 
 
 # %%
-async def finilize_finished_jobs():
+async def finalize_finished_jobs():
     while True:
-        logger.debug('finilize_finished_jobs')
+        logger.debug('finalize_finished_jobs')
         logger.debug('monitored_jobs: {}'.format(monitored_jobs))
         if monitored_jobs:
+            finished_jobs = []
             for job_key, job_set in monitored_jobs.items():
-                finished_jobs = []
                 if not job_set:
                     logger.debug("monitored_jobs with key '{}' is empty, finalizing..."
                                  .format(monitored_jobs))
@@ -424,7 +425,7 @@ async def finilize_finished_jobs():
                 monitored_jobs.pop(job_key)
         await asyncio.sleep(SLEEP_FOR_QSTAT)
 
-loop.create_task(finilize_finished_jobs())
+loop.create_task(finalize_finished_jobs())
 
 
 async def validation():
@@ -683,6 +684,12 @@ def validate_args(args):
         )
         # raise aiohttp.web.HTTPBadRequest(reason=reason)
         raise Exception(reason)
+    #
+    if 'job_id' in args and 'webserver_job_id' not in args:
+        args['webserver_job_id'] = args['job_id']
+    if 'job_email' in args and 'webserver_job_email' not in args:
+        args['webserver_job_email'] = args['job_email']
+
     # Fill in defaults:
     args['sequence_file'] = args.get('sequence_file', None)
     args['uniprot_domain_pair_ids'] = args.get('uniprot_domain_pair_ids', None)
