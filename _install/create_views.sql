@@ -121,7 +121,7 @@ udp.uniprot_domain_id_1 domain_id_1,
 udp.uniprot_id_2 protein_id_2,
 udp.uniprot_domain_id_2 domain_id_2,
 
-udp.path_to_data data_path,
+udp.path_to_data,
 
 -- template
 udpt.score_1 alignment_score_1,
@@ -200,45 +200,49 @@ JOIN elaspic.uniprot_domain_pair_mutation udpmut USING (uniprot_domain_pair_id);
 
 -- === Procedure to finilize mutations ===
 
+DROP PROCEDURE IF EXISTS `update_muts`;
+
 DELIMITER $$
 CREATE DEFINER=`elaspic-web`@`192.168.%.%` PROCEDURE `update_muts`(
   protein_id varchar(255), 
   mutation varchar(255))
 begin
-  start transaction;
-    
-    update muts web_mut
-    left join elaspic_core_mutation db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
-    set web_mut.affectedType='CO', web_mut.status='error', dateFinished = now(), error='1: ddG not calculated'
-    where protein = protein_id and mut = mutation and db_mut.ddg is null;
 
-    update muts web_mut
-    left join elaspic_core_mutation_local db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
-    set web_mut.affectedType='CO', web_mut.status='error', dateFinished = now(), error='1: ddG not calculated'
-    where protein = protein_id and mut = mutation and db_mut.ddg is null;
+  START TRANSACTION ;
 
+	update muts web_mut
+	left join elaspic_core_mutation db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
+	set web_mut.affectedType='CO', web_mut.status='error', dateFinished = now(), error='1: ddG not calculated'
+	where protein = protein_id and mut = mutation and db_mut.ddg is null;
 
-    update muts web_mut
-    join elaspic_core_mutation db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
-    set web_mut.affectedType='CO', web_mut.status='done', dateFinished = now()
-    where protein = protein_id and mut = mutation and db_mut.ddg is not null;
-
-    update muts web_mut
-    join elaspic_core_mutation_local db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
-    set web_mut.affectedType='CO', web_mut.status='done', dateFinished = now()
-    where protein = protein_id and mut = mutation and db_mut.ddg is not null;
+	update muts web_mut
+	left join elaspic_core_mutation_local db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
+	set web_mut.affectedType='CO', web_mut.status='error', dateFinished = now(), error='1: ddG not calculated'
+	where protein = protein_id and mut = mutation and db_mut.ddg is null;
 
 
-    update muts web_mut
-    join elaspic_interface_mutation db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
-    set web_mut.affectedType='IN', web_mut.status='done', dateFinished = now()
-    where protein = protein_id and mut = mutation and db_mut.ddg is not null;
-   
-    update muts web_mut
-    join elaspic_interface_mutation_local db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
-    set web_mut.affectedType='IN', web_mut.status='done', dateFinished = now()
-    where protein = protein_id and mut = mutation and db_mut.ddg is not null;
-   
-  commit;
+	update muts web_mut
+	join elaspic_core_mutation db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
+	set web_mut.affectedType='CO', web_mut.status='done', dateFinished = now(), error=Null
+	where protein = protein_id and mut = mutation and db_mut.ddg is not null;
+
+	update muts web_mut
+	join elaspic_core_mutation_local db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
+	set web_mut.affectedType='CO', web_mut.status='done', dateFinished = now(), error=Null
+	where protein = protein_id and mut = mutation and db_mut.ddg is not null;
+
+
+	update muts web_mut
+	join elaspic_interface_mutation db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
+	set web_mut.affectedType='IN', web_mut.status='done', dateFinished = now(), error=Null
+	where protein = protein_id and mut = mutation and db_mut.ddg is not null;
+
+   	update muts web_mut
+	join elaspic_interface_mutation_local db_mut on (web_mut.protein = db_mut.protein_id and web_mut.mut = db_mut.mutation)
+	set web_mut.affectedType='IN', web_mut.status='done', dateFinished = now(), error=Null
+	where protein = protein_id and mut = mutation and db_mut.ddg is not null;
+
+  COMMIT ;
+
 end$$
 DELIMITER ;
