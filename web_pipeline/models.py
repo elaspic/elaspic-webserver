@@ -304,7 +304,7 @@ class _CoreModel(models.Model):
         return self.chain
 
     def __str__(self):
-        return '%d' % self.template_id
+        return '{}.{}.{}'.format(self.id, self.protein_id, self.domain_idx)
 
     class Meta:
         abstract = True
@@ -394,6 +394,7 @@ class _CoreMutation(models.Model):
 
     class Meta:
         abstract = True
+        # ordering = ['id']
         # unique_together = (("protein_id", "domain_id", "mut"),)
 
 
@@ -425,7 +426,7 @@ class CoreMutationLocal(_CoreMutation):
 # %% Interface
 class _InterfaceModel(models.Model):
     # Key
-    id = models.IntegerField(primary_key=True, db_index=True, db_column='interface_id')
+    id = models.AutoField(primary_key=True, db_index=True, db_column='interface_id')
     protein_id_1 = models.CharField(max_length=15)
     # domain_id_1 = models.IntegerField(db_index=True)
     # domain_idx_1 = models.IntegerField(db_index=True)
@@ -434,7 +435,7 @@ class _InterfaceModel(models.Model):
     # domain_idx_2 = models.IntegerField(db_index=True)
 
     # domain pair
-    data_path = models.TextField(blank=True)
+    data_path = models.TextField(blank=True, db_column='path_to_data')
 
     def getclan(self, chain):
         if chain == 1:

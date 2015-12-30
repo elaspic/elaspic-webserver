@@ -49,12 +49,14 @@ def checkForCompletion(jobs):
 #    return jtom
 
 
-def getResultData(jtom, local=False):
+def getResultData(jtom):
 
     # Update job last visited to now.
     j = jtom.job
     j.dateVisited = now()
     j.save()
+
+    local = True if j.localID else False
 
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
@@ -148,44 +150,51 @@ def fetchProtein(pid, local=False):
         3) Uniprot identifiers.
 
     '''
+    logger.debug("fetchProtein({}, {})".format(pid, local))
     pid = pid.upper()
-    if local:
-        return ProteinLocal.objects.get(id=pid)
     try:
-        # 1)
+        # 1) Database protein
         return Protein.objects.get(id=pid)
-    except Protein.DoesNotExist:
+    except Protein.DoesNotExist as e:
+        logger.debug(e)
         try:
-            # 2)
-            iden = HGNCIdentifier.objects.get(identifierID=pid)
-            return Protein.objects.get(id=iden.uniprotID)
-        except (HGNCIdentifier.DoesNotExist, Protein.DoesNotExist):
+            # Local protein
+            return ProteinLocal.objects.get(id=pid)
+        except ProteinLocal.DoesNotExist as e:
+            logger.debug(e)
             try:
-                # 3)
-                iden = list(UniprotIdentifier.objects.filter(identifierID=pid))
-                if iden:
-                    # If more than one identifier is found, return the most
-                    # important one determined by the following dict:
-                    Ids = {'primaryIds': ['GeneWiki', 'UniProtKB-ID', 'EMBL',
-                                          'Ensembl_PRO', 'EMBL-CDS', 'Ensembl',
-                                          'GeneCards', 'GI'],
-                           'modelIds': ['WormBase_PRO', 'WormBase', 'WormBase_TRS',
-                                        'CYGD', 'SGD', 'PomBase', 'FlyBase', 'Xenbase',
-                                        'MGI', 'TAIR', 'PATRIC', 'dictyBase',
-                                        'EchoBASE', 'EcoGene', 'euHCVdb', 'GeneFarm',
-                                        'H-InvDB', 'VectorBase', 'TubercuList',
-                                        'LegioList', 'Leproma', 'mycoCLAP', 'PseudoCAP'],
-                           'secondaryIds': ['GeneID', 'EnsemblGenome']}
+                # 2)
+                iden = HGNCIdentifier.objects.get(identifierID=pid)
+                return Protein.objects.get(id=iden.uniprotID)
+            except (HGNCIdentifier.DoesNotExist, Protein.DoesNotExist) as e:
+                logger.debug(e)
+                try:
+                    # 3)
+                    iden = list(UniprotIdentifier.objects.filter(identifierID=pid))
+                    if iden:
+                        # If more than one identifier is found, return the most
+                        # important one determined by the following dict:
+                        Ids = {'primaryIds': ['GeneWiki', 'UniProtKB-ID', 'EMBL',
+                                              'Ensembl_PRO', 'EMBL-CDS', 'Ensembl',
+                                              'GeneCards', 'GI'],
+                               'modelIds': ['WormBase_PRO', 'WormBase', 'WormBase_TRS',
+                                            'CYGD', 'SGD', 'PomBase', 'FlyBase', 'Xenbase',
+                                            'MGI', 'TAIR', 'PATRIC', 'dictyBase',
+                                            'EchoBASE', 'EcoGene', 'euHCVdb', 'GeneFarm',
+                                            'H-InvDB', 'VectorBase', 'TubercuList',
+                                            'LegioList', 'Leproma', 'mycoCLAP', 'PseudoCAP'],
+                               'secondaryIds': ['GeneID', 'EnsemblGenome']}
 
-                    iden = sorted(
-                        iden, key=lambda i: ([i.identifierType not in Ids[key] for key in Ids])
-                    )
-                    return Protein.objects.get(id=iden[0].uniprotID)
-                else:
-                    raise UniprotIdentifier.DoesNotExist
+                        iden = sorted(
+                            iden, key=lambda i: ([i.identifierType not in Ids[key] for key in Ids])
+                        )
+                        return Protein.objects.get(id=iden[0].uniprotID)
+                    else:
+                        logger.debug("Error: '{}'".format(UniprotIdentifier.DoesNotExist))
+                        raise UniprotIdentifier.DoesNotExist
 
-            except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist):
-                return None
+                except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist):
+                    return None
 
     return None
 # The entire uniprot ID list would be:
