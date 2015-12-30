@@ -18,7 +18,7 @@ from django.utils.timezone import now, localtime
 from django.template import Context
 from django.template.loader import get_template
 
-from mum.celeryapp import app
+# from mum.celeryapp import app
 from web_pipeline.functions import checkForCompletion
 # from web_pipeline.models import Mutation, Imutation
 from web_pipeline.cleanupmanager import CleanupManager
