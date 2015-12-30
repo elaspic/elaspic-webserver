@@ -149,7 +149,7 @@ function proteinReceived(result) {
         $('#barbox').data('data-pdb', result.msg);
         $('#jid').val(result.userpath);
         $('#selectchaindiv').show();
-        $('#chain').val(result.msg[0][0]);
+        $('#chain').val(0);
         $('.first-switch').removeClass('first');
         for (var i = 0; i < result.msg.length; i++) {
             var chain = result.msg[i][0];
