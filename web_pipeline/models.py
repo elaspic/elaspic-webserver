@@ -588,7 +588,7 @@ class InterfaceModel(_InterfaceModel):
             )
             a2 = (
                 '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s_%s</a>'
-                % (self.cath2[:-3], self.cath2[:-3], self.cath1[-3])
+                % (self.cath2[:-3], self.cath2[:-3], self.cath2[-3])
             )
         else:
             a1 = self.cath1[:-3] + '_' + self.cath1[-3]
