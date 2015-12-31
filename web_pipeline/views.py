@@ -89,17 +89,21 @@ def runPipeline(request):
         local = False
         # Generate list of valid proteins and mutations.
         pnms = request.GET['proteins'].split(' ')[:10000]
+        logger.debug('pnms: {}'.format(pnms))
         validPnms = []
         for pnm in pnms:
             iden, mut = getPnM(pnm)
             p = fetchProtein(iden)
             if not p:
+                logger.error("Could not fetch protein for pnm: '{}', iden: '{}', mut: '{}'".format(pnm, iden, mut))
                 continue
             if isInvalidMut(mut, p.seq):
+                logger.error("Invalid mutation for pnm: '{}', iden: '{}', mut: '{}'".format(pnm, iden, mut))
                 continue
             validPnms.append([p.id, mut, iden])
         if not validPnms:
             return HttpResponseRedirect('/')  # No valid proteins.
+        logger.debug('validPnms: {}'.format(validPnms))
 
         # Create job in database.
         while True:
@@ -113,6 +117,8 @@ def runPipeline(request):
                                browser=request.META['HTTP_USER_AGENT'])
 
         # Create mutations in database if not already there.
+        newMuts, doneMuts = [], []
+        
         for pnm in validPnms:
             toRerun = False
             m = list(Mut.objects.filter(protein=pnm[0], mut=pnm[1]))
@@ -136,7 +142,6 @@ def runPipeline(request):
             muts = list(CoreMutation.objects.filter(protein_id=pnm[0], mut=pnm[1]))
             imuts = list(InterfaceMutation.objects.filter(protein_id=pnm[0], mut=pnm[1]))
 
-            newMuts, doneMuts = [], []
             if m:
                 mut = m[0]
                 typ = mut.affectedType
@@ -146,7 +151,7 @@ def runPipeline(request):
                 # 2) Mutation data changed from core to interface.
                 # 3) Mutation data changed from not in domain.
                 # 4) Pipeline crashed or ran out of time on last run.
-                if ((not typ) or  # AS
+                if (
                         (typ == 'CO' and not muts) or
                         (typ == 'IN' and not imuts) or
                         (typ == 'CO' and imuts) or
@@ -593,17 +598,17 @@ def displaySecondaryResult(request):
                             int(pxSize), defstart, defend, isInDomain,
                             int(dpSize), prot.id, prot.desc(),
                             homodimer if idx else None,
-                            chainself if idx and not didx else None,
-                            chaininac if idx and not didx else None,
-                            notUnique if idx and not didx else None,
+                            chainself if idx else None,
+                            chaininac if idx else None,
+                            notUnique if idx else None,
                             protName,
-                            seqid if idx and not didx else None,
-                            dopescore if idx and not didx else None,
-                            dgwt if idx and not didx else None,
-                            dgmut if idx and not didx else None,
-                            ddg if idx and not didx else None,
-                            pdbmutnum if idx and not didx else None,
-                            pdbtemp if idx and not didx else None])
+                            seqid if idx else None,
+                            dopescore if idx else None,
+                            dgwt if idx else None,
+                            dgmut if idx else None,
+                            ddg if idx else None,
+                            pdbmutnum if idx else None,
+                            pdbtemp if idx else None])
             # if prot.name.split('_')[0] == 'UBC':
             # o += prot.name.split('_')[0] + ', '
             # AS
@@ -620,8 +625,8 @@ def displaySecondaryResult(request):
                     intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id == initialProtein):
                 curdom = ds[idx]
                 curmut = intmuts[idx - 1]['mut']
-                curmut.seqid = seqid if idx and not didx else None
-                curmut.pdbtemp = pdbtemp if idx and not didx else None
+                curmut.seqid = seqid if idx else None
+                curmut.pdbtemp = pdbtemp if idx else None
     pxMutnum = mutNum / pSize * barSize - mutLineSize / 2
     if pxMutnum < 0:
         pxMutnum = 0
