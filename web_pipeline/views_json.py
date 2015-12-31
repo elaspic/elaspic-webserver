@@ -411,7 +411,11 @@ def getProtein(request):
                 inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
                 isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
                 iId = inac.id if m.__class__.__name__ == 'Imutation' else None
-
+                
+                # Skip core mutations not in any database.
+                if not isinstance(m, InterfaceMutationLocal) and len(mut_dbs[m.mut]) == 0:
+                    continue
+                
                 mut_dbs_html = ''
                 if mut_dbs[m.mut]:
                     mut_dbs_html = (

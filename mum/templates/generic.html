@@ -12,11 +12,16 @@
         
         
         	{% if help %}
-				
 				<p style="margin-top: 0;">The webserver relies on two different pipelines: 
 				    <a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click">Profs</a> 
 				and <a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" class="click">ELASPIC</a>.
 				</p>
+                <div id="pipelinediagram">
+                    <a href="{{ STATIC_FOLDER }}images/help_pipelinediagram.png" target="_blank" title="Click for full size version">
+                        <img src="{{ STATIC_FOLDER }}images/help_pipelinediagram_smaller.png" />
+                        <p><b>Flowchart of ELASPIC pipeline.</b> <br /><i>Click to view in full size. </i></p>
+                    </a>
+                </div>
 				<p><a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click2" style="font-weight: 600;">Profs</a>
 				unifies domain definitions obtained from Pfam and CATH in order to create domain 
 				boundaries that are the most consistent with both with the structural fold and the evolutionary 
