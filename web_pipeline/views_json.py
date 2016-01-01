@@ -405,16 +405,21 @@ def getProtein(request):
             )
 
             mut_dbs = findInDatabase([m.mut for m in muts], p.id)
+            
+            # Skip core mutations not in any database.
+            muts = [m for m in muts if isinstance(m, InterfaceMutation) or len(mut_dbs[m.mut]) > 0]
+            # If >100 mutations, skip all non-database mutations.
+            if len(muts) > 100:
+                muts = [m for m in muts if len(mut_dbs[m.mut]) > 0]
+            # If >100 mutations, skip uniprot database mutations.
+            if len(muts) > 100:
+                muts = [m for m in muts if len(mut_dbs[m.mut]) == 1 and mut_dbs[m.mut][0]['name'] ==  'UniProt']
 
             for m in muts:
                 chain = m.findChain()
-                inac = m.getinacprot(chain) if m.__class__.__name__ == 'Imutation' else None
-                isInt = inac.getname() if m.__class__.__name__ == 'Imutation' else None
-                iId = inac.id if m.__class__.__name__ == 'Imutation' else None
-                
-                # Skip core mutations not in any database.
-                if not isinstance(m, InterfaceMutationLocal) and len(mut_dbs[m.mut]) == 0:
-                    continue
+                inac = m.getinacprot(chain) if isinstance(m, InterfaceMutation) else None
+                isInt = inac.getname() if isinstance(m, InterfaceMutation) else None
+                iId = inac.id if isinstance(m, InterfaceMutation) else None
                 
                 mut_dbs_html = ''
                 if mut_dbs[m.mut]:
