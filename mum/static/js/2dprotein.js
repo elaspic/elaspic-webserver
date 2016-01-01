@@ -51,47 +51,14 @@ function create2dBar(protein) {
 	var psize = protein.seq.length;
 	
 	$('.protein2d .enddesc').text(psize);
-	
-	// Draw interactions.
-    //protein.inacs['test'] = [1,239];
 
-    if (protein.inacs) {
-
-        var protCount = protein.inacs.length;
-        
-        for (var j = 0; j < protCount; j++) {
-
-            var color = blue_rainbow(protCount, j);
-            
-            for (var i = 0; i < protein.inacs[j].aa.length; i++) {
-                
-                var aa = protein.inacs[j].aa[i];
-
-                var pxsize = 1 / psize * barSize;
-                var center1px = (pxsize - 1)/2; 
-                var pxstart = aa / psize * barSize - center1px - 0.5;
-                
-                var height = Math.min(38/protCount, 10);
-
-                
-                var top = j*height;
-                
-                var inac = '<div style="width:' + pxsize + 'px; left:' + pxstart + 'px;';
-                    inac += 'height: ' + height + 'px; background-color: ' + color + ';';
-                    inac += 'top: ' + (36 + top) + 'px;" class="aa' + aa + '"';
-                    inac += ' data-pid="' + protein.inacs[j].pid  + '" data-prot="' + protein.inacs[j].prot + '"></div>';
-            
-                $('.dominacs').append(inac);
-
-            }
-        }
-    }
-	
 	// Draw domains
+    var domaindefs = [];
 	for (var i = 0; i < protein.doms.length; i++) {
-
+        
 		var domStart = parseInt(protein.defs[i].split(':')[0]);
 		var domEnd = parseInt(protein.defs[i].split(':')[1]);
+        domaindefs.push([domStart, domEnd]);
 		
 		var pxsize = (domEnd - domStart) / psize * barSize;
 		var pxstart = domStart / psize * barSize - border;
@@ -119,6 +86,53 @@ function create2dBar(protein) {
 		
 		$('.protein2d').append(domain);
 	}
+    
+    
+	// Draw interactions.
+    if (protein.inacs) {
+
+        var protCount = protein.inacs.length;
+        
+        for (var j = 0; j < protCount; j++) {
+
+            var color = blue_rainbow(protCount, j);
+            
+            for (var i = 0; i < protein.inacs[j].aa.length; i++) {
+                
+                var aa = protein.inacs[j].aa[i];
+                
+                // Hide interfaces outside domains.
+                var in_domain = false;
+                for (var k = 0; k < domaindefs.length; k++) {
+                    if (aa >= domaindefs[k][0] && aa <= domaindefs[k][1]) {
+                        in_domain = true;
+                        break;
+                    }
+                }
+                if (!in_domain) {
+                    continue;
+                }
+
+                var pxsize = 1 / psize * barSize;
+                var center1px = (pxsize - 1)/2; 
+                var pxstart = aa / psize * barSize - center1px - 0.5;
+                
+                var height = Math.min(38/protCount, 10);
+
+                var top = j*height;
+                
+                var inac = '<div style="width:' + pxsize + 'px; left:' + pxstart + 'px;';
+                    inac += 'height: ' + height + 'px; background-color: ' + color + ';';
+                    inac += 'top: ' + (36 + top) + 'px;" class="aa' + aa + '"';
+                    inac += ' data-pid="' + protein.inacs[j].pid  + '" data-prot="' + protein.inacs[j].prot + '"></div>';
+            
+                $('.dominacs').append(inac);
+
+            }
+        }
+    }
+	
+
 	
 	$(".popup").hover(function() {
 		showHover(this);
