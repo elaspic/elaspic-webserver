@@ -524,7 +524,7 @@ input.text, select, .styled-select, .selection label:before,
 .selection .descriptor, #table > div, .popbox {
 	background-color: #C5E7F9;
 }
-.protein2d .current.domain, .tooltip #rerun {
+.protein2d .current.domain-bg, .tooltip #rerun {
     background-color: #E1F0F9;
 }
 .protein2d .current2.domain {
@@ -558,13 +558,14 @@ input.text, select, .styled-select, .selection label:before,
 .protein2d .barmutation {
     background-color: #CC0D37;
 }
-
 .descbar {
 	border-width: 1px;
 	border-radius: 5px;
-    background-image: url('../images/paper2.png');
 	border-color: #C0C0C0;
 	border-style: solid;
+}
+.descbar, #inacbox  .h4div {
+    background-image: url('../images/paper2.png');
 }
 .descbar div {
 	padding: 15px 0px;

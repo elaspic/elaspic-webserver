@@ -41,6 +41,7 @@
 							<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="1">
 								{{ dom.1 }}
 							</div>
+                            <div class="domain-bg{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
 						{% endspaceless %}{% endfor %}
 						<div class="tooltip2d"></div>
 					</div>
@@ -69,6 +70,7 @@
 							<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current2{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="2">
 								{{ dom.1 }}
 							</div>
+                            <div class="domain-bg" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
 						{% endspaceless %}{% endfor %}
 							<div class="tooltip2d"></div>
 						</div>
@@ -197,7 +199,10 @@
 						
 						<!-- Scores -->
 						<p class="whole br">
-							<span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.template.getsequenceidentity }}{% endif %}</span></span>
+							PDB template{% if inInt %}s{% endif %} used: <span id="sbpdb" class="mono">{% if inInt %}{{ curmut.pdbtemp|safe }}{% else %}{{ curmut.model.getpdbtemplate|safe }}{% endif %}</span>
+						</p>
+						<p class="whole">
+							<span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.getsequenceidentity }}{% endif %}</span></span>
 							<span class="half hright">Model score: <span id="sbdop" class="mono">{{ curmut.model.dope_score|floatformat:3 }}</span></span>
 						</p>
 						<p class="whole">
@@ -207,6 +212,9 @@
 						<p class="ddg">
 							Final &#916;&#916;G: <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
 						</p>
+                        
+                        <!-- Database information -->
+                        <p class="mutdb">{{ mut_dbs_html|safe }}</p>
 						
 						<!-- Dl buttons -->
 						<div id="pdbdl">Download:&nbsp;

@@ -1,3 +1,41 @@
+function rainbow(numOfSteps, step) {
+    // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
+    // Adam Cole, 2011-Sept-14
+    // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+    var r, g, b;
+    var h = step / numOfSteps;
+    var i = ~~(h * 6);
+    var f = h * 6 - i;
+    var q = 1 - f;
+    switch(i % 6){
+        case 0: r = 1; g = f; b = 0; break;
+        case 1: r = q; g = 1; b = 0; break;
+        case 2: r = 0; g = 1; b = f; break;
+        case 3: r = 0; g = q; b = 1; break;
+        case 4: r = f; g = 0; b = 1; break;
+        case 5: r = 1; g = 0; b = q; break;
+    }
+    var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+    return (c);
+}
+
+function blue_rainbow(numOfSteps, step) {
+    var switches = 4;
+    var r, g, b;
+    var h = step / numOfSteps;
+    var i = ~~(h * switches);
+    var f = h * switches - i;
+    var q = 1 - f;
+    switch(i % switches){
+        case 0: r = f*0.6+0.2; g = 0.2; b = 1; break;
+        case 1: r = 0.8; g = f*0.6+0.2; b = 1; break;
+        case 2: r = q*0.6+0.2; g = 0.8; b = 1; break;
+        case 3: r = f*0.8; g = 0.8; b = q*0.8+0.2; break;
+    }
+    var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+    return (c);
+}
+
 var barSize = 868;
 var mutDescSize = 70;
 var mutLineSize = 2;
@@ -5,23 +43,25 @@ var mutLineSize = 2;
 function create2dBar(protein) {
 
 	$('.protein2d .domain').remove();
+    $('.protein2d .domain-bg').remove();
+    $('.dominacs div').remove();
 
-    var border = 1
+    var border = 1;
 
 	var psize = protein.seq.length;
 	
 	$('.protein2d .enddesc').text(psize);
-	
-	
-	
-	// Draw domains
-	for(var i = 0; i < protein.doms.length; i++) {
 
+	// Draw domains
+    var domaindefs = [];
+	for (var i = 0; i < protein.doms.length; i++) {
+        
 		var domStart = parseInt(protein.defs[i].split(':')[0]);
 		var domEnd = parseInt(protein.defs[i].split(':')[1]);
+        domaindefs.push([domStart, domEnd]);
 		
-		var pxsize = (domEnd - domStart) / psize * barSize - border * 2;
-		var pxstart = domStart / psize * barSize;
+		var pxsize = (domEnd - domStart) / psize * barSize;
+		var pxstart = domStart / psize * barSize - border;
 		
 		var dname, dpopup;
 		
@@ -36,14 +76,63 @@ function create2dBar(protein) {
             dpopup = protein.doms[i];
         }
 		
-		var divtitle = (thisPage == 'sIn') ? '' : 'title="Click to open Pfam description." '
+		var divtitle = (thisPage == 'sIn') ? '' : 'title="Click to open Pfam description." ';
+        
+        var style = ' style="width: ' + pxsize + 'px; left: ' + pxstart + 'px;"';
+        var data = ' data-start="' + domStart + '" data-end="' + domEnd + '" data-text="' + dpopup + '"';
 		
-		var domain =  '<div ' + divtitle + 'class="domain popup" style="width: ' + pxsize + 'px; left: ' + pxstart + 'px;"';
-			domain += 'data-start="' + domStart + '" data-end="' + domEnd + '" data-text="' + dpopup;
-			domain += '">' + dname + '</div>'
+		var domain =  '<div ' + divtitle + 'class="domain popup"' + style + data + '>' + dname + '</div>';
+            domain += '<div class="domain-bg"' + style + data + '></div>';
 		
-		$('.protein2d').append(domain)
+		$('.protein2d').append(domain);
 	}
+    
+    
+	// Draw interactions.
+    if (protein.inacs) {
+
+        var protCount = protein.inacs.length;
+        
+        for (var j = 0; j < protCount; j++) {
+
+            var color = blue_rainbow(protCount, j);
+            
+            for (var i = 0; i < protein.inacs[j].aa.length; i++) {
+                
+                var aa = protein.inacs[j].aa[i];
+                
+                // Hide interfaces outside domains.
+                var in_domain = false;
+                for (var k = 0; k < domaindefs.length; k++) {
+                    if (aa >= domaindefs[k][0] && aa <= domaindefs[k][1]) {
+                        in_domain = true;
+                        break;
+                    }
+                }
+                if (!in_domain) {
+                    continue;
+                }
+
+                var pxsize = 1 / psize * barSize;
+                var center1px = (pxsize - 1)/2; 
+                var pxstart = aa / psize * barSize - center1px - 0.5;
+                
+                var height = Math.min(38/protCount, 10);
+
+                var top = j*height;
+                
+                var inac = '<div style="width:' + pxsize + 'px; left:' + pxstart + 'px;';
+                    inac += 'height: ' + height + 'px; background-color: ' + color + ';';
+                    inac += 'top: ' + (36 + top) + 'px;" class="aa' + aa + '"';
+                    inac += ' data-pid="' + protein.inacs[j].pid  + '" data-prot="' + protein.inacs[j].prot + '"></div>';
+            
+                $('.dominacs').append(inac);
+
+            }
+        }
+    }
+	
+
 	
 	$(".popup").hover(function() {
 		showHover(this);
@@ -104,7 +193,7 @@ function fixBarMut() {
 	
 	// Highlight domain if mutation is in it.
 	var inDomain = false;
-	$('.protein2d').children('.domain').each(function () {
+	$('.protein2d').children('.domain-bg').each(function () {
 		var start = $(this).attr('data-start');
 		var end = $(this).attr('data-end');
 		if (num >= parseInt(start) && num <= parseInt(end)) {
@@ -116,12 +205,60 @@ function fixBarMut() {
 	});
 	
 	// Display not-in-domain warning message.
-	if (inDomain || aa == '-') {
-		$('#notdomainwarning').hide(0);
+	if (inDomain || aa == '-' || $('#barbox').data('data-pdb')) {
+		$('#notdomainwarning').hide();
 	} else {
-		$('#notdomainwarning').show(0);
+		$('#notdomainwarning').show();
 	}
+    
+    // Summarize affected protein interactions.
+    $('.inacsummary div').remove();
+    
+    var inac;
+    var $inacs = $('.protein2d .aa' + num)
+
+    var columns = 2;
+    
+    var steps = Math.ceil($inacs.length / 2);
+
+    for (var i = 0; i < steps; i++) {
+        var count = 0;
+        $inacs.each(function(){
+            if (count % steps === i) {
+                inac = '<div><div class="inaccolor" style="background-color:' + $(this).css('background-color') + ';"></div>';
+                inac += '<a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + $(this).attr('data-pid') + '">' + $(this).attr('data-prot') + '</a></div>';
+                $('.inacsummary').append(inac);
+            }
+            count += 1;
+        });
+        
+    }
+    if (inac) {
+        $('#inacbox').show();
+        $('#inacbox').css('height', Math.min(40+steps*20, 140) + 'px')
+        $('#inacbox .inacsummary').css('height', Math.min(10+steps*20, 110) + 'px')
+    } else {
+        $('#inacbox').hide();
+    }
+        
+
 }
+function getY(i, svgdata) {
+    var h = 100;
+    var distanceisno = 20;
+    var noleft = (svgdata[i-1] === undefined || svgdata[i-1].x + distanceisno < svgdata[i].x) ? true : false;
+    var noright = (svgdata[i+1] === undefined || svgdata[i+1].x - distanceisno > svgdata[i].x) ? true : false;
+    if ((noright && noleft) || svgdata.length < 5) {
+        return 1;
+    } else if (svgdata.length < 10) {
+        return (i%2) ? 20 : 1;
+    } else if (svgdata.length < 30) {
+        return (i%3) ? ((i%2) ? 20 : 50) : 1;
+    } else {
+        return (i%Math.floor(svgdata.length/10))*40;
+    }
+}
+
 var lastMutTooltip;
 
 function fixBarMuts(muts) {
@@ -136,7 +273,7 @@ function fixBarMuts(muts) {
 		posLeft = -25,
 		labelBox, links;
 
-	var svgdata = []
+	var svgdata = [];
 
 	for (var key in muts) {
 		// Add vertical line.
@@ -144,8 +281,14 @@ function fixBarMuts(muts) {
 		$('.barmutations').append('<div class="line"></div>');
 		$('.barmutations .line').last().css('left', pxMutnum);
 		// Add to data array to be drawn.
-		svgdata.push({x:pxMutnum-posLeft+1, y:5, text: muts[key][0][0]['m'], data: muts[key]});
+		svgdata.push({x:pxMutnum-posLeft+1, y:100, text: muts[key][0][0]['m'], data: muts[key]});
+        console.log(key)
+        console.log(muts[key][0][0]['m'])
 	}
+    
+    for (var i = 0; i < svgdata.length; i++) {
+        svgdata[i].y = getY(i, svgdata);
+    }
 
 	svgdata.sort(function(a) { return -a.x });
 
@@ -158,23 +301,25 @@ function fixBarMuts(muts) {
 		    .attr("x2",function(d) { return Math.min(Math.max(20, d.labelPos.x), w - 20)})
 		    .attr("y2",function(d) { return Math.max(Math.min(d.labelPos.y - 5, svgHeight - 10), 5)})
 	}
+    var pgravity = 0.05;
 	var labelForce = d3.force_labels()
 		.linkDistance(function(d, i){
-			var distanceisno = 20;
-			var noleft = (svgdata[i-1] === undefined || svgdata[i-1].x + distanceisno < svgdata[i].x) ? true : false;
-			var noright = (svgdata[i+1] === undefined || svgdata[i+1].x - distanceisno > svgdata[i].x) ? true : false;
-			if ((noright && noleft) || svgdata.length < 5) {
-				svgHeight = Math.max(svgHeight, h * 4/10)
-				return 1;
-			} else if (svgdata.length < 10) {
-				svgHeight = Math.max(svgHeight, h * 7/10)
-				return (i%2) ? 20 : 1;
-			} else {
-				svgHeight = Math.max(svgHeight, h * 10/10)
-				return (i%3) ? ((i%2) ? 20 : 50) : 1;
-			}
+            if (svgdata.length < 5) {
+                svgHeight = Math.max(svgHeight, h * 4/10)
+                pgravity = 0.02;
+            } else if (svgdata.length < 10) {
+                svgHeight = Math.max(svgHeight, h * 7/10)
+                pgravity = 0.02;
+            } else if (svgdata.length < 30) {
+                pgravity = 0.03;
+                svgHeight = Math.max(svgHeight, h * 10/10)
+            } else {
+                svgHeight = Math.max(svgHeight, h*(svgdata.length/20));
+            }
+            return getY(i, svgdata);
 		})
-		.size([w, 1000]).gravity(0.02).nodes([]).links([]).charge(-90);	
+		.size([w, 1000]).gravity(0.05).nodes([]).links([]).charge(-70);	
+    console.log('Drawn ' + svgdata.length + ' mutations.');
 
     var anchors = svg.selectAll(".anchor").data(svgdata);
 	var labels = svg.selectAll(".labels").data(svgdata);
@@ -183,7 +328,7 @@ function fixBarMuts(muts) {
 	anchors.enter().append("circle").attr("class","anchor").attr("r",1)
 	var newLabels = labels.enter().append("g").attr("class","labels")
 	labelBox = newLabels.append("g").attr("class","labelbox")
-	labelBox.append("text").attr("class","labeltext").attr("y",8)
+	labelBox.append("text").attr("class","labeltext").attr("y",10)
 	newLabels.append("line").attr("class","link")
 	links = svg.selectAll(".link")
 	
@@ -250,7 +395,7 @@ function fixBarMuts(muts) {
 	anchors.call(labelForce.update)
 
 	labelForce.start();
-	for (var i = n * n; i > 0; --i) labelForce.tick();
+	for (var i = 10000; i > 0; --i) labelForce.tick();
 	labelForce.stop();
 	
 	$('.protsvg').css('height', svgHeight + 'px');
@@ -265,6 +410,7 @@ function fixMutPopupData(data, num) {
         // Set variables.
         var head = (data[num][i].i) ? 'Interaction with: <a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + data[num][i].id + '">' + (data[num][i].i) + '</a>' : 'Stability results';
         var sbddg = data[num][0].d,
+            sbmutdb = data[num][0].db,
             sbdgwt = data[num][0].dw,
             sbdgmut = data[num][0].dm,
             sbseq = data[num][0].si,
@@ -282,6 +428,7 @@ function fixMutPopupData(data, num) {
 		$('.muttooltip .ttext #sbdgwt').html(sbdgwt);
 		$('.muttooltip .ttext #sbdgmut').html(sbdgmut);
 		$('.muttooltip .ttext #sbddg').html(sbddg);
+        $('.muttooltip .ttext #dbs').html(sbmutdb + '.');
     }
     // Fix paddings for interactions.
     var mwidth = 200;

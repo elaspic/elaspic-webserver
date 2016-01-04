@@ -40,8 +40,6 @@ jQuery.fn.autoGrow = function() {
 
 function handleResults(result, ajaxRequests) {
 
-	
-
 	$("#validation div").remove();
 	var validationArray = [];
 	var validated = 0;
@@ -213,16 +211,19 @@ $(document).ready(function(){
 
     $("#pfile").ajaxfileupload({
         "action": "../json/uploadfile/",
+        "params": {'filetype': 'prot'},
         "onComplete": function(response) {
+            if (typeof response === 'string' || response instanceof String) {
+                // Converts text to JSON if needed (Chrome).
+                response = $.parseJSON($(response).text());
+            }
             // Split file per line and remove spaces.
             if (response.error) {
                 $("#uploaderr").show();
                 $("#uploaderr").html(response.msg);
             } else {
-
                 // Insert file text.
                 $("#proteinsinput").val(response.msg);
-
                 // Adjust input height.
                 $("#proteinsinput").trigger( "keyup" );
                 
@@ -245,7 +246,7 @@ $(document).ready(function(){
 
         // Remove spaces.
         var allinput = $.map($("#proteinsinput").val().split("\n"), function(str, i) {
-            if (i < 100)
+            if (i < 10000)
                 return str.replace(/\s+/g, "").substring(0,65);
         });
 
@@ -271,8 +272,8 @@ $(document).ready(function(){
         var example = ['CCM1.E567Q', 'O00522.E567A', 'KRIT1_HUMAN.E567F',
                        'HLA-DRB1.V209R', 'KRas2.I36M', 'ENSG00000133703.V8R',
                        'P68871.V35D', 'KIAA0145.R612Y', '3PPJ.R575F',
-                       'Q9Y2L6.G109S', 'EIF4E3.A21N',
-                       'ROCK2.L581I', '5027.F95E', 'Cx46.G233T'];
+                       'Q9Y2L6.G109S', 'EIF4E3.A21N', // 5027.F95E
+                       'ROCK2.L581I', 'Cx46.R133T'];
         $("#proteinsinput").val( example.join("\n") );
         $("#proteinsinput").trigger( "keyup" );
         getProteins(ajaxRequests);

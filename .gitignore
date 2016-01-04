@@ -1,11 +1,12 @@
 # Folders
-crashlogs/
-static/
-mum/static/jobs/*
-*/__pycache__
-static/
+**/__pycache__
+**/.coverage
 
-# Files
+# Prefixes
+.*
+celerybeat-schedule*
+
+# Extensions
 *.pyc
-celerybeat*
+*.bak
 
