@@ -1,10 +1,13 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
+import web_pipeline.views
+import web_pipeline.views_json
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
-urlpatterns = patterns('',
+
+#urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'mum.views.home', name='home'),
     # url(r'^mum/', include('mum.foo.urls')),
@@ -15,48 +18,47 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     #url(r'^admin/', include(admin.site.urls)),
 
-)
+#)
+urlpatterns = []
 
 # Views accessed directly by the user.
-urlpatterns += patterns('web_pipeline.views',
-
+urlpatterns += [
     # Input sites.
-    url(r'^$', 'inp', {'p': 'sIn'}),
-    url(r'^many/$', 'inp', {'p': 'mIn'}),
+    url(r'^$', web_pipeline.views.inp, {'p': 'sIn'}),
+    url(r'^many/$', web_pipeline.views.inp, {'p': 'mIn'}),
 
-    url(r'^run/$', 'runPipeline'),
+    url(r'^run/$', web_pipeline.views.runPipeline),
 
     # Results sites.
-    url(r'^result/[a-zA-Z0-9]{6}/$', 'displayResult'),
-    url(r'^result/[a-zA-Z0-9]{6}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$', 'displaySecondaryResult'),
+    url(r'^result/[a-zA-Z0-9]{6}/$',
+        web_pipeline.views.displayResult),
+    url(r'^result/[a-zA-Z0-9]{6}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$',
+        web_pipeline.views.displaySecondaryResult),
 
-    url(r'^popup/jsmol/$', 'jsmolpopup'),
+    url(r'^popup/jsmol/$', web_pipeline.views.jsmolpopup),
 
     # Generic sites.
-    url(r'^(help|reference|contact)/$', 'genericSite'),
-    
-
-)
+    url(r'^(help|reference|contact)/$', web_pipeline.views.genericSite),
+]
 
 # Views accessed through AJAX calls.
-urlpatterns += patterns('web_pipeline.views_json',
-
+urlpatterns += [
     # Input sites.
-    url(r'^json/getprotein/$', 'getProtein'),
-    url(r'^json/uploadfile/$', 'uploadFile'),
+    url(r'^json/getprotein/$', web_pipeline.views_json.getProtein),
+    url(r'^json/uploadfile/$', web_pipeline.views_json.uploadFile),
 
     # Results sites.
-    url(r'^json/checkjob/$', 'checkIfJobIsReady'),
-    url(r'^json/rerun/$', 'rerunMut'),
-    url(r'^json/getdownloads/$', 'prepareDownloadFiles'),
-    url(r'^getfile/', 'dlFile'),
+    url(r'^json/checkjob/$', web_pipeline.views_json.checkIfJobIsReady),
+    url(r'^json/rerun/$', web_pipeline.views_json.rerunMut),
+    url(r'^json/getdownloads/$', web_pipeline.views_json.prepareDownloadFiles),
+    url(r'^getfile/', web_pipeline.views_json.dlFile),
 
     # Generic.
-    url(r'^json/contactmail/$', 'sendContactMail'),
+    url(r'^json/contactmail/$', web_pipeline.views_json.sendContactMail),
 
     # Cleanup.
-    url(r'^cleanup/$', 'cleanup'),
-)
+    url(r'^cleanup/$', web_pipeline.views_json.cleanup),
+]
 
 
 #urlpatterns += patterns('web_pipeline.views_import',

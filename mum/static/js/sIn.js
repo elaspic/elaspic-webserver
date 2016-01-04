@@ -129,13 +129,40 @@ function fixSelects(seq) {
 	  $(".fewaa").css("width", stri.length * 9 + 40);
 	  $("#select2sub").css("width", 47);
 
+      $("#fakearea").val("");
 	  fixSelLink();
 
 }
 function proteinReceived(result) {
-
+    
+    // Get protein name from inpit field.
+    if (result.inputfile) {
+        var protName = $("#proteininput").val();
+            protName = protName.substring(6, protName.length-1);
+        result.prot = protName;
+        result.desc = 'chain ' + result.msg[0][0];
+        result.seq = result.msg[0][1];
+        result.known = {};
+        result.doms = [];
+        result.defs = [];
+        result.inacs = [];
+        $('#barbox').data('data-pdb', result.msg);
+        $('#jid').val(result.userpath);
+        $('#selectchaindiv').show();
+        $('#chain').val(0);
+        $('.first-switch').removeClass('first');
+        for (var i = 0; i < result.msg.length; i++) {
+            var chain = result.msg[i][0];
+            $('#selectchain').append('<option value="' + i + '" id="' + chain + '">chain ' + chain + '</option>');
+        }
+    } else {
+        var protName = $.trim( $("#proteininput").val() ).toUpperCase();
+        $('#barbox').data('data-pdb', false);
+        $('#selectchaindiv').hide();
+        $('.first-switch').addClass('first');
+    }
+    
 	// Print protein name and description.
-	var protName = $.trim( $("#proteininput").val() ).toUpperCase();
 	$(".proteininfo .proteinname").text(protName);
 	var protID = (protName != result.prot) ? ' (<span class="mono">' + result.prot + '</span>)' : '';
 	$(".proteininfo .proteinid").html(protID);
@@ -148,8 +175,7 @@ function proteinReceived(result) {
 	$("#proteininput").stop();
 	$("#selectbox").stop();
 	$("#selectbox .boxhead").stop();
-	
-	
+
 	// Show select box.
 	$("#inputbox .boxhead").fadeTo(500, 0);
 	$("#selectbox .boxhead").css('opacity', 1);
@@ -183,8 +209,9 @@ function proteinReceived(result) {
 	});
 }
 
-function getProtein(protein, ajaxRequests) {
-
+function stopFetch(ajaxRequests) {
+    
+    $("#uploaderr").hide();
 	$("#protein").animate({height: 120}, {duration: 500});
 	$("#inputbox .boxhead .proteinname").addClass('example');
 	$("#selectbox").animate({
@@ -206,17 +233,28 @@ function getProtein(protein, ajaxRequests) {
 			$("#nothumanwarning").hide(0);
 		}
 	});
-
-	var trimmedProtein = $.trim(protein);
-
+    
 	$("#pwheel").text("");
 	$("#pwheel").removeClass("wheelerr");
+    $("#pwheel").removeClass("wheelon");
+    $('#selectchain option').remove();
+    $('#inacbox').hide();
 
 	if (ajaxRequests[ajaxRequests.length - 1]) {
 		ajaxRequests[ajaxRequests.length - 1].abort();
 	}
 	  
-	if (trimmedProtein != "") {
+}
+
+
+function getProtein(protein, ajaxRequests) {
+
+
+    stopFetch(ajaxRequests);
+
+	var trimmedProtein = $.trim(protein);
+
+	if (trimmedProtein != "" && trimmedProtein.substring(0,6) != '<file=') {
 	  	$("#pwheel").addClass("wheelon");
 
 		ajaxRequests[ajaxRequests.length] = $.ajax({
@@ -267,6 +305,8 @@ $(document).ready(function(){
 
 	  // Get protein on change.
 	  $("#proteininput").anyChange(function() {
+          $('#chain').val("");
+          $("#fakearea").val("");
 	      var newMut = $.trim( $("#proteininput").val() );
 	      $("#proteininput").val(newMut);
 	      if (newMut != $("#proteininput").attr("data-prev")) {
@@ -275,28 +315,71 @@ $(document).ready(function(){
 	      }
 	  });
 
-	  // Example proteins.
-	  $(".example").click(function() {
-	      $("#proteininput").val($(".example").html());
-	      getProtein( $("#proteininput").val(), ajaxRequests );
-	  });
+    $("#pfile").ajaxfileupload({
+        "action": "../json/uploadfile/",
+        "params": {'filetype': 'pdb'},
+        "onStart": function() {
+            stopFetch(ajaxRequests);
+        },
+        "onComplete": function(response) {
+            if (typeof response === 'string' || response instanceof String) {
+                // Converts text to JSON if needed (Chrome).
+                response = $.parseJSON($(response).text());
+            }
+            // Split file per line and remove spaces.
+            if (response.error) {
+                $("#uploaderr").show();
+                $("#uploaderr").html(response.msg);
+            } else {
+                $('#proteininput').val('<file=' + response.inputfile + '>');
+                proteinReceived(response);
+            }
+        }
+    });
+    
+    $("#pfilelabel").click(function() {
+        $("#uploaderr").hide();
+        $("#pfile").click();
+    });
+    
+    // Example proteins.
+    $(".example").click(function() {
+        $("#proteininput").val($(".example").html());
+        getProtein( $("#proteininput").val(), ajaxRequests );
+    });
 
-	  // Make extraBox plugin possible.
-	  $("#select2sub").extraBox({ attribute: "id" });
+    // Make extraBox plugin possible.
+    $("#select2sub").extraBox({ attribute: "id" });
 
-	  // Update sequence on change.
-	  $("select").bind("keyup", function() {
-	      $(this).change();
-	  });
-	  $(".allaa").change(function() {
-	      fixSelLink();
-	      fixBarMut();
-	      saveMut();
-	  });
-	  $(".fewaa").change(function() {
-	      fixBarMut();
-	      saveMut();
-	  });
+    // Update sequence on change.
+    $("select").bind("keyup", function() {
+        $(this).change();
+    });
+    $('#selectchain').change(function() {
+        var chainid = $(this).find("option:selected").val();
+        obj = {known: {}, doms: [], defs: [], inacs: []}
+
+        obj.seq = $('#barbox').data('data-pdb')[chainid][1];
+        
+        $(".proteininfo .desc").text( $(this).find("option:selected").text() );
+        
+        fixSelects(obj.seq);
+        
+        create2dBar(obj);
+        
+        $("#fakearea").val("");
+        $('#chain').val(chainid);
+
+    });
+    $(".allaa").change(function() {
+        fixSelLink();
+        fixBarMut();
+        saveMut();
+    });
+    $(".fewaa").change(function() {
+        fixBarMut();
+        saveMut();
+    });
 	  
     // Tooltips.
 	$(document).click(function() {
