@@ -4,11 +4,12 @@ from os import path, mkdir
 from shutil import copyfile
 import json
 import requests
-from collections import defaultdict
+from collections import defaultdict, Counter
 from tempfile import NamedTemporaryFile
 from random import randint
 import pickle
 import logging
+import time
 
 from Bio.PDB.PDBParser import PDBParser
 
@@ -20,7 +21,7 @@ from django.core.mail import EmailMessage
 from mum.settings import DB_PATH
 
 from web_pipeline.models import (
-    Job, JobToMut, Mut, findInDatabase,
+    Job, JobToMut, Mut, findInDatabase, get_protein_name,
     Protein, ProteinLocal,
     CoreModel, CoreModelLocal,
     CoreMutation, CoreMutationLocal,
@@ -353,33 +354,45 @@ def getProtein(request):
             # p.identifier_set.get(identifierType='geneName').identifierID
             output[idx]['gene'] = p.id
 
+        logger.debug("Intro output: {}".format(output))
+
         # Set domains.
-        if domReq:
+        if domReq or knownmutsReq:
+            all_interface_models = set()
             ds = list(CoreModel.objects.filter(protein_id=p.id))
             output[idx]['doms'], output[idx]['defs'] = [], []
+            domain_range_all = set()
 
             inacs = defaultdict(set)
             pidToName = {}
 
+            logger.debug('Going over all domains and interactions...')
             for d in ds:
                 output[idx]['doms'].append(d.getname(''))
-                output[idx]['defs'].append(d.getdefs(1))
+                defs = d.getdefs(1)
+                output[idx]['defs'].append(defs)
+                domain_range = set(range(int(defs.split(':')[0]), int(defs.split(':')[1]) + 1))
+                domain_range_all.update(domain_range)
 
                 # Set interactions.
-                model1 = InterfaceModel.objects.filter(domain1=d)
+                model1 = (
+                    InterfaceModel.objects.filter(domain1=d)
+                    .exclude(aa1__isnull=True).exclude(aa1__exact='').exclude(aa1__exact=',')
+                )
                 for m in model1:
-                    if not m.aa1:
-                        continue
-                    pid = m.domain2.protein_id
-                    pidToName[pid] = m.domain2.protein.getname()
-                    inacs[pid] = set.union(inacs[pid], set(m.aa1.split(',')))
-                model2 = InterfaceModel.objects.filter(domain2=d)
+                    partner_protein_id, partner_protein_name = m.protein_id_2, m.get_protein_name(2)
+                    pidToName[partner_protein_id] = partner_protein_name
+                    inacs[partner_protein_id] = set.union(inacs[partner_protein_id], set(m.aa1.split(',')))
+                    all_interface_models.add((m, partner_protein_id, partner_protein_name))
+                model2 = (
+                    InterfaceModel.objects.filter(domain2=d)
+                    .exclude(aa2__isnull=True).exclude(aa2__exact='').exclude(aa2__exact=',')
+                )
                 for m in model2:
-                    if not m.aa2:
-                        continue
-                    pid = m.domain1.protein_id
-                    pidToName[pid] = m.domain1.protein.getname()
-                    inacs[pid] = set.union(inacs[pid], set(m.aa2.split(',')))
+                    partner_protein_id, partner_protein_name = m.protein_id_1, m.get_protein_name(1)
+                    pidToName[partner_protein_id] = partner_protein_name
+                    inacs[partner_protein_id] = set.union(inacs[partner_protein_id], set(m.aa2.split(',')))
+                    all_interface_models.add((m, partner_protein_id, partner_protein_name))
 
             inacsum = defaultdict(int)
             for aas in inacs.values():
@@ -393,33 +406,52 @@ def getProtein(request):
             )
 
             output[idx]['inacsum'] = inacsum
+        logger.debug('Done going over all domains and interactions!')
+        logger.debug("output: {}".format(output))
 
         # Set already known mutations for protein.
+        logger.debug('knownmutsReq')
         if knownmutsReq:
             mdict = {}
+            logger.debug('querying mutations...')
+            # muts = (
+            #     list(CoreMutation.objects
+            #          .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None)) +
+            #     list(InterfaceMutation.objects
+            #          .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+            # )
             muts = (
-                list(CoreMutation.objects
-                     .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None)) +
-                list(InterfaceMutation.objects
-                     .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
+                [(mut, None, None) for model in ds for mut in model.muts.all() if int(mut.mut[1:-1]) in domain_range_all] +
+                [(mut, partner_protein_id, partner_protein_name)
+                 for (model, partner_protein_id, partner_protein_name) in all_interface_models
+                 for mut in model.muts.filter(protein_id=p.id)
+                 if int(mut.mut[1:-1]) in domain_range_all]
             )
+            logger.debug("muts: '{}'".format(muts))
+            logger.debug('done querying mutations...')
 
-            mut_dbs = findInDatabase([m.mut for m in muts], p.id)
-            
+            mut_dbs = findInDatabase([m[0].mut for m in muts], p.id)
+
+            logger.debug("Done 'findInDatabase'")
+
             # Skip core mutations not in any database.
-            muts = [m for m in muts if isinstance(m, InterfaceMutation) or len(mut_dbs[m.mut]) > 0]
-            # If >100 mutations, skip all non-database mutations.
-            if len(muts) > 100:
-                muts = [m for m in muts if len(mut_dbs[m.mut]) > 0]
-            # If >100 mutations, skip uniprot database mutations.
-            if len(muts) > 100:
-                muts = [m for m in muts if len(mut_dbs[m.mut]) == 1 and mut_dbs[m.mut][0]['name'] ==  'UniProt']
+            muts = [
+                m for m in muts
+                if ((isinstance(m[0], (CoreMutationLocal, InterfaceMutationLocal))) or
+                    (isinstance(m[0], (CoreMutation, InterfaceMutation)) and len(mut_dbs[m[0].mut])))
+            ]
+            # If still > 100 mutations, keep residues with the largest number of mutants
+            MAX_NUM_MUTATIONS = 100
+            if len(muts) > MAX_NUM_MUTATIONS:
+                mutated_residue_counts = Counter([m[0].mut[:-1] for m in muts])
+                most_common_mutated_residues = {x[0] for x in mutated_residue_counts.most_common(MAX_NUM_MUTATIONS)}
+                muts = [m for m in muts if m[0].mut[:-1] in most_common_mutated_residues]
 
-            for m in muts:
+            for m_tuple in muts:
+                m, partner_protein_id, partner_protein_name = m_tuple
                 chain = m.findChain()
-                inac = m.getinacprot(chain) if isinstance(m, InterfaceMutation) else None
-                isInt = inac.getname() if isinstance(m, InterfaceMutation) else None
-                iId = inac.id if isinstance(m, InterfaceMutation) else None
+                isInt = partner_protein_name
+                iId = partner_protein_id
                 
                 mut_dbs_html = ''
                 if mut_dbs[m.mut]:
@@ -572,9 +604,9 @@ def getProtein(request):
     else:
         err = None
 
-    # Return.
-    logger.debug("output:\n{}".format(output))
-    logger.debug("err:\n{}".format(err))
+    # Return
+    logger.debug("output: {}".format(output))
+    logger.debug("err: {}".format(err))
     return HttpResponse(json.dumps({'r': output, 'e': err}), content_type='application/json')
 
 
