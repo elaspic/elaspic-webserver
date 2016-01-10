@@ -217,7 +217,8 @@ def fetchProtein(pid, local=False):
                         logger.debug("Error: '{}'".format(UniprotIdentifier.DoesNotExist))
                         raise UniprotIdentifier.DoesNotExist
 
-                except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist):
+                except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist) as e:
+                    logger.debug(e)
                     return None
 
     return None

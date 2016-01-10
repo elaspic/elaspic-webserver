@@ -1,3 +1,6 @@
+import functools
+import logging
+
 from django.db import models
 
 from django.utils.timezone import localtime
@@ -9,6 +12,8 @@ from collections import defaultdict
 #
 # Run shell: from web_pipeline.models import *
 #
+
+logger = logging.getLogger(__name__)
 
 
 # %% Database: 'default'
@@ -158,31 +163,7 @@ class _Protein(models.Model):
 class Protein(_Protein):
 
     def getname(self):
-        try:
-            name = (
-                HGNCIdentifier.objects
-                .get(identifierType='HGNC_genename', uniprotID=self.id)
-                .identifierID
-            )
-        except HGNCIdentifier.DoesNotExist:
-            try:
-                name = (
-                    UniprotIdentifier.objects
-                    .get(identifierType='GeneWiki', uniprotID=self.id)
-                    .identifierID
-                )
-            except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
-                name = self.name.split('_')[0]
-        except HGNCIdentifier.MultipleObjectsReturned:
-            name = list(
-                HGNCIdentifier.objects
-                .filter(identifierType='HGNC_genename', uniprotID=self.id)
-            )[0].identifierID
-
-        if '-' not in self.id:
-            return name
-        else:
-            return name + ' isoform ' + self.id.split('-')[-1]
+        return get_protein_name(self.id, local=False)
 
     class Meta(_Protein.Meta):
         db_table = 'elaspic_sequence'
@@ -200,14 +181,80 @@ class ProteinLocal(_Protein):
 #    sequence = models.TextField(null=True, blank=True)
 
     def getname(self):
-        return self.name
+        return get_protein_name(self.id, local=True)
 
     class Meta(_Protein.Meta):
         db_table = 'elaspic_sequence_local'
 
 
+@functools.lru_cache(maxsize=256, typed=False)
+def get_protein_name(protein_id,  local):
+    """
+
+    Parameters
+    ----------
+    protein_id : str
+    local : True | False
+
+    Returns
+    -------
+    str | None
+
+    """
+    if local:
+        return _get_protein_name_local(protein_id)
+    else:
+        return _get_protein_name(protein_id)
+
+
+def _get_protein_name_local(protein_id):
+    try:
+        name = ProteinLocal.objects.get(id=protein_id).name
+    except ProteinLocal.DoesNotExist:
+        name = None
+    return name
+
+
+def _get_protein_name(protein_id):
+    try:
+        name = (
+            HGNCIdentifier.objects
+            .get(identifierType='HGNC_genename', uniprotID=protein_id)
+            .identifierID
+        )
+    except HGNCIdentifier.DoesNotExist:
+        try:
+            name = (
+                UniprotIdentifier.objects
+                .get(identifierType='GeneWiki', uniprotID=protein_id)
+                .identifierID
+            )
+        except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
+            try:
+                protein_name = Protein.objects.get(id=protein_id).name
+            except Protein.DoesNotExist:
+                logger.error("Could not find protein: '{}'".format(protein_id))
+                name = None
+            else:
+                name = protein_name.split('_')[0]
+    except HGNCIdentifier.MultipleObjectsReturned:
+        name = list(
+            HGNCIdentifier.objects
+            .filter(identifierType='HGNC_genename', uniprotID=protein_id)
+        )[0].identifierID
+    if '-' not in protein_id:
+        return name
+    else:
+        return name + ' isoform ' + protein_id.split('-')[-1]
+
+
 # %% Core
 class _CoreModel(models.Model):
+
+    @property
+    def local(self):
+        raise NotImplementedError
+
     # Key
     id = models.AutoField(primary_key=True, db_index=True, db_column='domain_id')
     protein_id = models.CharField(max_length=15)
@@ -220,14 +267,14 @@ class _CoreModel(models.Model):
 
     data_path = models.TextField(blank=True, db_column='path_to_data')
 
+    def get_protein_name(self, chain=1):
+        return get_protein_name(self.protein_id, local=self.local)
+
     def getclan(self, chain=1):
         return self.clan if self.clan else '-'
 
     def getname(self, chain=1):
         return self.name
-
-    def getprot(self, chain=1):
-        return self.protein
 
     def getdefs(self, chain=1):
         if self.model_domain_def:
@@ -305,8 +352,14 @@ class _CoreModel(models.Model):
 
 class CoreModel(_CoreModel):
 
+    local = False
     interactions = models.ManyToManyField(
         'self', symmetrical=False, through='InterfaceModel', blank=True)
+
+    # protein = models.ForeignKey(Protein, db_index=True, db_column='protein_id')
+
+    def getprot(self, chain=1):
+        return Protein.objects.get(id=self.protein_id)
 
     def getpdbtemplate(self, chain=1, link=True):
         pdb = self.cath[:-3] + '_' + self.cath[-3]
@@ -319,25 +372,30 @@ class CoreModel(_CoreModel):
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        self.protein = Protein.objects.get(id=self.protein_id)
+        # self.protein = Protein.objects.get(id=self.protein_id)
 
     class Meta(_CoreModel.Meta):
         db_table = 'elaspic_core_model'
         managed = False
-        
 
 
 class CoreModelLocal(_CoreModel):
 
+    local = True
     interactions = models.ManyToManyField(
         'self', symmetrical=False, through='InterfaceModelLocal', blank=True)
+
+    # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
+
+    def getprot(self, chain=1):
+        return ProteinLocal.objects.get(id=self.protein_id)
 
     def getpdbtemplate(self, chain=1, link=True):
         return self.cath
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        self.protein = ProteinLocal.objects.get(id=self.protein_id)
+        # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_CoreModel.Meta):
         db_table = 'elaspic_core_model_local'
@@ -346,7 +404,7 @@ class CoreModelLocal(_CoreModel):
 # %% Core Mutation
 class _CoreMutation(models.Model):
     # Key
-    protein_id = models.CharField(max_length=15)
+    protein_id = models.CharField(max_length=15, primary_key=True)
     # domain_id = models.AutoField(primary_key=True, db_column='domain_id', db_index=True)
     domain_idx = models.IntegerField(db_index=True)
     mut = models.CharField(max_length=8, db_column='mutation')
@@ -401,16 +459,18 @@ class _CoreMutation(models.Model):
     class Meta:
         abstract = True
         # ordering = ['id']
-        # unique_together = (("protein_id", "domain_id", "mut"),)
+        unique_together = (("protein_id", "model", "mut"),)
 
 
 class CoreMutation(_CoreMutation):
 
-    model = models.OneToOneField(CoreModel, db_column='domain_id', primary_key=True)
+    model = models.ForeignKey(CoreModel, db_column='domain_id', related_name='muts')
+
+    # protein = models.ForeignKey(Protein, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        self.protein = Protein.objects.get(id=self.protein_id)
+        # self.protein = Protein.objects.get(id=self.protein_id)
 
     class Meta(_CoreMutation.Meta):
         db_table = 'elaspic_core_mutation'
@@ -419,11 +479,13 @@ class CoreMutation(_CoreMutation):
 
 class CoreMutationLocal(_CoreMutation):
 
-    model = models.OneToOneField(CoreModelLocal, db_column='domain_id', primary_key=True)
+    model = models.ForeignKey(CoreModelLocal, db_column='domain_id', related_name='muts')
+
+    # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        self.protein = ProteinLocal.objects.get(id=self.protein_id)
+        # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_CoreMutation.Meta):
         db_table = 'elaspic_core_mutation_local'
@@ -431,6 +493,11 @@ class CoreMutationLocal(_CoreMutation):
 
 # %% Interface
 class _InterfaceModel(models.Model):
+
+    @property
+    def local(self):
+        raise NotImplementedError
+
     # Key
     id = models.AutoField(primary_key=True, db_index=True, db_column='interface_id')
     protein_id_1 = models.CharField(max_length=15)
@@ -442,6 +509,14 @@ class _InterfaceModel(models.Model):
 
     # domain pair
     data_path = models.TextField(blank=True, db_column='path_to_data')
+
+    def get_protein_name(self, chain=1):
+        if chain == 1:
+            return get_protein_name(self.protein_id_1, local=self.local)
+        elif chain == 2:
+            return get_protein_name(self.protein_id_2, local=self.local)
+        else:
+            raise ValueError
 
     def getclan(self, chain):
         if chain == 1:
@@ -475,12 +550,6 @@ class _InterfaceModel(models.Model):
             return self.domain1
         elif chain == 2:
             return self.domain2
-
-    def getprot(self, chain):
-        if chain == 1:
-            return self.domain1.protein
-        elif chain == 2:
-            return self.domain2.protein
 
 #    def __str__(self):
 #        return '%s-%s' % (self.domain1_id, self.domain2_id)
@@ -575,10 +644,17 @@ class _InterfaceModel(models.Model):
 
 class InterfaceModel(_InterfaceModel):
 
+    local = False
     domain1 = models.ForeignKey(
         CoreModel, db_index=True, related_name='p1', db_column='domain_id_1')
     domain2 = models.ForeignKey(
         CoreModel, db_index=True, related_name='p2', db_column='domain_id_2')
+
+    def getprot(self, chain):
+        if chain == 1:
+            return Protein.objects.get(id=self.protein_id_1)
+        elif chain == 2:
+            return Protein.objects.get(id=self.protein_id_2)
 
     def getpdbtemplate(self, chain, link=True):
         if link:
@@ -605,16 +681,23 @@ class InterfaceModel(_InterfaceModel):
 
 class InterfaceModelLocal(_InterfaceModel):
 
+    local = True
+    domain1 = models.ForeignKey(
+        CoreModelLocal, db_index=True, related_name='p1', db_column='domain_id_1')
+    domain2 = models.ForeignKey(
+        CoreModelLocal, db_index=True, related_name='p2', db_column='domain_id_2')
+
+    def getprot(self, chain):
+        if chain == 1:
+            return ProteinLocal.objects.get(id=self.protein_id_1)
+        elif chain == 2:
+            return ProteinLocal.objects.get(id=self.protein_id_2)
+
     def getpdbtemplate(self, chain, link=True):
         if chain == 1:
             return '{}, {}'.format(self.cath1, self.cath2)
         elif chain == 2:
             return '{}, {}'.format(self.cath2, self.cath1)
-
-    domain1 = models.ForeignKey(
-        CoreModelLocal, db_index=True, related_name='p1', db_column='domain_id_1')
-    domain2 = models.ForeignKey(
-        CoreModelLocal, db_index=True, related_name='p2', db_column='domain_id_2')
 
     class Meta(_InterfaceModel.Meta):
         db_table = 'elaspic_interface_model_local'
@@ -628,7 +711,7 @@ class _InterfaceMutation(models.Model):
     # domain_id_1 = models.IntegerField(db_index=True)
     # protein_id_2 = models.CharField(max_length=15)
     # domain_id_2 = models.IntegerField(db_index=True)
-    protein_id = models.CharField(max_length=15)
+    protein_id = models.CharField(max_length=15, primary_key=True)
     mut = models.CharField(max_length=8, db_column='mutation')
     chain_idx = models.IntegerField()
 
@@ -714,11 +797,13 @@ class _InterfaceMutation(models.Model):
 
 class InterfaceMutation(_InterfaceMutation):
 
-    model = models.OneToOneField(InterfaceModel, db_column='interface_id', primary_key=True)
+    model = models.ForeignKey(InterfaceModel, db_column='interface_id', related_name='muts')
+
+    # protein = models.ForeignKey(Protein, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        self.protein = Protein.objects.get(id=self.protein_id)
+        # self.protein = Protein.objects.get(id=self.protein_id)
 
     class Meta(_InterfaceMutation.Meta):
         db_table = 'elaspic_interface_mutation'
@@ -727,11 +812,13 @@ class InterfaceMutation(_InterfaceMutation):
 
 class InterfaceMutationLocal(_InterfaceMutation):
 
-    model = models.OneToOneField(InterfaceModelLocal, db_column='interface_id', primary_key=True)
+    model = models.ForeignKey(InterfaceModelLocal, db_column='interface_id', related_name='muts')
+
+    # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        self.protein = ProteinLocal.objects.get(id=self.protein_id)
+        # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_InterfaceMutation.Meta):
         db_table = 'elaspic_interface_mutation_local'
@@ -787,6 +874,7 @@ class DatabaseCOSMIC(models.Model):
 
 
 def findInDatabase(mutations, protein_id):
+    logger.debug("findInDatabase({}, {})".format(mutations, protein_id))
     dbs = defaultdict(list)
 
     for db in (DatabaseClinVar, DatabaseUniProt, DatabaseCOSMIC):
@@ -795,5 +883,5 @@ def findInDatabase(mutations, protein_id):
             dbs[mut_db.mut].append({'name': mut_db.__class__.__name__[8:],
                                     'url': mut_db.makeLink(),
                                     'variation': mut_db.variation})
-
+    logger.debug("dbs: '{}'".format(dbs))
     return dbs
