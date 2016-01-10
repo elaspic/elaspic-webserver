@@ -334,7 +334,7 @@ def displayResult(request):
                     if d.protein_id == m.mut.protein:
                         mut.inac = 'self'
                     else:
-                        mut.inac = d.protein.getname()
+                        mut.inac = d.get_protein_name()
 
                     # AS: don't know what's going on here but errors so skip...
                     mut.inacd = ('h%d' % d.id if mut.inac == 'self' else 'n%d' % d.id)
