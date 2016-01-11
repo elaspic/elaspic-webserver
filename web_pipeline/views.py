@@ -73,7 +73,7 @@ def runPipeline(request):
             f.write('>input.pdb\n')
             f.write(seq)
         if isInvalidMut(mut, seq):
-            logger.debug("Mutation '{}' if not valid for sequence '{}'".format(mut, seq))
+            logger.error("Mutation '{}' if not valid for sequence '{}'".format(mut, seq))
             return HttpResponseRedirect('/')
 
         j = Job.objects.create(jobID=randomID,
@@ -221,6 +221,9 @@ def runPipeline(request):
         while (not status or status == 'error') and n_tries < 10:
             n_tries += 1
             r = requests.post('http://127.0.0.1:8000/elaspic/api/1.0/', json=data_in)
+            if not r.ok:
+                logger.error("Bad response from jobsubmitter server: {}".format(r))
+                continue
             status = r.json().get('status', None)
             logger.debug('status: {}'.format(status))
     else:
@@ -518,6 +521,8 @@ def displaySecondaryResult(request):
         [p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])
         # [p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])
     )
+
+    logger.debug('intmuts: {}'.format(intmuts))
     logger.debug("prots: '{}'".format(prots))
     for idx, prot in enumerate(prots):
 
@@ -526,6 +531,8 @@ def displaySecondaryResult(request):
             pds = [m.getdomain(chain_pos) for m in data.realMut]
             # pds = list(CoreModelLocal.objects.filter(protein_id=prot.id))
         else:
+            # chain_pos = 1 if not idx else 2
+            # pds = [m.getdomain(chain_pos) for m in data.realMut]
             pds = list(CoreModel.objects.filter(protein_id=prot.id))
 
         logger.debug("pds: '{}'".format(pds))
@@ -614,7 +621,7 @@ def displaySecondaryResult(request):
             # AS
             logger.debug('idx: {}, didx: {}'.format(idx, didx))
             logger.debug('initialProtein: {}'.format(initialProtein))
-            logger.debug('pd.protein_id: {}'.format(pd.id))
+            logger.debug('pd.id: {}'.format(pd.id))
             try:
                 logger.debug(
                     'intmuts...: {}'.format(intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id)
@@ -631,6 +638,7 @@ def displaySecondaryResult(request):
     if pxMutnum < 0:
         pxMutnum = 0
 
+    logger.debug('curdom: {}'.format(curdom))
     logger.debug('curmut: {}'.format(curmut))
     logger.debug('data.realMut: {}'.format(data.realMut))
     logger.debug('ds: {}'.format(ds))

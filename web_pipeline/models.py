@@ -255,6 +255,10 @@ class _CoreModel(models.Model):
     def local(self):
         raise NotImplementedError
 
+    @property
+    def protein(self):
+        return self.getprot()
+
     # Key
     id = models.AutoField(primary_key=True, db_index=True, db_column='domain_id')
     protein_id = models.CharField(max_length=15)
@@ -403,6 +407,11 @@ class CoreModelLocal(_CoreModel):
 
 # %% Core Mutation
 class _CoreMutation(models.Model):
+
+    @property
+    def protein(self):
+        raise NotImplementedError
+
     # Key
     protein_id = models.CharField(max_length=15, primary_key=True)
     # domain_id = models.AutoField(primary_key=True, db_column='domain_id', db_index=True)
@@ -466,6 +475,10 @@ class CoreMutation(_CoreMutation):
 
     model = models.ForeignKey(CoreModel, db_column='domain_id', related_name='muts')
 
+    @property
+    def protein(self):
+        return Protein.objects.get(id=self.protein_id)
+
     # protein = models.ForeignKey(Protein, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
@@ -480,6 +493,10 @@ class CoreMutation(_CoreMutation):
 class CoreMutationLocal(_CoreMutation):
 
     model = models.ForeignKey(CoreModelLocal, db_column='domain_id', related_name='muts')
+
+    @property
+    def protein(self):
+        return ProteinLocal.objects.get(id=self.protein_id)
 
     # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
@@ -705,6 +722,11 @@ class InterfaceModelLocal(_InterfaceModel):
 
 # %% Interface Mutation
 class _InterfaceMutation(models.Model):
+
+    @property
+    def protein(self):
+        raise NotImplementedError
+
     # Key
     # interface_id = models.IntegerField(primary_key=True, db_index=True)
     # protein_id_1 = models.CharField(max_length=15)
@@ -799,6 +821,10 @@ class InterfaceMutation(_InterfaceMutation):
 
     model = models.ForeignKey(InterfaceModel, db_column='interface_id', related_name='muts')
 
+    @property
+    def protein(self):
+        return Protein.objects.get(id=self.protein_id)
+
     # protein = models.ForeignKey(Protein, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
@@ -813,6 +839,10 @@ class InterfaceMutation(_InterfaceMutation):
 class InterfaceMutationLocal(_InterfaceMutation):
 
     model = models.ForeignKey(InterfaceModelLocal, db_column='interface_id', related_name='muts')
+
+    @property
+    def protein(self):
+        return ProteinLocal.objects.get(id=self.protein_id)
 
     # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 

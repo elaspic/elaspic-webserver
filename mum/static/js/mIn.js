@@ -271,9 +271,9 @@ $(document).ready(function(){
         $("#uploaderr").hide();
         var example = ['CCM1.E567Q', 'O00522.E567A', 'KRIT1_HUMAN.E567F',
                        'HLA-DRB1.V209R', 'KRas2.I36M', 'ENSG00000133703.V8R',
-                       'P68871.V35D', 'KIAA0145.R612Y', '3PPJ.R575F',
-                       'Q9Y2L6.G109S', 'EIF4E3.A21N', 
-                       'ROCK2.L581I', 'Cx46.R133T'];
+                       'P68871.V35D', 'KIAA0145.S66T', '3PPJ.R575F',
+                       'Q9Y2L6.G109S', 'EIF4E3.V130A', 
+                       'ROCK2.S264Y', 'Cx46.R133T'];
         $("#proteinsinput").val( example.join("\n") );
         $("#proteinsinput").trigger( "keyup" );
         getProteins(ajaxRequests);

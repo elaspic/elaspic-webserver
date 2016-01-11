@@ -421,10 +421,13 @@ def getProtein(request):
             #          .filter(protein_id=p.id, mut_errors=None).exclude(ddG=None))
             # )
             muts = (
-                [(mut, None, None) for model in ds for mut in model.muts.all() if int(mut.mut[1:-1]) in domain_range_all] +
+                [(mut, None, None)
+                 for model in ds
+                 for mut in model.muts.exclude(ddG=None)
+                 if int(mut.mut[1:-1]) in domain_range_all] +
                 [(mut, partner_protein_id, partner_protein_name)
                  for (model, partner_protein_id, partner_protein_name) in all_interface_models
-                 for mut in model.muts.filter(protein_id=p.id)
+                 for mut in model.muts.filter(protein_id=p.id).exclude(ddG=None)
                  if int(mut.mut[1:-1]) in domain_range_all]
             )
             logger.debug("muts: '{}'".format(muts))
