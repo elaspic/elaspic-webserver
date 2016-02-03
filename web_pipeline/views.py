@@ -665,14 +665,15 @@ def displaySecondaryResult(request):
                 d2 = dom
 
     d1 = None
-    for ds_x in ds:
-        for dom in ds_x:  # AS: shooting in the dark...
-            if dom[7]:
-                d1 = dom
-            if d1 is not None:
-                break
-        if d1 is not None:
-            break
+    for dom in ds[0]:
+        if dom[7]:
+            d1 = dom
+    if d1 is None:
+        # This occurs if the mutation is outside every domain
+        # for example when interface domain definitions don't line up
+        # with core domain definitions, and an interface mutation
+        # is outside all core domains.
+        d1 = ds[0][0]
 
     logger.debug("curdom: {}".format(curdom))
     logger.debug("d2: {}".format(d2))
