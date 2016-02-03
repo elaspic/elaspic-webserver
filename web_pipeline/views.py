@@ -658,16 +658,21 @@ def displaySecondaryResult(request):
                 'mut': {'mut': mut, 'desc': p.desc()}}
 
     # Get the domains interacting.
-    d1 = None
     d2 = None
     if curdom:
         for dom in curdom:
             if dom[7]:
                 d2 = dom
-    for ds_x in ds:  # AS: shooting in the dark...
-        for dom in ds_x:
+
+    d1 = None
+    for ds_x in ds:
+        for dom in ds_x:  # AS: shooting in the dark...
             if dom[7]:
                 d1 = dom
+            if d1 is not None:
+                break
+        if d1 is not None:
+            break
 
     logger.debug("curdom: {}".format(curdom))
     logger.debug("d2: {}".format(d2))
