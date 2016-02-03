@@ -168,7 +168,7 @@ def send_email(item, system_command, restarting=False):
     """
     TODO: Rework this to be asyncronous.
     """
-    me = 'ostrokach@gmail.com'
+    me = 'no-reply@kimlab.org'
     you = 'ostrokach@gmail.com'
     body = []
     body.extend([
@@ -643,6 +643,8 @@ async def main(data_in):
         - uniprot_domain_pair_ids  (database)
             Comma-separated list of uniprot_domain_pair_id interfaces to analyse.
     """
+    if not isinstance(data_in, (list, tuple)):
+        data_in = [data_in]
     for args in data_in:
         logger.debug('main')
         validate_args(args)

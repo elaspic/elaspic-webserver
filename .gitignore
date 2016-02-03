@@ -1,6 +1,9 @@
 # Folders
-**/__pycache__
-**/.coverage
+/.coverage
+/static
+/log
+
+__pycache__
 
 # Prefixes
 .*
