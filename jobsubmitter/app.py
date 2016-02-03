@@ -76,7 +76,7 @@ if __name__ == '__main__':
     if args.interactive:
         config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['console']
     else:
-        config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['info_log', 'debug_log']
+        config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['debug_log']  # ['info_log']
     logging.config.dictConfig(config.LOGGING_CONFIGS)
 
     loop = asyncio.get_event_loop()
