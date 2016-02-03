@@ -102,7 +102,7 @@ def rerunMut(request):
             n_tries = 0
             while (not status or status == 'error') and n_tries < 10:
                 n_tries += 1
-                r = requests.post('http://127.0.0.1:8000/elaspic/api/1.0/', json=data_in)
+                r = requests.post('http://elaspic.kimlab.org:8000/elaspic/api/1.0/', json=data_in)
                 status = r.json().get('status', None)
 
     return HttpResponse(json.dumps({'error': error}), content_type='application/json')

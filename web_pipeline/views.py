@@ -221,7 +221,7 @@ def runPipeline(request):
         n_tries = 0
         while (not status or status == 'error') and n_tries < 10:
             n_tries += 1
-            r = requests.post('http://127.0.0.1:8000/elaspic/api/1.0/', json=data_in)
+            r = requests.post('http://elaspic.kimlab.org:8000/elaspic/api/1.0/', json=data_in)
             if not r.ok:
                 logger.error("Bad response from jobsubmitter server: {}".format(r))
                 continue
@@ -495,6 +495,7 @@ def displaySecondaryResult(request):
         # Show error page if database fetching failed.
         if fileError:
             # Could not read mutation from database. Return error.
+            logger.error("{}: {}".format(type(e), e))
             return render(request, 'result2.html', {'url': returnUrl,
                                                     'current': 'result2',
                                                     'job': j,
@@ -540,6 +541,13 @@ def displaySecondaryResult(request):
 
         # Check if homodimer with self.
         homodimer = True if prot == p else False
+
+        try:
+            logger.debug(
+                'intmuts...: {}'.format(intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id)
+            )
+        except IndexError:
+            logger.debug('intmuts...: None')
 
         for didx, pd in enumerate(pds):
             # Get domain definitions.
@@ -620,15 +628,7 @@ def displaySecondaryResult(request):
             # if prot.name.split('_')[0] == 'UBC':
             # o += prot.name.split('_')[0] + ', '
             # AS
-            logger.debug('idx: {}, didx: {}'.format(idx, didx))
-            logger.debug('initialProtein: {}'.format(initialProtein))
-            logger.debug('pd.id: {}'.format(pd.id))
-            try:
-                logger.debug(
-                    'intmuts...: {}'.format(intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id)
-                )
-            except IndexError:
-                    logger.debug('intmuts...: None')
+            logger.debug('pd.id: {}, idx: {}, didx: {}'.format(pd.id, idx, didx))
             if (pd.id == initialProtein and
                     intmuts[idx - 1]['mut'].model.getdomain(1 if chain == 2 else 2).id == initialProtein):
                 curdom = ds[idx]
@@ -664,16 +664,17 @@ def displaySecondaryResult(request):
         for dom in curdom:
             if dom[7]:
                 d2 = dom
-    for dom in ds[0]:
-        if dom[7]:
-            d1 = dom
+    for ds_x in ds:  # AS: shooting in the dark...
+        for dom in ds_x:
+            if dom[7]:
+                d1 = dom
 
     logger.debug("curdom: {}".format(curdom))
     logger.debug("d2: {}".format(d2))
-    logger.debug("d1: {}".format(d1))
 
     # Get domain interaction values for 2dbar.
     if d2:
+        logger.debug("d1: {}".format(d1))
         # Set start and end for each domain.
         d1s, d1e = d1[3], d1[3] + d1[4]
         d2s, d2e = d2[3], d2[3] + d2[4]

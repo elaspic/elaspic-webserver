@@ -112,6 +112,7 @@ class FileManager(object):
 
                 mutCompleted = True if (m.mut.status == 'done' and m.mut.affectedType != 'NO') \
                                     and (self.job.isDone or not(m.mut.rerun)) else False
+                c = 1
                 if mutCompleted:
                     logger.info("m.realMut: {}".format(m.realMut))
                     rm = m.realMut[0]
