@@ -212,6 +212,7 @@ def runPipeline(request):
                 'protein_id': mut.protein,
                 'mutations': mut.mut,
                 'uniprot_domain_pair_ids': '',
+                'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
             }
             data_in.append(mutation)
 
@@ -657,6 +658,7 @@ def displaySecondaryResult(request):
                 'mut': {'mut': mut, 'desc': p.desc()}}
 
     # Get the domains interacting.
+    d1 = None
     d2 = None
     if curdom:
         for dom in curdom:

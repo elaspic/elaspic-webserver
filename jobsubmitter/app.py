@@ -12,6 +12,7 @@ from aiohttp import web
 
 import config
 import jobsubmitter
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -31,17 +32,17 @@ async def generic_handler(request, request_type):
         data_in = await request.json()
     else:
         raise Exception('Wrong request_type: {}'.format(request_type))
-    logger.debug("data_in:\n{}".format(data_in))
+    logger.debug("data_in: {}".format(data_in))
 
     # Process input
-    muts = asyncio.ensure_future(jobsubmitter.main(data_in))
-    logger.debug('muts: {}'.format(muts))
-
-    # Prepare output
-    if data_in:
+    if data_in and data_in.get('secret_key') == settings.JOBSUBMITTER_SECRET_KEY:
+        # Submit job
+        muts = asyncio.ensure_future(jobsubmitter.main(data_in))
+        logger.debug('muts: {}'.format(muts))
         data_out = {'status': 'submitted'}
     else:
-        data_out = {'status': 'error'}
+        # Invalid request
+        data_out = {'status': 'error', 'data_in': data_in}
     logger.debug('data_out:\n{}'.format(data_out))
 
     # Response
@@ -65,13 +66,22 @@ app.router.add_route('POST', '/elaspic/api/1.0/', post)
 
 # %%
 if __name__ == '__main__':
+    import argparse
     import logging.config
-    config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['info_log', 'debug_log']
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--interactive', action='store_true')
+    args = parser.parse_args()
+
+    if args.interactive:
+        config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['console']
+    else:
+        config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['info_log', 'debug_log']
     logging.config.dictConfig(config.LOGGING_CONFIGS)
 
     loop = asyncio.get_event_loop()
     handler = app.make_handler()
-    f = loop.create_server(handler, '127.0.0.1', 8000)
+    f = loop.create_server(handler, '0.0.0.0', 8000)
     srv = loop.run_until_complete(f)
     print('serving on: {}'.format(srv.sockets[0].getsockname()))
     logger.info('*' * 75)

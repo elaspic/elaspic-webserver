@@ -96,6 +96,7 @@ def rerunMut(request):
                 'protein_id': mut.protein,
                 'mutations': mut.mut,
                 'uniprot_domain_pair_ids': '',
+                'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
             }]
             status = None
             n_tries = 0
