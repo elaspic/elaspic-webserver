@@ -66,6 +66,7 @@ logger = logging.getLogger(__name__)
 
 
 def rerunMut(request):
+    logger.debug('rerunMut({})'.format(request))
     if not request.GET:
         raise Http404
     if not ('m' in request.GET) or not ('j' in request.GET):
@@ -89,15 +90,17 @@ def rerunMut(request):
             # ##### Rerun pipeline #####
             # runPipelineWrapper.delay(m, j.jobID)
             # sleepabit.delay(5,10)
-            data_in = [{
+            data_in = {
                 'job_id': j.jobID,
                 'job_email': j.email,
                 'job_type': 'database',
-                'protein_id': mut.protein,
-                'mutations': mut.mut,
-                'uniprot_domain_pair_ids': '',
                 'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
-            }]
+                'mutations': [{
+                    'protein_id': mut.protein,
+                    'mutations': mut.mut,
+                    'uniprot_domain_pair_ids': '',
+                }]
+            }
             status = None
             n_tries = 0
             while (not status or status == 'error') and n_tries < 10:

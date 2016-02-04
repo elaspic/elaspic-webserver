@@ -634,19 +634,23 @@ async def main(data_in):
     ----------
     data_in : list of dicts
         Each dict should have the following elements:
+        - job_id (all?)
         - job_type  (all)
-        - protein_id  (all)
-        - structure_file  (local)
-        - sequence_file  (local)
-        - mutations  (all)
-            Can be a comma-separated list of mutations, e.g. M1A,G2A
-        - uniprot_domain_pair_ids  (database)
-            Comma-separated list of uniprot_domain_pair_id interfaces to analyse.
+        - job_emial (optional)
+        - mutations
+            - protein_id  (all)
+            - structure_file  (local)
+            - sequence_file  (local)
+            - mutations  (all)
+                Can be a comma-separated list of mutations, e.g. M1A,G2A
+            - uniprot_domain_pair_ids  (database)
+                Comma-separated list of uniprot_domain_pair_id interfaces to analyse.
     """
-    if not isinstance(data_in, (list, tuple)):
-        data_in = [data_in]
-    for args in data_in:
+    for args in data_in.get('mutations', []):
         logger.debug('main')
+        args['job_id'] = data_in.get('job_id')
+        args['job_email'] = data_in.get('job_email')
+        args['job_type'] = data_in.get('job_type')
         validate_args(args)
         logger.debug('done validating args')
         have_prereqs = True
@@ -694,7 +698,7 @@ def validate_args(args):
 
     # Fill in defaults:
     args['sequence_file'] = args.get('sequence_file', None)
-    args['uniprot_domain_pair_ids'] = args.get('uniprot_domain_pair_ids', None)
+    args['uniprot_domain_pair_ids'] = args.get('uniprot_domain_pair_ids', '')
     # Make sure we have all the required arguments for the given job type
     if args['job_type'] == 'local':
         local_opts = [
