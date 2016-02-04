@@ -188,33 +188,37 @@ def runPipeline(request):
     # ##### Run pipeline #####
 
     if local:
-        data_in = [{
-            'job_id': randomID,
+        data_in = {
+            'job_id': j.jobID,
             'job_email': j.email,
             'job_type': 'local',
-            'protein_id': randomID,
-            'mutations': '{}_{}'.format(int(chain) + 1, mut),
-            'structure_file': 'input.pdb',
-            # 'sequence_file': 'input.fasta'
-        }]
+            'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+            'mutations': [{
+                'protein_id': randomID,
+                'mutations': '{}_{}'.format(int(chain) + 1, mut),
+                'structure_file': 'input.pdb',
+                # 'sequence_file': 'input.fasta',
+            }],
+        }
     else:
         # Run pipeline for new mutations.'
-        data_in = []
+        data_in = {
+            'job_id': j.jobID,
+            'job_email': j.email,
+            'job_type': 'database',
+            'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+            'mutations': []
+        }
         for m in newMuts:
             mut = m[0]
             mut.status = 'running'
             # mut.taskId = p.task_ids
             mut.save()
-            mutation = {
-                'job_id': j.jobID,
-                'job_email': j.email,
-                'job_type': 'database',
+            data_in['mutations'].append({
                 'protein_id': mut.protein,
                 'mutations': mut.mut,
                 'uniprot_domain_pair_ids': '',
-                'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
-            }
-            data_in.append(mutation)
+            })
 
     if data_in:
         status = None
