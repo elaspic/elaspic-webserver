@@ -35,4 +35,6 @@ if __name__ == '__main__':
         for mutation in args.mutations.split(','):
             upload_mutation(args.uniprot_id, mutation)
     else:
-        raise RuntimeError('Incorrent run_type: {}'.format(args.run_type))
+        print(
+            "This script is only applicable for run_type == 'mutations'!\n"
+            "(args = '{}')".format(args))
