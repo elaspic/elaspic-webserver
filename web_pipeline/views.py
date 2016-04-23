@@ -24,6 +24,7 @@ from web_pipeline.models import (
 from web_pipeline.functions import (
     getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail
 )
+import web_pipeline.functions as fn
 
 import logging
 
@@ -63,9 +64,10 @@ def runPipeline(request):
         mut = request.GET['proteins'].split('.')[-1]
         filename = request.GET['fileToUpload']
 
-        randomID = request.GET['jid']
+        # Create job in database.
+        random_id = request.GET['jid']
+        user_path = fn.get_user_path(random_id)
         chain = request.GET['chain']
-        user_path = os.path.join(DB_PATH, 'user_input', randomID)
 
         with open(os.path.join(user_path, 'pdb_parsed.pickle'), 'rb') as f:
             seq = pickle.load(f)[int(chain)][1]  # list of (chain_id, chain_seq)
@@ -76,12 +78,12 @@ def runPipeline(request):
             logger.error("Mutation '{}' if not valid for sequence '{}'".format(mut, seq))
             return HttpResponseRedirect('/')
 
-        j = Job.objects.create(jobID=randomID,
+        j = Job.objects.create(jobID=random_id,
                                email=request.GET['email'],
                                browser=request.META['HTTP_USER_AGENT'],
-                               localID=randomID)
+                               localID=random_id)
 
-        m = Mut.objects.create(protein=randomID, mut=mut, status='running')
+        m = Mut.objects.create(protein=random_id, mut=mut, chain=chain, status='running')
 
         JobToMut.objects.create(job=j, mut=m, inputIdentifier=filename)
 
@@ -105,14 +107,8 @@ def runPipeline(request):
             return HttpResponseRedirect('/')  # No valid proteins.
         logger.debug('validPnms: {}'.format(validPnms))
 
-        # Create job in database.
-        while True:
-            randomID = "%06x" % randint(1, 16777215)
-            user_path = os.path.join(DB_PATH, 'user_input', randomID)
-            if Job.objects.filter(jobID=randomID).count() == 0 and not os.path.exists(user_path):
-                break
-
-        j = Job.objects.create(jobID=randomID,
+        random_id = fn.get_random_id()
+        j = Job.objects.create(jobID=random_id,
                                email=request.GET['email'],
                                browser=request.META['HTTP_USER_AGENT'])
 
@@ -194,14 +190,14 @@ def runPipeline(request):
             'job_type': 'local',
             'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
             'mutations': [{
-                'protein_id': randomID,
+                'protein_id': random_id,
                 'mutations': '{}_{}'.format(int(chain) + 1, mut),
                 'structure_file': 'input.pdb',
                 # 'sequence_file': 'input.fasta',
             }],
         }
     else:
-        # Run pipeline for new mutations.'
+        # Run pipeline for new mutations.
         data_in = {
             'job_id': j.jobID,
             'job_email': j.email,
@@ -237,21 +233,6 @@ def runPipeline(request):
             .format(newMuts, doneMuts)
         )
 
-#    if args_list:
-#        p = jobsubmitter.main.delay(args_list, randomID)
-#        for m in newMuts:
-#            mut = m[0]
-#            mut.status = 'running'
-#            mut.taskId = p.task_id
-#            mut.save()
-
-    # p = runPipelineWrapper.delay([m[0] for m in newMuts], randomID)
-#    for m in newMuts:
-#        mut = m[0]
-#        p = runPipelineWrapper.delay(mut, randomID)
-#        mut.taskId = p.task_id
-#        mut.save()
-
     if local:
         sendEmail(j, 'started')
     else:
@@ -268,7 +249,7 @@ def runPipeline(request):
             sendEmail(j, 'started')
 
     # Redirect to result page.
-    return HttpResponseRedirect('http://%s/result/%s/' % (request.get_host(), randomID))
+    return HttpResponseRedirect('http://%s/result/%s/' % (request.get_host(), random_id))
 
 
 def displayResult(request):
@@ -457,7 +438,7 @@ def displaySecondaryResult(request):
                              os.path.join(pdbpath, 'mut.pdb'))
                 except Exception as e:
                     fileError = e
-        # INTERFACE.
+        # INTERFACE
         else:
             doneInt, toRemove = [], []
             for i, mu in enumerate(data.realMut):
@@ -545,6 +526,7 @@ def displaySecondaryResult(request):
 
         # Check if homodimer with self.
         homodimer = True if prot == p else False
+        logger.debug("homodimer: '{}'".format(homodimer))
 
         try:
             logger.debug(
@@ -649,7 +631,7 @@ def displaySecondaryResult(request):
     logger.debug('ds: {}'.format(ds))
 
     if not curmut:
-        curmut = data.realMut[0] if inCore else data.realMut[1]  # AS: indexerror?
+        curmut = data.realMut[0] if inCore else data.realMut[-1]  # AS: indexerror?
         curdom = None if inCore else ds[1]
 
     if loadEverything:
@@ -667,6 +649,9 @@ def displaySecondaryResult(request):
         for dom in curdom:
             if dom[7]:
                 d2 = dom
+        # AS hacking
+        if d2 is None and not inCore:
+            d2 = curdom[-1]
 
     d1 = None
     for dom in ds[0]:
