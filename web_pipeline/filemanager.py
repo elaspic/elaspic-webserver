@@ -53,17 +53,25 @@ class FileManager(object):
         # Save mutation list.
         for pnm in muts:
             iden, mut = getPnM(pnm)
+            if iden is None or mut is None:
+                logger.error("Something wrong happened when parsing pnm: '{}'".format(pnm))
+                logger.error("iden: '{}'".format(iden))
+                logger.error("mut: '{}'".format(mut))
+                continue
 
             # Get interaction if it is an interface mutaition.
-            isInterface = True if '_' in mut else False
+            isInterface = '_' in mut
             if isInterface:
                 mut, interfaceID = mut.split('_')
 
                 # AS
                 # inac = self.IM.objects.get(id=interfaceID)
                 # model = inac.model
-                model = self.IM.objects.get(id=interfaceID)
-
+                try:
+                    model = self.IM.objects.get(id=interfaceID)
+                except (self.IM.DoesNotExist, ValueError):
+                    logger.error("Interface model with id '{}' was not found!".format(interfaceID))
+                    continue
 
             # Get local mutation data.
             jtom = list(JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=jobID))
@@ -203,7 +211,7 @@ class FileManager(object):
                     physchem = ['pcv_salt_equal', 'pcv_salt_opposite', 'pcv_hbond', 'pcv_vdW']
 
                     header += (['Model/DOPE_score',
-                                'Sift_score',
+                                'Provean_score',
                                 'Matrix_score'] +
                                wtmut(['Secondary_structure',
                                      'Solvent_accessibility']) +
