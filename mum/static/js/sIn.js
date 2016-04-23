@@ -357,7 +357,7 @@ $(document).ready(function(){
     });
     $('#selectchain').change(function() {
         var chainid = $(this).find("option:selected").val();
-        obj = {known: {}, doms: [], defs: [], inacs: []}
+        obj = {known: {}, doms: [], defs: [], inacs: []};
 
         obj.seq = $('#barbox').data('data-pdb')[chainid][1];
         
