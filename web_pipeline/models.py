@@ -26,6 +26,7 @@ class Mut(models.Model):
 
     protein = models.CharField(max_length=50, db_index=True)
     mut = models.CharField(max_length=8)
+    chain = models.SmallIntegerField(null=True, blank=True)  # chain_idx; 0 -> first chain in PDB
 
     affectedType = models.CharField(max_length=2, choices=TYPE_CHOICES, blank=True)
     dateAdded = models.DateTimeField(auto_now_add=True)
