@@ -114,7 +114,7 @@ def runPipeline(request):
 
         # Create mutations in database if not already there.
         newMuts, doneMuts = [], []
-        
+
         for pnm in validPnms:
             toRerun = False
             m = list(Mut.objects.filter(protein=pnm[0], mut=pnm[1]))
@@ -335,8 +335,8 @@ def displayResult(request):
                         toRemove.append(i)
                     else:
                         doneInt.append(dubkey)
-            for rem in toRemove:
-                m.realMut.remove(m.realMut[rem])
+            for i in reversed(toRemove):
+                m.realMut.pop(i)
 
     context = {
         'url': 'http://%s/result/%s/' % (request.get_host(), requestID),
