@@ -353,7 +353,7 @@ class _CoreModel(models.Model):
         abstract = True
         unique_together = (("protein_id", "domain_idx"),)
         ordering = ['id']
-        
+
 
 class CoreModel(_CoreModel):
 
@@ -559,9 +559,9 @@ class _InterfaceModel(models.Model):
         except Exception:
             pass
         if chain == 1:
-            return self.domain1.defs
+            return self.domain1.getdefs()
         elif chain == 2:
-            return self.domain2.defs
+            return self.domain2.getdefs()
 
     def getdomain(self, chain):
         if chain == 1:
@@ -658,7 +658,7 @@ class _InterfaceModel(models.Model):
     class Meta:
         abstract = True
         ordering = ['id']
-        
+
 
 class InterfaceModel(_InterfaceModel):
 
