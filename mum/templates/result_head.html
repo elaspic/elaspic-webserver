@@ -1,55 +1,54 @@
-		<script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.tablesorter.min.js"></script>
-		<script type="text/javascript">
-			var jobID = '{{ job.jobID }}';
-		</script>{% if isRunning %}
-		<script type="text/javascript">
-/*
-function updateMutTable(data) {
-	for (var i = 0; i < data.status.length; i++) {
-		$("#resulttable tbody").find(".tds").eq(i).removeClass("running");
-		$("#resulttable tbody").find(".tds").eq(i).removeClass("queued");
-		$("#resulttable tbody").find(".tds").eq(i).removeClass("error");
-		$("#resulttable tbody").find(".tds").eq(i).addClass(data.status[i].toLowerCase());
-		if (data.status[i] == "done") {
-		alert(1)
-			$("#resulttable tbody"").find(".status").eq(i).html('<a href="{{ url }}' + data.iden[i] + '.' + data.seq[i] + '/" class="click">Complete</a>');
-		} else {
-		alert(2)
-			$("#resulttable").find(".status").eq(i).text(data.status[i]);
+<script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.tablesorter.min.js"></script>
+<script type="text/javascript">
+	var jobID = '{{ job.jobID }}';
+</script>{% if isRunning %}
+<script type="text/javascript">
+	/*
+	function updateMutTable(data) {
+		for (var i = 0; i < data.status.length; i++) {
+			$("#resulttable tbody").find(".tds").eq(i).removeClass("running");
+			$("#resulttable tbody").find(".tds").eq(i).removeClass("queued");
+			$("#resulttable tbody").find(".tds").eq(i).removeClass("error");
+			$("#resulttable tbody").find(".tds").eq(i).addClass(data.status[i].toLowerCase());
+			if (data.status[i] == "done") {
+			alert(1)
+				$("#resulttable tbody"").find(".status").eq(i).html('<a href="{{ url }}' + data.iden[i] + '.' + data.seq[i] + '/" class="click">Complete</a>');
+			} else {
+			alert(2)
+				$("#resulttable").find(".status").eq(i).text(data.status[i]);
+			}
 		}
 	}
-}
 
-function checkIfDone() {
-	$.ajax({
-		url: "/json/checkjob/",
-		data: {j: "{{ job.jobID }}"},
-		type: "POST",
-		dataType: "json",
-		cache: false,
-		success: function (data) {
+	function checkIfDone() {
+		$.ajax({
+			url: "/json/checkjob/",
+			data: {j: "{{ job.jobID }}"},
+			type: "POST",
+			dataType: "json",
+			cache: false,
+			success: function (data) {
 
-			updateMutTable(data);
+				updateMutTable(data);
 
-			if (data.done) {
-				$("#notreadyyet").remove();
-			} else {
+				if (data.done) {
+					$("#notreadyyet").remove();
+				} else {
+					setTimeout(function() {
+						checkIfDone();
+					}, 30000);
+				}
+			},
+			error: function (data) {
 				setTimeout(function() {
 					checkIfDone();
 				}, 30000);
 			}
-		},
-		error: function (data) {
-			setTimeout(function() {
-				checkIfDone();
-			}, 30000);
-		}
-	});
-}*/
+		});
+	}*/
 
-$("#notreadyyet").show();
-setTimeout(function() {
-	location.reload();
-}, 120000);
-
-		</script>{% endif %}
+	$("#notreadyyet").show();
+	setTimeout(function() {
+		location.reload();
+	}, 120000);
+</script>{% endif %}

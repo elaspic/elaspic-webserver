@@ -1,240 +1,235 @@
-{% extends "res.html" %}
-
-{% block headscript %}
-
-	{% include "result2_head.html" %}
-
-{% endblock %}
+{% extends "res.html" %} {% block headscript %} {% include "result2_head.html" %} {% endblock %} {% block otherfields %}
 
 
+<div id="topresults" class="field topfield">
+	<div class="top{% if inInt %} inac{% endif %}">
+		<h2>{{ data.inputIdentifier }}.{{ data.mut.mut }}</h2>
+		<div class="description">Detailed results for job #{{ job.jobID }} produced by {{ SITE_NAME }}</div>
+		<div class="line">
+			<hr />
+		</div>
+	</div>
+	<div class="content">
+		{% if dbError %}
+		<div id="dberror">
+			An error has occured. The data could not be found in the database.
+			<br /> Please contact us if this problems persists.
+		</div>
+		{% else %}
 
-{% block otherfields %}
-	
+		<!-- 2D protein bar -->
+		<div class="protein2d_wrapper{% if inInt %} inac{% endif %}">
 
-		<div id="topresults" class="field topfield">
-		    <div class="top{% if inInt %} inac{% endif %}">
-		        <h2>{{ data.inputIdentifier }}.{{ data.mut.mut }}</h2>
-		        <div class="description">Detailed results for job #{{ job.jobID }} produced by {{ SITE_NAME }}</div>
-		        <div class="line"><hr /></div>
-		    </div>
-		    <div class="content">
-				{% if dbError %}
-				 	<div id="dberror">
-				 		An error has occured. The data could not be found in the database. <br />
-				 		Please contact us if this problems persists.
-				 	</div>
-				{% else %}
-				
-				<!-- 2D protein bar -->
-				<div class="protein2d_wrapper{% if inInt %} inac{% endif %}">
-					
-					<div class="protein2d" id="bar1" style="width: {{ barsize }}px;">
-						<div class="dheader {% if inInt %}darkblue{% endif %}">
-							<span class="mono">{{ data.inputIdentifier }}</span>,
-							{% if loadeverything %}{{ data.realMut.0.protein.desc }}{% else %}{{ data.mut.desc }}{% endif %}:
-						</div>
-						<div class="dombar"></div>
-						<div class="barmutation" style="left: {{ pxmutnum|floatformat:'0' }}px;"></div>
-						<div class="barmutdesc" style="left: {{ pxmutdesc|floatformat:'0' }}px;">{{ data.mut.mut }}</div>
-						<div class="startdesc">1</div><div class="enddesc" style>{{ size|floatformat:'0' }}</div>
-						{% for dom in domains.0 %}{% spaceless %}
-							<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="1">
-								{{ dom.1 }}
-							</div>
-                            <div class="domain-bg{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
-						{% endspaceless %}{% endfor %}
-						<div class="tooltip2d"></div>
+			<div class="protein2d" id="bar1" style="width: {{ barsize }}px;">
+				<div class="dheader {% if inInt %}darkblue{% endif %}">
+					<span class="mono">{{ data.inputIdentifier }}</span>, {% if loadeverything %}{{ data.realMut.0.protein.desc }}{% else %}{{ data.mut.desc }}{% endif %}:
+				</div>
+				<div class="dombar"></div>
+				<div class="barmutation" style="left: {{ pxmutnum|floatformat:'0' }}px;"></div>
+				<div class="barmutdesc" style="left: {{ pxmutdesc|floatformat:'0' }}px;">{{ data.mut.mut }}</div>
+				<div class="startdesc">1</div>
+				<div class="enddesc" style>{{ size|floatformat:'0' }}</div>
+				{% for dom in domains.0 %}{% spaceless %}
+				<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="1">
+					{{ dom.1 }}
+				</div>
+				<div class="domain-bg{% if dom.7 %} current{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
+				{% endspaceless %}{% endfor %}
+				<div class="tooltip2d"></div>
+			</div>
+		</div>
+		{% if inInt %}
+		<!-- Interaction -->
+		<div id="protein2dinac_wrapper">
+			<div id="protein2dinac">
+				<div class="before"></div>
+				<div class="toptria"></div>
+				<div class="bottria"></div>
+				<div class="after"></div>
+			</div>
+		</div>
+		<!-- 2D protein bar #2 -->
+		<div class="protein2d_wrapper inac">
+
+			<div class="protein2d" id="bar2" style="width: {{ barsize }}px;">
+				<div class="dheader grey">
+					<span class="mono pname">{{ curdomain.0.15 }}</span>,
+					<span class="pdesc">{{ curdomain.0.10 }}</span>:
+				</div>
+				<div class="dombar"></div>
+				<div class="startdesc">1</div>
+				<div class="enddesc">{{ curdomain.0.8|floatformat:'0' }}</div>
+				{% for dom in curdomain %}{% spaceless %}
+				<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current2{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="2">
+					{{ dom.1 }}
+				</div>
+				<div class="domain-bg" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
+				{% endspaceless %}{% endfor %}
+				<div class="tooltip2d"></div>
+			</div>
+		</div>
+		<!-- CYTOSCAPE -->
+		<div id="cywrapper">
+			Select affected interaction:
+			<div id="cy"></div>
+		</div>
+		{% endif %}
+
+		<!-- JMOL -->
+		<div id="bottomcontent">
+			{% if loadeverything %}
+			<div id="protein3d_wrapper">
+				{% ifequal jmolmode "JAVA" %}
+				<div id="appletloading">
+					<br />Switch to the slower
+					<a href="?j=HTML5{% if initialp %}&p={% if initialh %}h{% else %}n{% endif %}{{ initialp }}{% endif %}" class="click3">HTML5 mode</a> if the applet isn't showing.
+				</div>
+				{% endifequal %}
+				<div class="jmolbuts" id="topbuts">
+					<div>Set mode:
+						<a href="?j=JAVA{% if initialp %}&p={% if initialh %}h{% else %}n{% endif %}{{ initialp }}{% endif %}" {% ifequal jmolmode "JAVA" %} class="underline" {% endifequal %}>JAVA</a> |
+						<a href="?j=HTML5{% if initialp %}&p={% if initialh %}h{% else %}n{% endif %}{{ initialp }}{% endif %}" {% ifequal jmolmode "HTML5" %} class="underline" {% endifequal %}>HTML5</a>
+					</div>
+					<div>Set quality:
+						<a href="javascript:jmolscript('mode', 'best');" class="bmode" id="bmodebest">Best</a> |
+						<a href="javascript:jmolscript('mode', 'normal');" class="bmode underline" id="bmodenormal">Normal</a> |
+						<a href="javascript:jmolscript('mode', 'worst');" class="bmode" id="bmodeworst">Worst</a>
 					</div>
 				</div>
-				{% if inInt %}
-					<!-- Interaction -->
-					<div id="protein2dinac_wrapper">
-						<div id="protein2dinac">
-							<div class="before"></div>
-							<div class="toptria"></div>
-							<div class="bottria"></div>
-							<div class="after"></div>
-						</div>
-					</div>
-					<!-- 2D protein bar #2 -->
-					<div class="protein2d_wrapper inac">
-					
-						<div class="protein2d" id="bar2" style="width: {{ barsize }}px;">
-						<div class="dheader grey">
-							<span class="mono pname">{{ curdomain.0.15 }}</span>, 
-							<span class="pdesc">{{ curdomain.0.10 }}</span>:
-						</div>
-							<div class="dombar"></div>
-							<div class="startdesc">1</div><div class="enddesc">{{ curdomain.0.8|floatformat:'0' }}</div>
-						{% for dom in curdomain %}{% spaceless %}
-							<div title="Click to open Pfam description." class="domain popup{% if dom.7 %} current2{% endif %}" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text="{{ dom.2 }}" data-bar="2">
-								{{ dom.1 }}
-							</div>
-                            <div class="domain-bg" style="width: {{ dom.4 }}px; left: {{ dom.3 }}px;" data-start="{{ dom.5 }}" data-end="{{ dom.6 }}" data-text=""></div>
-						{% endspaceless %}{% endfor %}
-							<div class="tooltip2d"></div>
-						</div>
-					</div>
-					<!-- CYTOSCAPE -->
-					<div id="cywrapper">
-						Select affected interaction:
-						<div id="cy"></div>
-					</div>
-				{% endif %}
 
-				<!-- JMOL -->
-				<div id="bottomcontent">
-				{% if loadeverything %}
-					<div id="protein3d_wrapper">
-						{% ifequal jmolmode "JAVA" %}
-						<div id="appletloading"><br />Switch to the slower
-							<a href="?j=HTML5{% if initialp %}&p={% if initialh %}h{% else %}n{% endif %}{{ initialp }}{% endif %}" class="click3">HTML5 mode</a>
-							if the applet isn't showing.
-						</div>
-						{% endifequal %}
-						<div class="jmolbuts" id="topbuts">
-							<div>Set mode: 
-								<a href="?j=JAVA{% if initialp %}&p={% if initialh %}h{% else %}n{% endif %}{{ initialp }}{% endif %}"{% ifequal jmolmode "JAVA" %} class="underline"{% endifequal %}>JAVA</a> |
-								<a href="?j=HTML5{% if initialp %}&p={% if initialh %}h{% else %}n{% endif %}{{ initialp }}{% endif %}"{% ifequal jmolmode "HTML5" %} class="underline"{% endifequal %}>HTML5</a> 
-							</div>
-							<div>Set quality: 
-								<a href="javascript:jmolscript('mode', 'best');" class="bmode" id="bmodebest">Best</a> |
-								<a href="javascript:jmolscript('mode', 'normal');" class="bmode underline" id="bmodenormal">Normal</a> |
-								<a href="javascript:jmolscript('mode', 'worst');" class="bmode" id="bmodeworst">Worst</a>
-							</div>
-						</div>
-						
-						<div id="appletplace"></div>
+				<div id="appletplace"></div>
 
-						<div style="float: right; text-align: right;" class="jmolbuts">
-							<div>Model:
-								<a href="javascript:jmolscript('model', '1.1');" class="bshow" id="b1.1">Wild-type</a> |
-								<a href="javascript:jmolscript('model', '2.1');" class="bshow" id="b2.1">Mutant</a> |
-								<a href="javascript:jmolscript('model', '0');" class="bshow underline" id="b0">Both</a>
-							</div>
-							{% if inInt %}
-							<div>Protein:
-								<a href="javascript:jmolscript('show', 'self');" class="pshow" id="pshowself">{{ data.inputIdentifier }}</a> |
-								<a href="javascript:jmolscript('show', 'inac');" class="pshow" id="pshowinac">{{ curdomain.0.15 }}</a> |
-								<a href="javascript:jmolscript('show', 'hetatm');" class="pshow" id="pshowhetatm">Cofactors</a> |
-								<a href="javascript:jmolscript('show', 'all');" class="pshow underline" id="pshowall">All</a>
-							</div>
-							{% endif %}
-							<div>Center camera:
-								<a href="javascript:jmolscript('center', 'prot');" class="bcenter" id="bprot">Protein</a> |
-								<a href="javascript:jmolscript('center', 'mut');" class="bcenter underline" id="bmut">Mutation</a>
-							</div>
-							<div class="click opennew">Clone in larger window</div>
-						</div>
-						<div class="jmolbuts">
-							<div>Cartoon:
-								<a href="javascript:jmolscript('cart', 'on');" class="bcart" id="bcarton">On</a> |
-								<a href="javascript:jmolscript('cart', 'off');" class="bcart" id="bcartoff">Off</a> |
-								<a href="javascript:jmolscript('cart', 'trans');" class="bcart underline" id="bcarttrans">Translucent</a>
-							</div>
-							<div>Sticks:
-								<a href="javascript:jmolscript('sticks', 'on');" class="bstick" id="bstickon">On</a> |
-								<a href="javascript:jmolscript('sticks', 'off');" class="bstick" id="bstickoff">Off</a> |
-								<a href="javascript:jmolscript('sticks', $('#stickFormRange').val());" class="bstick underline" id="bsticknum">Within Å:</a> 
-								<select id="stickFormRange">
-									{% for i in selectrange %}<option value="{{ i }}"{% ifequal i 6 %} selected="selected"{% endifequal %}>{{ i }}</option>{% endfor %}
-								</select>
-							</div>
-							<div>Labels:
-								<a href="javascript:jmolscript('label', 'on', false);" class="blabel" id="blabelon">On</a> |
-								<a href="javascript:jmolscript('label', 'off', false);" class="blabel" id="blabeloff">Off</a> |
-								<a href="javascript:jmolscript('label', 'sticks', false);" class="blabel underline" id="blabelsticks">Only sticks</a>
-							</div>
-							<div>Color by:
-								<a href="javascript:jmolscript('color', 'chain');" class="bcolor" id="bcolorchain">Protein</a> |
-								<a href="javascript:jmolscript('color', 'atom');" class="bcolor underline" id="bcoloratom">Model</a> |
-								<a href="javascript:jmolscript('color', 'structure');" class="bcolor" id="bcolorstructure">Structure</a> |
-								<!--<a href="javascript:color('residue');" class="bcolor" id="bcolorresidue">Residue</a> |-->
-								<a href="javascript:jmolscript('color', 'hydro');" class="bcolor" id="bcolorhydro">Hydrophobicity</a> <!--|
+				<div style="float: right; text-align: right;" class="jmolbuts">
+					<div>Model:
+						<a href="javascript:jmolscript('model', '1.1');" class="bshow" id="b1.1">Wild-type</a> |
+						<a href="javascript:jmolscript('model', '2.1');" class="bshow" id="b2.1">Mutant</a> |
+						<a href="javascript:jmolscript('model', '0');" class="bshow underline" id="b0">Both</a>
+					</div>
+					{% if inInt %}
+					<div>Protein:
+						<a href="javascript:jmolscript('show', 'self');" class="pshow" id="pshowself">{{ data.inputIdentifier }}</a> |
+						<a href="javascript:jmolscript('show', 'inac');" class="pshow" id="pshowinac">{{ curdomain.0.15 }}</a> |
+						<a href="javascript:jmolscript('show', 'hetatm');" class="pshow" id="pshowhetatm">Cofactors</a> |
+						<a href="javascript:jmolscript('show', 'all');" class="pshow underline" id="pshowall">All</a>
+					</div>
+					{% endif %}
+					<div>Center camera:
+						<a href="javascript:jmolscript('center', 'prot');" class="bcenter" id="bprot">Protein</a> |
+						<a href="javascript:jmolscript('center', 'mut');" class="bcenter underline" id="bmut">Mutation</a>
+					</div>
+					<div class="click opennew">Clone in larger window</div>
+				</div>
+				<div class="jmolbuts">
+					<div>Cartoon:
+						<a href="javascript:jmolscript('cart', 'on');" class="bcart" id="bcarton">On</a> |
+						<a href="javascript:jmolscript('cart', 'off');" class="bcart" id="bcartoff">Off</a> |
+						<a href="javascript:jmolscript('cart', 'trans');" class="bcart underline" id="bcarttrans">Translucent</a>
+					</div>
+					<div>Sticks:
+						<a href="javascript:jmolscript('sticks', 'on');" class="bstick" id="bstickon">On</a> |
+						<a href="javascript:jmolscript('sticks', 'off');" class="bstick" id="bstickoff">Off</a> |
+						<a href="javascript:jmolscript('sticks', $('#stickFormRange').val());" class="bstick underline" id="bsticknum">Within Å:</a>
+						<select id="stickFormRange">
+							{% for i in selectrange %}
+							<option value="{{ i }}" {% ifequal i 6 %} selected="selected" {% endifequal %}>{{ i }}</option>{% endfor %}
+						</select>
+					</div>
+					<div>Labels:
+						<a href="javascript:jmolscript('label', 'on', false);" class="blabel" id="blabelon">On</a> |
+						<a href="javascript:jmolscript('label', 'off', false);" class="blabel" id="blabeloff">Off</a> |
+						<a href="javascript:jmolscript('label', 'sticks', false);" class="blabel underline" id="blabelsticks">Only sticks</a>
+					</div>
+					<div>Color by:
+						<a href="javascript:jmolscript('color', 'chain');" class="bcolor" id="bcolorchain">Protein</a> |
+						<a href="javascript:jmolscript('color', 'atom');" class="bcolor underline" id="bcoloratom">Model</a> |
+						<a href="javascript:jmolscript('color', 'structure');" class="bcolor" id="bcolorstructure">Structure</a> |
+						<!--<a href="javascript:color('residue');" class="bcolor" id="bcolorresidue">Residue</a> |-->
+						<a href="javascript:jmolscript('color', 'hydro');" class="bcolor" id="bcolorhydro">Hydrophobicity</a>
+						<!--|
 								<a href="javascript:color('charge');" class="bcolor" id="bcolorcharge">Charge</a>-->
-							</div>
-						</div>
 					</div>
+				</div>
+			</div>
 
-					{% comment %}<div>Surface:?
-						<a href="javascript:Jmol.script(jmol1,'select *;isosurface vdw')">isosurface vdw</a>
-						<a href="javascript:Jmol.script(jmol1,'isosurface delete')">off</a>
-						<a href="javascript:Jmol.script(jmol1,'if ({atomno < 10}.partialcharge == 0){calculate partialcharge};isosurface vdw map mep')">mep</a>
-						<a href="javascript:Jmol.script(jmol1,'isosurface translucent')">translucent</a>
-						<a href="javascript:Jmol.script(jmol1,'isosurface opaque')">opaque</a>
-						<a href="javascript:Jmol.script(jmol1,'console')">console</a>
-					</div>{% endcomment %}
-					
-					<!-- Sidebar -->
-					<div id="result_wrapper" class="descbar">
-						<h4>{{ data.inputIdentifier }}.{{ data.mut.mut }}</h4>
-						
-						<!-- Status -->
-						<p class="{{ data.mut.status }}">
-							{% ifequal data.mut.status 'done' %}Completed successfully{% else %}Error{% endifequal %}
-						</p>
-						
-						<!-- Protein domain -->
-						<p class="whole">
-							<span class="wholeheader">Protein, domain:</span>
-							<span id="sbprotori" class="mono onethird">{{ data.inputIdentifier }}</span>
-							<span id="sbdomori" class="mono twothirds">{{ domainname }}</span>
-						</p>
-						{% if inInt %}
-							<p class="whole">
-								<span class="wholeheader">Interacting with:</span>
-								<span id="sbprot" class="mono onethird">{{ curdomain.0.15 }}</span>
-								<span id="sbdom" class="mono twothirds">
+			{% comment %}
+			<div>Surface:?
+				<a href="javascript:Jmol.script(jmol1,'select *;isosurface vdw')">isosurface vdw</a>
+				<a href="javascript:Jmol.script(jmol1,'isosurface delete')">off</a>
+				<a href="javascript:Jmol.script(jmol1,'if ({atomno < 10}.partialcharge == 0){calculate partialcharge};isosurface vdw map mep')">mep</a>
+				<a href="javascript:Jmol.script(jmol1,'isosurface translucent')">translucent</a>
+				<a href="javascript:Jmol.script(jmol1,'isosurface opaque')">opaque</a>
+				<a href="javascript:Jmol.script(jmol1,'console')">console</a>
+			</div>{% endcomment %}
+
+			<!-- Sidebar -->
+			<div id="result_wrapper" class="descbar">
+				<h4>{{ data.inputIdentifier }}.{{ data.mut.mut }}</h4>
+
+				<!-- Status -->
+				<p class="{{ data.mut.status }}">
+					{% ifequal data.mut.status 'done' %}Completed successfully{% else %}Error{% endifequal %}
+				</p>
+
+				<!-- Protein domain -->
+				<p class="whole">
+					<span class="wholeheader">Protein, domain:</span>
+					<span id="sbprotori" class="mono onethird">{{ data.inputIdentifier }}</span>
+					<span id="sbdomori" class="mono twothirds">{{ domainname }}</span>
+				</p>
+				{% if inInt %}
+				<p class="whole">
+					<span class="wholeheader">Interacting with:</span>
+					<span id="sbprot" class="mono onethird">{{ curdomain.0.15 }}</span>
+					<span id="sbdom" class="mono twothirds">
 									{% for dom in curdomain %}{% if dom.7 %}{% if dom.2 %}{{ dom.2 }}{% else %}{{ dom.1 }}{% endif %}{% endif %}{% endfor %}
 								</span>
-							</p>
-						{% else %}
-							<p class="whole">
-								Type:	<span class="mono">
+				</p>
+				{% else %}
+				<p class="whole">
+					Type: <span class="mono">
 											{% ifequal data.mut.affectedType 'CO' %}Core (stability){% endifequal %}
 									  		{% ifequal data.mut.affectedType 'IN' %}Interface (affinity){% endifequal %}
 									  	</span>
-							</p>
-						{% endif %}
-						
-						<!-- Scores -->
-						<p class="whole br">
-							PDB template{% if inInt %}s{% endif %} used: <span id="sbpdb" class="mono">{% if inInt %}{{ curmut.pdbtemp|safe }}{% else %}{{ curmut.model.getpdbtemplate|safe }}{% endif %}</span>
-						</p>
-						<p class="whole">
-							<span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.getsequenceidentity }}{% endif %}</span></span>
-							<span class="half hright">Model score: <span id="sbdop" class="mono">{{ curmut.model.dope_score|floatformat:3 }}</span></span>
-						</p>
-						<p class="whole">
-							<span class="half">&#916;G<sub>wt</sub> <span class="small">(FoldX)</span>: <span id="sbdgwt" class="mono">{{ curmut.dGwt }}</span></span>
-						   	<span class="half hright">&#916;G<sub>mut</sub> <span class="small">(FoldX)</span>: <span id="sbdgmut" class="mono">{{ curmut.dGmut }}</span></span>
-						</p>
-						<p class="ddg">
-							Final &#916;&#916;G: <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
-						</p>
-                        
-                        <!-- Database information -->
-                        <p class="mutdb">{{ mut_dbs_html|safe }}</p>
-						
-						<!-- Dl buttons -->
-						<div id="pdbdl">Download:&nbsp;
-							<a id="dlwt" target="_blank" href="{{ STATIC_FOLDER }}jobs/{{ job.jobID }}/{{ data.inputIdentifier }}.{{ data.mut.mut }}/{{ curdomain.0.0 }}wt.pdb">
+				</p>
+				{% endif %}
+
+				<!-- Scores -->
+				<p class="whole br">
+					PDB template{% if inInt %}s{% endif %} used: <span id="sbpdb" class="mono">{% if inInt %}{{ curmut.pdbtemp|safe }}{% else %}{{ curmut.model.getpdbtemplate|safe }}{% endif %}</span>
+				</p>
+				<p class="whole">
+					<span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.getsequenceidentity }}{% endif %}</span></span>
+					<span class="half hright">Model score: <span id="sbdop" class="mono">{{ curmut.model.dope_score|floatformat:3 }}</span></span>
+				</p>
+				<p class="whole">
+					<span class="half">&#916;G<sub>wt</sub> <span class="small">(FoldX)</span>: <span id="sbdgwt" class="mono">{{ curmut.dGwt }}</span></span>
+					<span class="half hright">&#916;G<sub>mut</sub> <span class="small">(FoldX)</span>: <span id="sbdgmut" class="mono">{{ curmut.dGmut }}</span></span>
+				</p>
+				<p class="ddg">
+					Final &#916;&#916;G: <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
+				</p>
+
+				<!-- Database information -->
+				<p class="mutdb">{{ mut_dbs_html|safe }}</p>
+
+				<!-- Dl buttons -->
+				<div id="pdbdl">Download:&nbsp;
+					<a id="dlwt" target="_blank" href="{{ STATIC_FOLDER }}jobs/{{ job.jobID }}/{{ data.inputIdentifier }}.{{ data.mut.mut }}/{{ curdomain.0.0 }}wt.pdb">
 								PDB<sub>wt</sub>
-							</a> 
-							&nbsp;<span class="desc">|</span>
-							<a id="dlmut" target="_blank" href="{{ STATIC_FOLDER }}jobs/{{ job.jobID }}/{{ data.inputIdentifier }}.{{ data.mut.mut }}/{{ curdomain.0.0 }}mut.pdb">
+							</a> &nbsp;
+					<span class="desc">|</span>
+					<a id="dlmut" target="_blank" href="{{ STATIC_FOLDER }}jobs/{{ job.jobID }}/{{ data.inputIdentifier }}.{{ data.mut.mut }}/{{ curdomain.0.0 }}mut.pdb">
 								PDB<sub>mut</sub>
 							</a>
-						</div>
-					</div>
-					{% else %}
-						<i>{{ SITE_NAME }} could not predict stability changes, as the mutation <span class="mono">{{ data.mut.mut }}</span> 
-						does not fall into any known protein domains of {{ data.inputIdentifier }}.</i>
-					{% endif %}			
 				</div>
-				{% endif %}
 			</div>
-		</div> 
+			{% else %}
+			<i>{{ SITE_NAME }} could not predict stability changes, as the mutation <span class="mono">{{ data.mut.mut }}</span>
+						does not fall into any known protein domains of {{ data.inputIdentifier }}.</i> {% endif %}
+		</div>
+		{% endif %}
+	</div>
+</div>
 
-	
+
 {% endblock %}

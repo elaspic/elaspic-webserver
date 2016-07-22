@@ -1,126 +1,287 @@
-	<link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/2dprotein.css" media="all" />
-	<!-- Styling for protein2Dbar interaction shadow -->
-	<style type="text/css">
-		#protein2dinac {
-			left: {{ protein2dinac.mid_left }}px;
-			width: {{ protein2dinac.mid_width }}px;
+<link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/2dprotein.css" media="all" />
+<!-- Styling for protein2Dbar interaction shadow -->
+<style type="text/css">
+	#protein2dinac {
+		left: {
+			{
+				protein2dinac.mid_left
+			}
 		}
-		#protein2dinac .toptria, #protein2dinac .bottria {
-			border-left-width: {% widthratio protein2dinac.mid_width 2 1 %}px;
-			border-right-width: {% widthratio protein2dinac.mid_width 2 1 %}px;
+		px;
+		width: {
+			{
+				protein2dinac.mid_width
+			}
 		}
-		#protein2dinac .toptria {
-			{% ifequal protein2dinac.mid_side "down" %}
-				border-bottom-color: transparent;
-				border-left-color: transparent;
-			{% endifequal %}
-			{% ifequal protein2dinac.mid_side "up" %}
-				border-bottom-color: transparent;
-				border-right-color: transparent;
-			{% endifequal %}
-			{% ifequal protein2dinac.mid_side "solid" %}
-				border-top-color: transparent;
-				border-right-color: transparent;
-				border-bottom-color: transparent;
-				border-left-color: transparent;
-			{% endifequal %}
-			border-top-width: {{ protein2dinac.mid_top_height }}px;
-			border-bottom-width: {{ protein2dinac.mid_top_height }}px;
+		px;
+	}
+
+	#protein2dinac .toptria,
+	#protein2dinac .bottria {
+		border-left-width: {
+			% widthratio protein2dinac.mid_width 2 1 %
 		}
-		#protein2dinac .bottria {
-			{% ifequal protein2dinac.mid_side "down" %}
-				border-top-color: transparent;
-				border-right-color: transparent;
-			{% endifequal %}
-			{% ifequal protein2dinac.mid_side "up" %}
-				border-top-color: transparent;
-				border-left-color: transparent;
-			{% endifequal %}
-			{% ifequal protein2dinac.mid_side "solid" %}
-				border-top-color: transparent;
-				border-right-color: transparent;
-				border-bottom-color: transparent;
-				border-left-color: transparent;
-			{% endifequal %}
-			border-top-width: {{ protein2dinac.mid_bot_height }}px;
-			border-bottom-width: {{ protein2dinac.mid_bot_height }}px;
+		px;
+		border-right-width: {
+			% widthratio protein2dinac.mid_width 2 1 %
 		}
-		#protein2dinac .before {
-			border-top-width: {{ protein2dinac.left_height }}px;
-			border-bottom-width: {{ protein2dinac.left_height }}px;
-			{% ifequal protein2dinac.left_side "down" %}
-				border-bottom-color: transparent;
-				top: 0px;
-			{% endifequal %}
-			{% ifequal protein2dinac.left_side "up" %}
-				border-top-color: transparent;
-				bottom: 0px;
-			{% endifequal %}
-			border-left-width: {% widthratio protein2dinac.left_width 2 1 %}px;
-			border-right-width: {% widthratio protein2dinac.left_width 2 1 %}px;
-			left: -{{ protein2dinac.left_width }}px;
+		px;
+	}
+
+	#protein2dinac .toptria {
+		{
+			% ifequal protein2dinac.mid_side "down" %
 		}
-		#protein2dinac .after {
-			border-top-width: {{ protein2dinac.right_height }}px;
-			border-bottom-width: {{ protein2dinac.right_height }}px;
-			{% ifequal protein2dinac.right_side "down" %}
-				border-top-color: transparent;
-				bottom: 0px;
-			{% endifequal %}
-			{% ifequal protein2dinac.right_side "up" %}
-				border-bottom-color: transparent;
-				top: 0px;
-			{% endifequal %}
-			border-left-width: {% widthratio protein2dinac.right_width 2 1 %}px;
-			border-right-width: {% widthratio protein2dinac.right_width 2 1 %}px;
-			right: -{{ protein2dinac.right_width }}px;
+		border-bottom-color: transparent;
+		border-left-color: transparent;
+		{
+			% endifequal %
 		}
-	</style>
-	<script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
-	<script type="text/javascript" src="{{ STATIC_FOLDER }}js/cytoscape.min.js"></script>
-	<script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/JSmol.min.nojq.js"></script>
-	<script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/js/JSmolThree.js"></script>
-	<script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/js/JSmolGLmol.js"></script>
-	<script type="text/javascript">
+		{
+			% ifequal protein2dinac.mid_side "up" %
+		}
+		border-bottom-color: transparent;
+		border-right-color: transparent;
+		{
+			% endifequal %
+		}
+		{
+			% ifequal protein2dinac.mid_side "solid" %
+		}
+		border-top-color: transparent;
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+		border-left-color: transparent;
+		{
+			% endifequal %
+		}
+		border-top-width: {
+			{
+				protein2dinac.mid_top_height
+			}
+		}
+		px;
+		border-bottom-width: {
+			{
+				protein2dinac.mid_top_height
+			}
+		}
+		px;
+	}
 
-var thisPage = '{{ current }}';
-var jmolmode = '{{ jmolmode }}';
+	#protein2dinac .bottria {
+		{
+			% ifequal protein2dinac.mid_side "down" %
+		}
+		border-top-color: transparent;
+		border-right-color: transparent;
+		{
+			% endifequal %
+		}
+		{
+			% ifequal protein2dinac.mid_side "up" %
+		}
+		border-top-color: transparent;
+		border-left-color: transparent;
+		{
+			% endifequal %
+		}
+		{
+			% ifequal protein2dinac.mid_side "solid" %
+		}
+		border-top-color: transparent;
+		border-right-color: transparent;
+		border-bottom-color: transparent;
+		border-left-color: transparent;
+		{
+			% endifequal %
+		}
+		border-top-width: {
+			{
+				protein2dinac.mid_bot_height
+			}
+		}
+		px;
+		border-bottom-width: {
+			{
+				protein2dinac.mid_bot_height
+			}
+		}
+		px;
+	}
 
-var currentMut = {{ mutnum }};
-var staticFolder = "{{ STATIC_FOLDER }}";
-var reverseLabel = {{ reverselabel }};
-var mutPath = "{{ STATIC_FOLDER }}jobs/{{ job.jobID }}/{{ data.inputIdentifier }}.{{ data.mut.mut }}/";
-var defaultColor = "{% if inInt %}chain{% else %}atom{% endif %}";
-var defaultCartoon = "trans";
-var defaultLabel = "sticks";
-var defaultModel = "0";
-var defaultShow = 'all';
+	#protein2dinac .before {
+		border-top-width: {
+			{
+				protein2dinac.left_height
+			}
+		}
+		px;
+		border-bottom-width: {
+			{
+				protein2dinac.left_height
+			}
+		}
+		px;
+		{
+			% ifequal protein2dinac.left_side "down" %
+		}
+		border-bottom-color: transparent;
+		top: 0px;
+		{
+			% endifequal %
+		}
+		{
+			% ifequal protein2dinac.left_side "up" %
+		}
+		border-top-color: transparent;
+		bottom: 0px;
+		{
+			% endifequal %
+		}
+		border-left-width: {
+			% widthratio protein2dinac.left_width 2 1 %
+		}
+		px;
+		border-right-width: {
+			% widthratio protein2dinac.left_width 2 1 %
+		}
+		px;
+		left: - {
+			{
+				protein2dinac.left_width
+			}
+		}
+		px;
+	}
 
-var initialdomain = '{% if initialp %}{{ initialp }}{% else %}{{ curdomain.0.0 }}{% endif %}';
-var resNumDiff = {{ mutnumdiff }};
+	#protein2dinac .after {
+		border-top-width: {
+			{
+				protein2dinac.right_height
+			}
+		}
+		px;
+		border-bottom-width: {
+			{
+				protein2dinac.right_height
+			}
+		}
+		px;
+		{
+			% ifequal protein2dinac.right_side "down" %
+		}
+		border-top-color: transparent;
+		bottom: 0px;
+		{
+			% endifequal %
+		}
+		{
+			% ifequal protein2dinac.right_side "up" %
+		}
+		border-bottom-color: transparent;
+		top: 0px;
+		{
+			% endifequal %
+		}
+		border-left-width: {
+			% widthratio protein2dinac.right_width 2 1 %
+		}
+		px;
+		border-right-width: {
+			% widthratio protein2dinac.right_width 2 1 %
+		}
+		px;
+		right: - {
+			{
+				protein2dinac.right_width
+			}
+		}
+		px;
+	}
+</style>
+<script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
+<script type="text/javascript" src="{{ STATIC_FOLDER }}js/cytoscape.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/JSmol.min.nojq.js"></script>
+<script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/js/JSmolThree.js"></script>
+<script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/js/JSmolGLmol.js"></script>
+<script type="text/javascript">
+	var thisPage = '{{ current }}';
+	var jmolmode = '{{ jmolmode }}';
 
-// For interaction shadow.
-var d1s = {{ protein2dinac.self_start }};
-var d1w = {{ protein2dinac.self_width }};
-var d_full_height = {{ protein2dinac.full_height }};
+	var currentMut = {
+		{
+			mutnum
+		}
+	};
+	var staticFolder = "{{ STATIC_FOLDER }}";
+	var reverseLabel = {
+		{
+			reverselabel
+		}
+	};
+	var mutPath = "{{ STATIC_FOLDER }}jobs/{{ job.jobID }}/{{ data.inputIdentifier }}.{{ data.mut.mut }}/";
+	var defaultColor = "{% if inInt %}chain{% else %}atom{% endif %}";
+	var defaultCartoon = "trans";
+	var defaultLabel = "sticks";
+	var defaultModel = "0";
+	var defaultShow = 'all';
 
-var chainself = "{% if inInt %}{% if curdomain.0.12 %}{{ curdomain.0.12 }}{% else%}A{% endif %}{% else%}A{% endif %}";
-var chaininac = "{% if inInt %}{% if curdomain.0.13 %}{{ curdomain.0.13 }}{% else%}B{% endif %}{% else%}B{% endif %}";
+	var initialdomain = '{% if initialp %}{{ initialp }}{% else %}{{ curdomain.0.0 }}{% endif %}';
+	var resNumDiff = {
+		{
+			mutnumdiff
+		}
+	};
 
-// Domain dictionary.
-{% if inInt %}
+	// For interaction shadow.
+	var d1s = {
+		{
+			protein2dinac.self_start
+		}
+	};
+	var d1w = {
+		{
+			protein2dinac.self_width
+		}
+	};
+	var d_full_height = {
+		{
+			protein2dinac.full_height
+		}
+	};
+
+	var chainself = "{% if inInt %}{% if curdomain.0.12 %}{{ curdomain.0.12 }}{% else%}A{% endif %}{% else%}A{% endif %}";
+	var chaininac = "{% if inInt %}{% if curdomain.0.13 %}{{ curdomain.0.13 }}{% else%}B{% endif %}{% else%}B{% endif %}";
+
+	// Domain dictionary.
+	{ %
+		if inInt %
+	}
 
 	var domains = {
-	{% for prot in domains %}{% ifequal prot.0.0 0 %} {% else %}
-		'{{ prot.0.0}}': [{% for dom in prot %}{
+		{ %
+			for prot in domains %
+		} { % ifequal prot .0 .0 0 %
+		} { %
+			else %
+		}
+		'{{ prot.0.0}}': [{ %
+			for dom in prot %
+		} {
 			'name': '{{ dom.1 }}',
 			'popup': '{{ dom.2 }}',
 			'pxstart': '{{ dom.3 }}',
 			'pxsize': '{{ dom.4 }}',
 			'start': '{{ dom.5 }}',
 			'end': '{{ dom.6 }}',
-			'status': {{ dom.7|lower }},
-		},{% endfor %}],
+			'status': {
+				{
+					dom .7 | lower
+				}
+			},
+		}, { % endfor %
+		}],
 		'{{ prot.0.0}}data': {
 			'psize': '{{ prot.0.8 }}',
 			'pid': '{{ prot.0.9 }}',
@@ -128,238 +289,288 @@ var chaininac = "{% if inInt %}{% if curdomain.0.13 %}{{ curdomain.0.13 }}{% els
 			'pdesc': '{{ prot.0.10 }}',
 			'dname': '{% for dom in prot %}{% if dom.7 %}{% if dom.2 %}{{ dom.2 }}{% else %}{{ dom.1 }}{% endif %}{% endif %}{% endfor %}',
 			'seqid': '{{ prot.0.16 }}',
-            'dopescore': '{{ prot.0.17|floatformat:3 }}',
-            'dgwt': '{{ prot.0.18|floatformat:2 }}',
-            'dgmut': '{{ prot.0.19|floatformat:2 }}',
-            'ddg': '{{ prot.0.20|floatformat:2 }}',
-            'mutnum': {{ prot.0.21 }},
-            'pdb': '{{ prot.0.22|safe }}',
-			'homodimer': {{ prot.0.11|lower }},
+			'dopescore': '{{ prot.0.17|floatformat:3 }}',
+			'dgwt': '{{ prot.0.18|floatformat:2 }}',
+			'dgmut': '{{ prot.0.19|floatformat:2 }}',
+			'ddg': '{{ prot.0.20|floatformat:2 }}',
+			'mutnum': {
+				{
+					prot .0 .21
+				}
+			},
+			'pdb': '{{ prot.0.22|safe }}',
+			'homodimer': {
+				{
+					prot .0 .11 | lower
+				}
+			},
 			'chainself': '{{ prot.0.12 }}',
 			'chaininac': '{{ prot.0.13 }}',
-			'notUnique': {% if prot.0.14 %}'{{ prot.0.14 }}'{% else %}false{% endif %},
+			'notUnique': { %
+				if prot .0 .14 %
+			}
+			'{{ prot.0.14 }}' { %
+				else %
+			}
+			false { % endif %
+			},
 		},
-	{% endifequal %}{% endfor %}
-	}
-{% endif %}
-
-cyoption = {
-    showOverlay: false,
-    minZoom: 0.5,
-    maxZoom: 2,
-    locked: true,
-    name: 'circle',
-
-    style: cytoscape.stylesheet()
-    	.selector('node').css({
-			'content': 'data(name)',
-			'font-family': 'helvetica',
-			'font-size': 14,
-			'text-outline-width': 3,
-			'text-outline-color': '#888',
-			'text-valign': 'center',
-			'color': '#fff',
-			//'width': 'mapData(weight, 30, 80, 20, 50)',
-			//'height': 'mapData(height, 0, 200, 10, 45)',
-			'background-color': '#D6A0AD',
-			'text-outline-color': '#C07D8D',
-			'width': 35,
-			'height': 35,
-        })
-      	.selector('edge').css({
-          	'width': 3,
-          	'line-color': '#C07D8D',
-      	})
-      	.selector('.faded').css({
-			'background-color': '#BBB',
-			'line-color': '#BBB',
-			'text-outline-color': '#999',
-			'height': 30,
-			'width': 30,
-		})
-      	.selector('edge.faded').css({
-          	'width': 2,
-      	})
-		.selector('.center').css({
-			'height': 30,
-			'width': 30,
-			'background-color': '#3876B2',
-			'text-outline-color': '#286692',
-		})
-		.selector('.centersel').css({
-			'width': 35,
-			'height': 35,
-		}),
-
-    elements: {
-      nodes: [
-        {% for prot in domains %}{% ifnotequal prot.0.0 0 %}{% if not prot.0.11 %}{% if not prot.0.14 %}
-        	{data: { id: 'i{{ prot.0.0 }}', name: '{{ prot.0.15 }}' }},
-        {% endif %}{% endif %}{% endifnotequal %}{% endfor %}        
-        {data: { id: 'p', name: '{{ data.inputIdentifier }}' }}
-      ],
-
-      edges: [
-      	{% for prot in domains %}{% ifnotequal prot.0.0 0 %}
-        	{ data: { id: 'e{{ prot.0.0 }}', source: 'p', target: '{% if prot.0.11 %}p{% else %}i{% if prot.0.14 %}{{ prot.0.14 }}{% else %}{{ prot.0.0 }}{% endif %}{% endif %}' } },
-        {% endifnotequal %}{% endfor %}
-      ]
-    },
-
-    ready: function(){
-      	cy = this;
-      	cy.zoomingEnabled(false);
-		cy.boxSelectionEnabled(false);
-      	cy.panningEnabled(false)
-      	cy.elements().lock();
-      	cy.elements().addClass('faded');
-		var edgeEle = cy.$('#e{% if initialp %}{{ initialp }}{% else %}{{ curdomain.0.0 }}{% endif %}');
-		edgeEle.removeClass('faded');
-		edgeEle.connectedNodes().removeClass('faded');
-		cy.$('#p').addClass('center').unselectify();
-		// On click.
-      	cy.on('select', '*', function(e){
-		  var ele = e.cyTarget; 
-		  cy.elements().unselect();
-		  cy.elements().addClass('faded');
-		  cy.$('#p').removeClass('centersel');
-		  if (ele.isNode()) {
-		  	ele.removeClass('faded');
-		  	cy.$('#p, #e' + ele.id().substring(1)).removeClass('faded');
-		  } else {
-		  	ele.connectedNodes().removeClass('faded');
-		  	ele.removeClass('faded');
-		  	if (ele.target().id() == "p") {
-		  		cy.$('#p').addClass('centersel');
-		  		var pdimer = true;
-		  	} else {
-		  		var pdimer = false;
-		  	}
-		  }
-		  /// If mode is HTML5, do refresh.
-		  if (jmolmode == 'HTML5') {
-		  	var domainID = ele.id().substring(1)
-		  	var newUrl = (pdimer) ? '?p=h' + domainID : '?p=n' + domainID;
-		  	window.location.href = newUrl;
-		  }
-		  updateSecondary2dbar(ele.id(), pdimer);
-		});
-    },
-    layout: {
-		name: 'concentric',
-		fit: true,
-		ready: undefined, 
-		stop: undefined,
-		padding: 10,
-		startAngle: 3/2 * Math.PI,
-		counterclockwise: false, 
-		minNodeSpacing: 40,
-		height: 0,
-		width: 0,
-		concentric: function(){ // returns numeric value for each node, placing higher nodes in levels towards the centre
-		  return this.degree();
-		},
-		levelWidth: function(nodes){ // the variation of concentric values in each level
-		  return nodes.maxDegree() / 4;
+		{ % endifequal %
+		} { % endfor %
 		}
-	},
-	zoom: 1,
-  };
-
-;(function() {
-
-	var loadingmessage = 'hide all; set echo top left; color echo [40,100,150]; font echo 20 SANSSERIF; echo "Loading structure, please wait..';
-	if (jmolmode == "HTML5") {
-		loadingmessage += '|(Switch mode to JAVA for snappier performance)';
+	} { % endif %
 	}
+
+	cyoption = {
+		showOverlay: false,
+		minZoom: 0.5,
+		maxZoom: 2,
+		locked: true,
+		name: 'circle',
+
+		style: cytoscape.stylesheet()
+			.selector('node').css({
+				'content': 'data(name)',
+				'font-family': 'helvetica',
+				'font-size': 14,
+				'text-outline-width': 3,
+				'text-outline-color': '#888',
+				'text-valign': 'center',
+				'color': '#fff',
+				//'width': 'mapData(weight, 30, 80, 20, 50)',
+				//'height': 'mapData(height, 0, 200, 10, 45)',
+				'background-color': '#D6A0AD',
+				'text-outline-color': '#C07D8D',
+				'width': 35,
+				'height': 35,
+			})
+			.selector('edge').css({
+				'width': 3,
+				'line-color': '#C07D8D',
+			})
+			.selector('.faded').css({
+				'background-color': '#BBB',
+				'line-color': '#BBB',
+				'text-outline-color': '#999',
+				'height': 30,
+				'width': 30,
+			})
+			.selector('edge.faded').css({
+				'width': 2,
+			})
+			.selector('.center').css({
+				'height': 30,
+				'width': 30,
+				'background-color': '#3876B2',
+				'text-outline-color': '#286692',
+			})
+			.selector('.centersel').css({
+				'width': 35,
+				'height': 35,
+			}),
+
+		elements: {
+			nodes: [{ %
+				for prot in domains %
+			} { % ifnotequal prot .0 .0 0 %
+			} { %
+				if not prot .0 .11 %
+			} { %
+				if not prot .0 .14 %
+			} {
+				data: {
+					id: 'i{{ prot.0.0 }}',
+					name: '{{ prot.0.15 }}'
+				}
+			}, { % endif %
+			} { % endif %
+			} { % endifnotequal %
+			} { % endfor %
+			} {
+				data: {
+					id: 'p',
+					name: '{{ data.inputIdentifier }}'
+				}
+			}],
+
+			edges: [{ %
+				for prot in domains %
+			} { % ifnotequal prot .0 .0 0 %
+			} {
+				data: {
+					id: 'e{{ prot.0.0 }}',
+					source: 'p',
+					target: '{% if prot.0.11 %}p{% else %}i{% if prot.0.14 %}{{ prot.0.14 }}{% else %}{{ prot.0.0 }}{% endif %}{% endif %}'
+				}
+			}, { % endifnotequal %
+			} { % endfor %
+			}]
+		},
+
+		ready: function() {
+			cy = this;
+			cy.zoomingEnabled(false);
+			cy.boxSelectionEnabled(false);
+			cy.panningEnabled(false)
+			cy.elements().lock();
+			cy.elements().addClass('faded');
+			var edgeEle = cy.$('#e{% if initialp %}{{ initialp }}{% else %}{{ curdomain.0.0 }}{% endif %}');
+			edgeEle.removeClass('faded');
+			edgeEle.connectedNodes().removeClass('faded');
+			cy.$('#p').addClass('center').unselectify();
+			// On click.
+			cy.on('select', '*', function(e) {
+				var ele = e.cyTarget;
+				cy.elements().unselect();
+				cy.elements().addClass('faded');
+				cy.$('#p').removeClass('centersel');
+				if (ele.isNode()) {
+					ele.removeClass('faded');
+					cy.$('#p, #e' + ele.id().substring(1)).removeClass('faded');
+				} else {
+					ele.connectedNodes().removeClass('faded');
+					ele.removeClass('faded');
+					if (ele.target().id() == "p") {
+						cy.$('#p').addClass('centersel');
+						var pdimer = true;
+					} else {
+						var pdimer = false;
+					}
+				}
+				/// If mode is HTML5, do refresh.
+				if (jmolmode == 'HTML5') {
+					var domainID = ele.id().substring(1)
+					var newUrl = (pdimer) ? '?p=h' + domainID : '?p=n' + domainID;
+					window.location.href = newUrl;
+				}
+				updateSecondary2dbar(ele.id(), pdimer);
+			});
+		},
+		layout: {
+			name: 'concentric',
+			fit: true,
+			ready: undefined,
+			stop: undefined,
+			padding: 10,
+			startAngle: 3 / 2 * Math.PI,
+			counterclockwise: false,
+			minNodeSpacing: 40,
+			height: 0,
+			width: 0,
+			concentric: function() { // returns numeric value for each node, placing higher nodes in levels towards the centre
+				return this.degree();
+			},
+			levelWidth: function(nodes) { // the variation of concentric values in each level
+				return nodes.maxDegree() / 4;
+			}
+		},
+		zoom: 1,
+	};
+
+	;
+	(function() {
+
+		var loadingmessage = 'hide all; set echo top left; color echo [40,100,150]; font echo 20 SANSSERIF; echo "Loading structure, please wait..';
+		if (jmolmode == "HTML5") {
+			loadingmessage += '|(Switch mode to JAVA for snappier performance)';
+		}
 		loadingmessage += '";';
 
-	jmol_isReady = function(applet) {
-		jmolisready();
+		jmol_isReady = function(applet) {
+			jmolisready();
+		}
+
+		options = {
+			width: "100%",
+			height: "100%",
+			debug: false,
+			addSelectionOptions: false,
+			use: "{{ jmolmode }}", //HTML5
+			coverImage: "/static/images/jmol.png", // initial image instead of applet
+			deferApplet: true, // wait to load applet until click
+			deferUncover: false, // wait to uncover applet until script completed
+			jarPath: "{{ STATIC_FOLDER }}jsmol/java",
+			j2sPath: "{{ STATIC_FOLDER }}jsmol/j2s",
+			jarFile: "JmolApplet0.jar",
+			isSigned: false,
+			serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+			zIndexBase: 30,
+			z: {
+				monitorZIndex: 30
+			},
+			disableJ2SLoadMonitor: false,
+			disableInitialConsole: false,
+			readyFunction: jmol_isReady,
+			allowjavascript: true,
+			script: loadingmessage
+		}
+
+	})();
+
+	Jmol.setDocument(document);
+
+	var JSmolCloneData = {};
+
+	function cloneJSmol(JSmolObject) {
+		var t = JSmolObject._jmolType;
+		if (/_Canvas2D/.test(t)) {
+			t = 'HTML5';
+		} else if (/_Canvas3D/.test(t)) {
+			t = 'WebGL';
+		} else if (/_Applet/.test(t)) {
+			t = 'Java';
+		} else {
+			t = null;
+		}
+		JSmolCloneData.type = t;
+		JSmolCloneData.platformSpeed = Jmol.evaluate(JSmolObject, 'platformSpeed + 0');
+		JSmolCloneData.state = Jmol.getPropertyAsString(JSmolObject, 'stateInfo');
+		window.open('/popup/jsmol/', 'JSmolPopup', 'resizable, width=800, height=800');
 	}
 
-	options = {
-		width: "100%",
-		height: "100%",
-		debug: false,
-		addSelectionOptions: false,
-		use: "{{ jmolmode }}", //HTML5
-  		coverImage: "/static/images/jmol.png",        // initial image instead of applet
-  		deferApplet: true,                  // wait to load applet until click
-  		deferUncover: false,                 // wait to uncover applet until script completed
-		jarPath: "{{ STATIC_FOLDER }}jsmol/java",
-		j2sPath: "{{ STATIC_FOLDER }}jsmol/j2s",
-		jarFile: "JmolApplet0.jar",
-		isSigned: false,
-		serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
-		zIndexBase: 30,
-		z: {monitorZIndex: 30},
-		disableJ2SLoadMonitor: false,
-		disableInitialConsole: false,
-		readyFunction: jmol_isReady,
-		allowjavascript: true,
-		script: loadingmessage
+	function test(a, b, c, d) {
+		alert(1);
 	}
 
-})();
+	$(document).ready(function() {
 
-Jmol.setDocument(document);
+		// Cytoscape.
+		{ %
+			if inInt %
+		}
+		$('#cy').cytoscape(cyoption); { % endif %
+		}
 
-var JSmolCloneData = {};
-function cloneJSmol(JSmolObject) {
-	var t = JSmolObject._jmolType;
-	if ( /_Canvas2D/.test(t) ) { t = 'HTML5'; }
-	else if ( /_Canvas3D/.test(t) ) { t = 'WebGL'; }
-	else if ( /_Applet/.test(t) ) { t = 'Java'; }
-	else { t = null; }
-	JSmolCloneData.type = t;
-	JSmolCloneData.platformSpeed = Jmol.evaluate(JSmolObject, 'platformSpeed + 0');
-	JSmolCloneData.state = Jmol.getPropertyAsString(JSmolObject, 'stateInfo');
-	window.open('/popup/jsmol/','JSmolPopup','resizable, width=800, height=800');
-}
+		// Jsmol.
+		$("#appletplace").html(Jmol.getAppletHtml("jmol1", options));
+		$('.opennew').click(function() {
+			cloneJSmol(jmol1);
+		});
 
-function test(a, b, c, d) {
-	alert(1);
-}
 
-$(document).ready(function(){
+		// 2Dbar-popups.
+		$(".popup").hover(function() {
+			showHover(this);
+			var currentbar = "#bar" + $(this).attr('data-bar');
+			$(currentbar + " .tooltip2d").show();
+		}, function() {
+			var currentbar = "#bar" + $(this).attr('data-bar');
+			$(currentbar + " .tooltip2d").hide();
+		});
+		// 2Dbar-links.
+		$(".domain").click(function() {
+			linkPfam($(this));
+		});
 
-	// Cytoscape.
-	{% if inInt %}
-	$('#cy').cytoscape(cyoption);
-	{% endif %}
+		// Within-button.
+		$("#stickFormRange").change(function() {
+			jmolscript('sticks', $("#stickFormRange").val());
+		});
+		$("#stickFormRange").keyup(function() {
+			jmolscript('sticks', $("#stickFormRange").val());
+		});
 
-	// Jsmol.
-	$("#appletplace").html(Jmol.getAppletHtml("jmol1", options));
-	$('.opennew').click(function() {
-		cloneJSmol(jmol1);
+		// $('#jmol1_object').append('Applet failed to run.  No Java plug-in was found.');
+
 	});
-	
-
-	// 2Dbar-popups.
-	$(".popup").hover(function() {
-		showHover(this);
-		var currentbar = "#bar" + $(this).attr('data-bar');
-		$(currentbar + " .tooltip2d").show();
-	}, function() {
-		var currentbar = "#bar" + $(this).attr('data-bar');
-		$(currentbar + " .tooltip2d").hide();
-	});
-	// 2Dbar-links.
-	$(".domain").click(function() {
-		linkPfam($(this));
-	});
-	
-	// Within-button.
-	$("#stickFormRange").change(function(){
-		jmolscript('sticks', $("#stickFormRange").val());
-	});
-	$("#stickFormRange").keyup(function(){
-		jmolscript('sticks', $("#stickFormRange").val());
-	});
-	
-	// $('#jmol1_object').append('Applet failed to run.  No Java plug-in was found.');
-	
-});
-
-	</script>
+</script>
