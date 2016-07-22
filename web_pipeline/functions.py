@@ -90,7 +90,7 @@ def getResultData(jtom):
     # Update job last visited to now.
     j = jtom.job
     j.dateVisited = now()
-    j.save()
+    # j.save()
 
     local = True if j.localID else False
     CM = CoreMutationLocal if local else CoreMutation
