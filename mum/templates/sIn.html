@@ -1,97 +1,74 @@
-{% extends "in.html" %} {% block bodyin %}
+{% extends "in.html" %}
 
-<div id="inputbox" class="contentbox">
-	<div class="boxhead">First, input a protein ID such as <span class="proteinname click example">Q9BUL8</span>:</div>
-	<div class="boxheadbehind">Protein input:</div>
-	<div class="styled-text">
-		<input type="text" class="text" placeholder="POLR2A.." id="proteininput" /><span id="pwheel" class="wheel"></span></div>
-	<!--or <a href="/many/">run several proteins</a>.-->
-	<div id="proteinsfile">or <span id="pfilelabel" class="click">upload PDB structure</span>
-		<input class="hidden" id="pfile" type="file" name="fileToUpload" /> <span id="uploaderr"></span></div>
-</div>
 
-<div id="selectbox" class="contentbox">
-	<div class="boxhead">Now, select a mutation:</div>
-	<div class="selection" id="sub">
-		<div id="selectchaindiv" style="display:none;" class="styled-select first">
-			<label>
-				<select id="selectchain"></select>
-			</label>
-		</div>
-		<div class="styled-select first first-switch">
-			<label>
-				<select class="allaa changeme" id="selectsub"></select>
-			</label>
-		</div>
-		<div class="styled-select last">
-			<label>
-				<select id="select2sub" class="fewaa cursornormal" disabled="disabled">
-					<option value="A" id="A">A</option>
-					<option value="C" id="C">C</option>
-					<option value="D" id="D">D</option>
-					<option value="E" id="E">E</option>
-					<option value="F" id="F">F</option>
-					<option value="G" id="G">G</option>
-					<option value="H" id="H">H</option>
-					<option value="I" id="I">I</option>
-					<option value="K" id="K">K</option>
-					<option value="L" id="L">L</option>
-					<option value="M" id="M">M</option>
-					<option value="N" id="N">N</option>
-					<option value="P" id="P">P</option>
-					<option value="Q" id="Q">Q</option>
-					<option value="R" id="R">R</option>
-					<option value="S" id="S">S</option>
-					<option value="T" id="T">T</option>
-					<option value="V" id="V">V</option>
-					<option value="W" id="W">W</option>
-					<option value="Y" id="Y">Y</option>
-				</select>
-			</label>
-		</div>
-	</div>
-</div>
-{% comment %}
-<!-- popup http://www.sundoginteractive.com/sunblog/posts/jquery-hover-box -->{% endcomment %}
 
-<div id="inacbox" class="descbar">
-	<div style="position:relative;height:100%;width:100%;">
 
-		<div class="h4div">
-			<h4>Interactions affected by mutation:</h4></div>
+{% block bodyin %}
 
-		<div class="inacsummary">
-
-		</div>
-
-	</div>
-</div>
-
-<div id="barbox" class="contentbox">
-	<div class="proteininfo"><span class="proteinname"></span><span class="proteinid"></span>, <span class="desc"></span>:</div>
-
-	<div class="protein2d">
-		<div class="domclick"></div>
-		<div class="dombar"></div>
-		<div class="dominacs"></div>
-		<div class="barmutations"></div>
-		<div class="barmutation"></div>
-		<div class="barmutdesc"></div>
-		<div class="startdesc">1</div>
-		<div class="enddesc"></div>
-		<div class="tooltip2d"></div>
-		<svg class="protsvg"></svg>
+	<div id="inputbox" class="contentbox">
+		<div class="boxhead">First, input a protein ID such as <span class="proteinname click example">Q9BUL8</span>:</div>
+		<div class="boxheadbehind">Protein input:</div>
+		<div class="styled-text"><input type="text" class="text" placeholder="POLR2A.." id="proteininput" /><span id="pwheel" class="wheel"></span></div>
+		<!--or <a href="/many/">run several proteins</a>.-->
+        <div id="proteinsfile">or <span id="pfilelabel" class="click">upload PDB structure</span> <input class="hidden" id="pfile" type="file" name="fileToUpload" /> <span id="uploaderr"></span></div>
 	</div>
 
-	<div id="notdomainwarning" class="contentbox">
-		Warning: mutation is not in a domain
-		<div class="help dom"></div>
+	<div id="selectbox" class="contentbox">
+		<div class="boxhead">Now, select a mutation:</div>
+		<div class="selection" id="sub">
+            <div id="selectchaindiv" style="display:none;" class="styled-select first"><label><select id="selectchain"></select></label></div>
+		    <div class="styled-select first first-switch"><label><select class="allaa changeme" id="selectsub"></select></label></div>
+		    <div class="styled-select last">
+		        <label><select id="select2sub" class="fewaa cursornormal" disabled="disabled">
+		            <option value="A" id="A">A</option><option value="C" id="C">C</option>
+		            <option value="D" id="D">D</option><option value="E" id="E">E</option>
+		            <option value="F" id="F">F</option><option value="G" id="G">G</option>
+		            <option value="H" id="H">H</option><option value="I" id="I">I</option>
+		            <option value="K" id="K">K</option><option value="L" id="L">L</option>
+		            <option value="M" id="M">M</option><option value="N" id="N">N</option>
+		            <option value="P" id="P">P</option><option value="Q" id="Q">Q</option>
+		            <option value="R" id="R">R</option><option value="S" id="S">S</option>
+		            <option value="T" id="T">T</option><option value="V" id="V">V</option>
+		            <option value="W" id="W">W</option><option value="Y" id="Y">Y</option>
+		        </select></label>
+		    </div>
+		</div>
+	 </div>
+	 {% comment %}<!-- popup http://www.sundoginteractive.com/sunblog/posts/jquery-hover-box -->{% endcomment %}
+	 
+     <div id="inacbox" class="descbar"><div style="position:relative;height:100%;width:100%;">
+     
+        <div class="h4div"><h4>Interactions affected by mutation:</h4></div>
+        
+        <div class="inacsummary">
+        
+        </div>
+        
+     </div></div>
+     
+     <div id="barbox" class="contentbox">
+	 	 <div class="proteininfo"><span class="proteinname"></span><span class="proteinid"></span>, <span class="desc"></span>:</div>
+
+		 <div class="protein2d">
+			 <div class="domclick"></div>
+			 <div class="dombar"></div>
+             <div class="dominacs"></div>
+			 <div class="barmutations"></div>
+			 <div class="barmutation"></div>
+			 <div class="barmutdesc"></div>
+			 <div class="startdesc">1</div><div class="enddesc"></div>
+			 <div class="tooltip2d"></div>
+			 <svg class="protsvg"></svg>
+		 </div>
+		 
+		 <div id="notdomainwarning" class="contentbox">
+			Warning: mutation is not in a domain <div class="help dom"></div>
+		 </div>
+
 	</div>
-
-</div>
-<div id="nothumanwarning" class="contentbox">
-	Warning: because the selected protein is not human, the calculations can take up to several hours.
-</div>
-
+    <div id="nothumanwarning" class="contentbox">
+		Warning: because the selected protein is not human, the calculations can take up to several hours.
+	</div>
+	
 
 {% endblock %}
