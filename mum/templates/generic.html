@@ -1,16 +1,8 @@
-{% extends "base.html" %} {% block body %}
+{% extends "base.html" %}
 
+{% block body %}
 
-<div id="cite" class="field">
-    <div class="top">
-        <div class="description">
-            <h2>{% if help %}Source and file download{% else %}{{ this|capfirst }}{% endif %}</h2></div>
-        <div class="line tall">
-            <hr />
-        </div>
-    </div>
-    <div class="content">
-
+<<<<<<< HEAD
         {% if help %}
         <p style="margin-top: 0;">The webserver relies on two different pipelines:
             <a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click">Profs</a> and <a target="_blank" href="https://github.com/ostrokach/elaspic" class="click">ELASPIC</a>.
@@ -42,10 +34,94 @@
             <h2>{{ SITE_NAME }} tutorial</h2></div>
         <div class="line tall">
             <hr />
-        </div>
-    </div>
-    <div class="content">
+=======
 
+    <div id="cite" class="field">
+        <div class="top">
+            <div class="description"><h2>{% if help %}Source and file download{% else %}{{ this|capfirst }}{% endif %}</h2></div>
+            <div class="line tall"><hr /></div>
+>>>>>>> parent of 31289a9... Atom Beautify template files.
+        </div>
+        <div class="content">
+        
+        
+        	{% if help %}
+				<p style="margin-top: 0;">The webserver relies on two different pipelines: 
+				    <a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click">Profs</a> 
+				and <a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" class="click">ELASPIC</a>.
+				</p>
+                <div id="pipelinediagram">
+                    <a href="{{ STATIC_FOLDER }}images/help_pipelinediagram.png" target="_blank" title="Click for full size version">
+                        <img src="{{ STATIC_FOLDER }}images/help_pipelinediagram_smaller.png" />
+                        <p><b>Flowchart of ELASPIC pipeline.</b> <br /><i>Click to view in full size. </i></p>
+                    </a>
+                </div>
+				<p><a target="_blank" href="https://bitbucket.org/afgiraldofo/profs" class="click2" style="font-weight: 600;">Profs</a>
+				unifies domain definitions obtained from Pfam and CATH in order to create domain 
+				boundaries that are the most consistent with both with the structural fold and the evolutionary 
+				conservation of the protein. Profs domain boundaries for the entire Uniprot database can be 
+				<a href="{{ STATIC_FOLDER }}download/">downloaded here</a>. 
+        An R package implementing the Profs pipeline is hosted on 
+        <a href="https://bitbucket.org/afgiraldofo/profs" class="click">bitbucket</a>.
+				</p>
+				<p><a target="_blank" href="https://bitbucket.org/ostrokach/elaspic" class="click2" style="font-weight: 600;">ELASPIC</a>
+				constructs homology models of domains and domain-domain interactions, and uses those models, 
+				together with sequential and other features, to predict the energetic impact of a mutation on 
+				the stability of a single domain or the affinity between two domains. 
+				A more detailed description of the ELASPIC method, including cross-validation and comparison 
+				with existing approaches can be found in <a href="/reference/" class="click">the original publication</a>. 
+        A python package implementing the ELASPIC pipeline is hosted on 
+        <a href="https://bitbucket.org/ostrokach/elaspic" class="click">bitbucket</a>. 
+        Documentation for the ELASPIC pipeline is hosted on 
+        <a href="https://elaspic.readthedocs.org/en/" class="click">readthedocs</a>. 
+				</p>
+		</div>
+	</div>
+	<div id="help2" class="field">
+		<div class="top">
+			<div class="description"><h2>{{ SITE_NAME }} tutorial</h2></div>
+			<div class="line tall"><hr /></div>
+		</div>
+		<div class="content">
+			
+				<h3 style="padding-top: 0;">Run {{ SITE_NAME }}</h3>
+        		<p>On the main input page, users will see the page as below. Follow the numbers to correctly submit a job:</p>
+        		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help1bwedit.png" /></div>
+        		<div class="helptxt">
+            		<h4>1. Enter protein identifier</h4>
+            		<p class="pul">
+            		    Any protein in the <a class="click2" href="http://www.uniprot.org/" target="_blank">Uniprot knowledgebase</a> 
+            		    (>50M) can be entered with the most common identifiers, gene names, and synonyms (>800M). 
+            		    Example input: <span class="mono click2">OO0522</span>, 
+        		                       <span class="mono click2">CCM1</span>,
+        		                       <span class="mono click2">KRIT1_HUMAN</span>,
+        		                       <span class="mono click2">ENSP00000391675</span>, 
+        		                       <span class="mono click2">GC07M091828</span>.
+            		</p>
+        		    <ul><li>Warning: as only structural models for the human proteome has been precalculated, predictions for 
+        		            other organisms can be expected to last multiple hours per mutation.
+        		        </li>
+        		    </ul>
+            		<h4>2. Select mutation in protein</h4>
+            		<p class="pul">
+            		    Mutations can be selected by either clicking the protein figure or by using the select option next to the 
+            		    protein input.
+            		</p>
+            		<ul><li>Warning: because ELASPIC uses structures of protein domains to predict stability/affinity effects, the 
+            		        mutation has to fall within known domain boundries.
+        		        </li>
+        		    </ul>
+            		<h4>3. Submit job</h4>
+            		<p>A valid e-mail address can be entered for notifications about the submitted job. An email will be sent on job start and completion 
+            		with a link to the results. Check junk e-mail folder in case the notification got delivered there. </p>
+            		<h4>! Switch to batch input</h4>
+            		<p>Alternative option to input multiple mutations at once or upload a file with data.</p>
+            		<h4>!! See previously run mutations</h4>
+            		<p>Mutations already in the database are shown on the protein figure. Click each individual mutation to see their 
+            		results in the same format as on the result page.</p>
+        		</div>
+
+<<<<<<< HEAD
         <h3 style="padding-top: 0;">Run {{ SITE_NAME }}</h3>
         <p>On the main input page, users will see the page as below. Follow the numbers to correctly submit a job:</p>
         <div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help1bwedit.png" /></div>
@@ -151,6 +227,91 @@
         </div>
         {% endif %} {% if reference %}
         <p class="pdesc">If you use the results generated by the ELASPIC webserver, please cite the paper:</p>
+=======
+				<h3>{{ SITE_NAME }} prediction results</h3>
+        		<p>As output, ELASPIC gives a table of selected mutations and their predicted stability effects, as seen below:</p>
+        		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help2bwedit.png" /></div>
+        		<div class="helptxt">
+            		<h4>1. Result table</h4>
+            		<p class="pul">
+            		    ELASPIC distinguishes between two types of mutations: 
+            		        <i class="click2">core</i> <small>(of domain)</small> and 
+            		        <i class="click2">interface</i> <small>(between two proteins known to interact)</small></i>.
+            		    Besides mutation type, the table has six colums with results: 
+            		        <b>(i-ii)</b> The sequence identity and alignment score of the template used to model the protein domain or interaction structure. 
+            		        <b>(iii)</b> The DOPE score of the model given by <a class="click2" target="_blank" href="https://salilab.org/modeller/">Modeller</a>. 
+            		        <b>(iv-v)</b> The Gibbs free energy of the optimized wild-type and mutated models calculated by 
+            		              <a class="click2" target="_blank" href="http://foldx.crg.es/">FoldX</a>. 
+            		        <b>(vi)</b> The final change in domain stability (core) or binding affinity (interface) as predicted by {{ SITE_NAME }}.
+            		</p>
+            		<ul><li>Notice: For interface mutations two values are given for both sequence identity and alignment score.
+            		        The first one given will always be for the protein entered while the second is for the interacting protein.
+            		        Furthermore, in the interface multiple interactions might be affected, and multiple rows will then
+            		        be shown in the result table for the same mutation.
+        		        </li>
+        		    </ul>
+            		<h4>2. Filter results</h4>
+            		<p class="pul"> 
+            		    The result table can be filtered to only show the specific rows desired. Filtering can be done by protein name,
+            		    status of calculations, type of mutation, and by result scores.
+            		</p>
+            		<ul><li>Notice: Filtering not only filters the table, but also the downloadable files.
+        		        </li>
+        		    </ul>
+            		<h4>3. Downloadable files</h4>
+            		<p>
+            		    The results can be downloaded in a tab-delimited text file with either only the final predicted
+            		    energy change or with every single feature used by {{ SITE_NAME}}. Furthermore, created models, alignments,
+            		    and sequences can be downloaded.
+            		</p>
+            		<h4>4. See detailed results for mutation</h4>
+            		<p>Each completed row can be clicked to see detailed results.</p>
+        		</div>
+        		<h3>Detailed results</h3>
+				<p>The detailed results include a protein domain graphic and the modelled and wild-type protein structures superimposed in an enhanced dynamic 3D structure viewer:</p>
+        		<div class="helpimg"><img src="{{ STATIC_FOLDER }}images/help3bwedit.png" /></div>
+        		<div class="helptxt">
+            		<h4>1. Affected interaction network</h4>
+            		<p class="pul">
+            		    All interactions affected by the mutation are included in the network. Each
+            		    interaction can be clicked to display its detailed results. 
+            		</p>
+            		<ul><li>Notice: For core mutations the interaction network is not shown.
+        		        </li>
+        		    </ul>
+            		<h4>2. Protein interaction figure</h4>
+            		<p class="pul">
+            		    The selected interaction is shown as a figure with all protein domains. The interacting domains
+            		    are color-coded with blue for entered protein and pink for interacting protein.
+            		</p>
+            		<ul><li>Notice: For core mutations only the entered protein is shown.
+        		        </li>
+        		    </ul>
+            		<h4>3. Modelled structure</h4>
+            		<p>
+            		    A <a class="click2" target="_blank" href="http://sourceforge.net/projects/jsmol/">Jmol plugin</a> shows both the modelled wild-type and mutant 
+            		    structures. 
+            		    See mouse controls <a class="click" target="_blank" href="http://wiki.jmol.org/index.php/Mouse_Manual">in their wiki</a>.
+            		</p>
+            		<div class="helptxt">
+                		<h4>! Set quality settings</h4>
+                		<p>
+                		    Jmol runs by default in in Java mode. However, if Java not is installed or compatible with the browser 
+                		    (e.g. mobile phones) the plugin can be switched to HTML5 mode with a single click. Furthermore, if the 
+                		    structural rendering is too demanding for the browser, the quality can be reduced.
+                		</p>
+                		<h4>!! Set display settings</h4>
+                		<p>
+                		    The buttons below the plugin can manipulate the display. 
+                		    To control details such as labels, colors, and schemes use the buttons on the left. 
+                		    To view or hide a model or protein, or to view the structures in a larger window use the buttons on the right.
+                		</p>
+            		</div>
+        		</div>
+        
+        	
+        	{% endif %}
+>>>>>>> parent of 31289a9... Atom Beautify template files.
 
         <p class="paper"><a style="click2" target="_blank" href="http://dx.doi.org/10.1093/bioinformatics/btw031">
         Daniel K. Witvliet, Alexey Strokach, Andrés Felipe Giraldo-Forero, Joan Teyra, Recep Colak, Philip M. Kim (2016) ELASPIC web-server: proteome-wide structure based prediction of mutation effects on protein stability and binding affinity. <i>Bioinformatics</i>  32 (10): 1589-1591.</a></p>
@@ -160,6 +321,7 @@
         <p class="paper"><a style="click2" target="_blank" href="http://dx.doi.org/10.1371/journal.pone.0107353">
         Niklas Berliner, Joan Teyra, Recep Çolak, Sebastian Garcia Lopez, and Philip M. Kim (2014) Combining structural modeling with ensemble machine learning to accurately predict protein fold stability and binding affinity effects upon mutation. <i>PLoS ONE</i> 9 (9): e107353.</a></p>
 
+<<<<<<< HEAD
         {% endif %} {% if contact %} {% block headscript %}
         <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.color-2.1.2.min.js"></script>
         {% endblock %}
@@ -184,6 +346,45 @@
 
     </div>
 </div>
+=======
+			{% if reference %}
+		        <p class="pdesc">If you use the result generated by {{ SITE_NAME }}, please cite the paper:</p>
+		        <p class="paper"><a style="click2" target="_blank" href="http://www.ncbi.nlm.nih.gov/pubmed/25243403">
+		        	Niklas Berliner, Joan Teyra, Recep Çolak, Sebastian Garcia Lopez, and Philip M. Kim.
+		        	Combining structural modeling with ensemble machine learning to accurately predict 
+		        	protein fold stability and binding affinity effects upon mutation.
+		        	<i>PloS one</i>
+		        	<b>9</b>:e107353 (2014)
+		        </a></p>
+            {% endif %}
+            
+            
+            {% if contact %}
+            {% block headscript %}
+            	<script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.color-2.1.2.min.js"></script>
+            {% endblock %}
+				<form id="cont" action="#contact" method="POST">
+					<div class="cont">Name:
+						<input class="fname" type="text" placeholder="Name"  />
+					</div>
+					<div class="cont">Email:
+						<input class="fmail" type="text" placeholder="Email" />
+					</div>
+					<div class="cont">Subject:
+						<input class="ftitle" type="text" placeholder="Subject" />
+					</div>
+					<div class="cont float">Your message:
+						<textarea class="fmsg" placeholder="Message"></textarea>
+					</div>
+					<div class="error"></div>
+					<div class="form-response"></div>
+					<input class="submit" type="submit" value="Send" />
+				</form>
+            {% endif %}
+            
+        </div>
+    </div> 
+>>>>>>> parent of 31289a9... Atom Beautify template files.
 
 
 {% endblock %}

@@ -1,197 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <title>MUM import</title>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="/static/js/jquery-1.10.2.js"></script>
+        <style type="text/css">
+            li {margin:8px; width:350px;}
+            span.r {display:block; float:right;}
+			.click, .click2 {cursor:pointer; color:#777; text-decoration:underline;}
+			.click2 {display: inline;}
+			#text {width:50px;display:inline;}
+			.percent {width:100px; padding-left:5px;}
+        </style>
+        <script type="text/javascript">
 
-<head>
-    <title>MUM import</title>
-    <meta charset="utf-8">
-    <script type="text/javascript" src="/static/js/jquery-1.10.2.js"></script>
-    <style type="text/css">
-        li {
-            margin: 8px;
-            width: 350px;
-        }
 
-        span.r {
-            display: block;
-            float: right;
-        }
+function importer(type, path, out1, out2, counter, atline, maxlines) {
 
-        .click,
-        .click2 {
-            cursor: pointer;
-            color: #777;
-            text-decoration: underline;
-        }
+    if (counter == 0) {
+        $(out1).text("working..");
+        $(out2).text("(0%)");
+    }
+    var priv_counter = counter + 1
+    var result
+    var line_count
+    var max_lines
 
-        .click2 {
-            display: inline;
-        }
-
-        #text {
-            width: 50px;
-            display: inline;
-        }
-
-        .percent {
-            width: 100px;
-            padding-left: 5px;
-        }
-    </style>
-    <script type="text/javascript">
-        function importer(type, path, out1, out2, counter, atline, maxlines) {
-
-            if (counter == 0) {
-                $(out1).text("working..");
-                $(out2).text("(0%)");
+    $.when ( $.ajax({
+        url: "/import/importer/",
+        data: {t: type, f: path, n: priv_counter, m: maxlines},
+        type: "GET",
+        dataType: "json",
+        cache: false,
+        success: function (data) {
+            result = true
+            if (data.error) {
+                result = false
             }
-            var priv_counter = counter + 1
-            var result
-            var line_count
-            var max_lines
-
-            $.when($.ajax({
-                url: "/import/importer/",
-                data: {
-                    t: type,
-                    f: path,
-                    n: priv_counter,
-                    m: maxlines
-                },
-                type: "GET",
-                dataType: "json",
-                cache: false,
-                success: function(data) {
-                    result = true
-                    if (data.error) {
-                        result = false
-                    }
-                    line_count = atline + data.count
-                    max_lines = data.lines
-                },
-                error: function(data) {
-                    result = false
-                }
-            })).then(function() {
-                if (result) {
-                    $(out1).text(line_count.toString());
-                    $(out2).text("(" + priv_counter.toString() + "0%)");
-                    if (priv_counter < 10) {
-                        importer(type, path, out1, out2, priv_counter, line_count, max_lines)
-                    }
-                } else {
-                    $(out1).text("error");
-                }
-            });
+            line_count = atline + data.count
+            max_lines = data.lines
+        },
+        error: function (data) {
+            result = false
         }
-
-        function updatedb(version) {
-            $.ajax({
-                url: "/import/dbupdater/",
-                data: {
-                    v: version
-                },
-                type: "GET",
-                dataType: "json",
-                cache: false,
-                success: function(data) {
-                    if (data.error) {
-                        alert("Django error")
-                    } else {
-                        $("#text").attr("placeholder", version);
-                        $("#text").val("");
-                        alert("All complete!\n" + data.pC + " proteins, " + data.idC + " identifiers.\n" + data.dC + " domains (" + data.duC + " unique)\n" + data.eC + " ELMs (" + data.euC + " unique)\n" + data.iC + " interactions, " +
-                            data.mC + " mutations.")
-                    }
-                },
-                error: function(data) {
-                    alert("Ajax error")
-                }
-            })
+    }) ).then(function(){
+        if (result) {
+            $(out1).text(line_count.toString());
+            $(out2).text("(" + priv_counter.toString() + "0%)");
+            if (priv_counter < 10) {
+                importer(type, path, out1, out2, priv_counter, line_count, max_lines)
+            }
+        } else {
+            $(out1).text("error");
         }
+    });
+}
 
-        function resetdb() {
-            $.ajax({
-                url: "/import/dbreset/",
-                type: "GET",
-                dataType: "json",
-                cache: false,
-                success: function(data) {
-                    if (data.error) {
-                        alert("Django error")
-                    } else {
-                        $("#resetdb").text("reset database. All done")
-                    }
-                },
-                error: function(data) {
-                    alert("Ajax error")
-                }
-            })
+function updatedb(version) {
+	$.ajax({
+        url: "/import/dbupdater/",
+        data: {v: version},
+        type: "GET",
+        dataType: "json",
+        cache: false,
+        success: function (data) {
+            if (data.error) {
+				alert("Django error")
+			} else {
+				$("#text").attr("placeholder", version);
+				$("#text").val("");
+				alert("All complete!\n" + data.pC + " proteins, " + data.idC + " identifiers.\n" + data.dC + " domains (" + data.duC + " unique)\n" + data.eC + " ELMs (" + data.euC + " unique)\n" + data.iC + " interactions, " + data.mC + " mutations.")
+			}
+        },
+        error: function (data) {
+            alert("Ajax error")
         }
+    })
+}
+function resetdb() {
+	$.ajax({
+        url: "/import/dbreset/",
+        type: "GET",
+        dataType: "json",
+        cache: false,
+        success: function (data) {
+            if (data.error) {
+				alert("Django error")
+			} else {
+				$("#resetdb").text("reset database. All done")
+			}
+        },
+        error: function (data) {
+            alert("Ajax error")
+        }
+    })
+}
 
 
-        $(document).ready(function() {
+$(document).ready(function(){
 
-            $(".click").click(function() {
-                var id = $(this).attr("id");
-                if (id == "") {
+    $(".click").click(function(){
+		var id = $(this).attr("id");
+		if (id == "") {
 
-                } else {
-                    var path = $(this).attr("data-path");
-                    var r = confirm("Update " + id + " from '" + path + "'?" + "\n\nWARNING: this action cannot be undone!");
-                    if (r == true) {
-                        $(this).removeClass("click");
-                        importer(id, path, "#" + id + "_r", "#" + id + "_c", 0, 0, 0);
-                    }
-                }
-            });
-            $("#updatedb").click(function() {
-                var oldVersion = "{{ dbversion }}";
-                if ($("#text").val() != "") {
-                    var newVersion = $("#text").val()
-                } else {
-                    var subNum = parseInt(oldVersion.split(".")[2]) + 1;
-                    var newVersion = oldVersion.split(".")[0] + "." + oldVersion.split(".")[1] + "." + subNum;
-                }
-                var r = confirm("Update database from v" + oldVersion + " to v" + newVersion + "?");
-                if (r == true) {
-                    $(this).removeClass("click2");
-                    updatedb(newVersion);
-                }
-            });
-            $("#resetdb").click(function() {
-                var r = confirm("Reset database to zero? This might take a while.");
-                if (r == true) {
-                    resetdb();
-                    $("#resetdb").removeClass("click2");
-                    $("#resetdb").text("reset database. Wait please..")
-                }
-            });
-
-
-        });
-    </script>
-</head>
-
-<body>
+		} else {
+			var path = $(this).attr("data-path");
+			var r = confirm("Update " + id + " from '" + path + "'?" + "\n\nWARNING: this action cannot be undone!");
+			if (r  == true) {
+				$(this).removeClass("click");
+				importer(id, path, "#" + id + "_r", "#" + id + "_c", 0, 0, 0);
+			}
+		}
+    });
+	$("#updatedb").click(function(){
+		var oldVersion = "{{ dbversion }}";
+		if ($("#text").val() != "") {
+			var newVersion = $("#text").val()
+		} else {
+			var subNum = parseInt(oldVersion.split(".")[2]) + 1;
+			var newVersion = oldVersion.split(".")[0] + "." + oldVersion.split(".")[1] + "."  + subNum;
+		}
+		var r = confirm("Update database from v" + oldVersion + " to v" + newVersion + "?");
+			if (r  == true) {
+			$(this).removeClass("click2");
+			updatedb(newVersion);
+		}
+	});
+	$("#resetdb").click(function(){
+        var r = confirm("Reset database to zero? This might take a while.");
+		if (r  == true) {
+        		resetdb();
+               $("#resetdb").removeClass("click2");
+               $("#resetdb").text("reset database. Wait please..")
+		}
+	});
 
 
+});
 
-    <h3>Import data from file to MySQL database</h3>
+        </script>
+    </head>
 
-    <p>Current database: v
-        <input type="text" id="text" placeholder="{{ dbversion }}" />, {{ version_date|date:"d-M-y H:i" }}</p>
-    <p>Firstly, <span id="resetdb" class="click2">reset database</span>.</p>
-    <ul>
-        <li><span id="proteins" class="click" data-path="{{ path.proteins }}">Uniprot proteins</span><span id="proteins_c" class="percent r" "></span><span id="proteins_r " class="r "></span></li>
-			<li><span id="identifiers " class="click " data-path="{{ path.identifiers }} ">Uniprot identifiers</span><span id="identifiers_c " class="percent r "></span><span id="identifiers_r " class="r "></span></li>
-			<li><span id="hgncidentifiers " class="click " data-path="{{ path.hgncidentifiers }} ">HGNC identifiers</span><span id="hgncidentifiers_c " class="percent r "></span><span id="hgncidentifiers_r " class="r "></span></li>
-			<li><span id="oldidentifiers " class="click " data-path="{{ path.hgncidentifiers }} ">HGNC previous identifiers</span><span id="oldidentifiers_c " class="percent r "></span><span id="oldidentifiers_r " class="r "></span></li>
-			<li><span id="domains " class="click " data-path="{{ path.domains }} ">Domains</span><span id="domains_c " class="percent r ""></span><span id="domains_r" class="r"></span></li>
-        <li><span id="proteinpdbs" class="click" data-path="{{ path.proteinpdbs }}">Protein PDBs</span><span id="proteinpdbs_c" class="percent r" "></span><span id="proteinpdbs_r " class="r "></span></li>
-			<li><span id="interactions " class="click " data-path="{{ path.interactions }} ">Interactions</span><span id="interactions_c " class="percent r ""></span><span id="interactions_r" class="r"></span></li>
-    </ul>
-    <p>Lastly, <span id="updatedb" class="click2">update db</span></p>
-    z
-</body>
+    <body>
 
+
+
+		<h3>Import data from file to MySQL database</h3>
+
+		<p>Current database: v<input type="text" id="text" placeholder="{{ dbversion }}" />, {{ version_date|date:"d-M-y H:i" }}</p>
+            <p>Firstly, <span id="resetdb" class="click2">reset database</span>.</p>
+		<ul>
+			<li><span id="proteins" class="click" data-path="{{ path.proteins }}">Uniprot proteins</span><span id="proteins_c" class="percent r""></span><span id="proteins_r" class="r"></span></li>
+			<li><span id="identifiers" class="click" data-path="{{ path.identifiers }}">Uniprot identifiers</span><span id="identifiers_c" class="percent r"></span><span id="identifiers_r" class="r"></span></li>
+			<li><span id="hgncidentifiers" class="click" data-path="{{ path.hgncidentifiers }}">HGNC identifiers</span><span id="hgncidentifiers_c" class="percent r"></span><span id="hgncidentifiers_r" class="r"></span></li>
+			<li><span id="oldidentifiers" class="click" data-path="{{ path.hgncidentifiers }}">HGNC previous identifiers</span><span id="oldidentifiers_c" class="percent r"></span><span id="oldidentifiers_r" class="r"></span></li>
+			<li><span id="domains" class="click" data-path="{{ path.domains }}">Domains</span><span id="domains_c" class="percent r""></span><span id="domains_r" class="r"></span></li>
+			<li><span id="proteinpdbs" class="click" data-path="{{ path.proteinpdbs }}">Protein PDBs</span><span id="proteinpdbs_c" class="percent r""></span><span id="proteinpdbs_r" class="r"></span></li>
+			<li><span id="interactions" class="click" data-path="{{ path.interactions }}">Interactions</span><span id="interactions_c" class="percent r""></span><span id="interactions_r" class="r"></span></li>
+		</ul>
+		<p>Lastly, <span id="updatedb" class="click2">update db</span></p>
+z
+    </body>
 </html>
