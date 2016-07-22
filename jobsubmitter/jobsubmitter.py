@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec 15 13:42:14 2015
-
-@author: strokach
-"""
 import os
 import os.path as op
 import shlex
