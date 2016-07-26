@@ -26,6 +26,7 @@ class Mut(models.Model):
 
     protein = models.CharField(max_length=50, db_index=True)
     mut = models.CharField(max_length=8)
+    chain = models.SmallIntegerField(null=True, blank=True)  # chain_idx; 0 -> first chain in PDB
 
     affectedType = models.CharField(max_length=2, choices=TYPE_CHOICES, blank=True)
     dateAdded = models.DateTimeField(auto_now_add=True)
@@ -188,8 +189,8 @@ class ProteinLocal(_Protein):
 
 
 @functools.lru_cache(maxsize=256, typed=False)
-def get_protein_name(protein_id,  local):
-    """
+def get_protein_name(protein_id, local):
+    """Find protein name in the database. Store result in lru cache.
 
     Parameters
     ----------
@@ -199,7 +200,6 @@ def get_protein_name(protein_id,  local):
     Returns
     -------
     str | None
-
     """
     if local:
         return _get_protein_name_local(protein_id)
@@ -352,7 +352,7 @@ class _CoreModel(models.Model):
         abstract = True
         unique_together = (("protein_id", "domain_idx"),)
         ordering = ['id']
-        
+
 
 class CoreModel(_CoreModel):
 
@@ -407,6 +407,8 @@ class CoreModelLocal(_CoreModel):
 
 # %% Core Mutation
 class _CoreMutation(models.Model):
+
+    mutation_type = 'core'
 
     @property
     def protein(self):
@@ -558,9 +560,9 @@ class _InterfaceModel(models.Model):
         except Exception:
             pass
         if chain == 1:
-            return self.domain1.defs
+            return self.domain1.getdefs()
         elif chain == 2:
-            return self.domain2.defs
+            return self.domain2.getdefs()
 
     def getdomain(self, chain):
         if chain == 1:
@@ -657,7 +659,7 @@ class _InterfaceModel(models.Model):
     class Meta:
         abstract = True
         ordering = ['id']
-        
+
 
 class InterfaceModel(_InterfaceModel):
 
@@ -722,6 +724,8 @@ class InterfaceModelLocal(_InterfaceModel):
 
 # %% Interface Mutation
 class _InterfaceMutation(models.Model):
+
+    mutation_type = 'interface'  # interface
 
     @property
     def protein(self):
@@ -801,7 +805,9 @@ class _InterfaceMutation(models.Model):
         elif self.protein_id == self.model.protein_id_2:
             return 2
         else:
-            raise ValueError('self.chain_idx: {}, self.protein_id: {}'.format(self.chain_idx, self.protein_id))
+            raise ValueError(
+                'self.chain_idx: {}, self.protein_id: {}'
+                .format(self.chain_idx, self.protein_id))
 
     def getinacprot(self, chain=None):
         c = chain or self.findChain()
