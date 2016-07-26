@@ -199,9 +199,9 @@
 				<tbody>
 					{% for jm in data %}{% spaceless %}
 						{% for rmut in jm.realMut %}
-						<tr class="{{ jm.mut.status }}{% ifequal jm.mut.affectedType 'NO' %}NO{% endifequal  %}" data-pnt="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}{% ifequal jm.mut.affectedType 'IN' %}_{{ rmut.model.id }}{% endifequal %}">
+						<tr class="{{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}" data-pnt="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}{% if rmut.mutation_type == 'interface' %}_{{ rmut.model.id }}{% endif %}">
 							<!-- Status -->
-							<td class="tds {{ jm.mut.status }}{% ifequal jm.mut.affectedType 'NO' %}NO{% endifequal  %}">
+							<td class="tds {{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">
 									{% ifequal jm.mut.affectedType 'NO' %}
 										<span class="hidden">2</span>
@@ -235,8 +235,8 @@
 							<td {% ifnotequal jm.mut.status 'done' %}colspan="8" {% endifnotequal %}class="tdt">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
 									<span>
-										{% ifequal jm.mut.affectedType 'CO' %}Core{% endifequal %}
-										{% ifequal jm.mut.affectedType 'IN' %}Interface w/ {{ rmut.inac }}{% endifequal %}
+										{% if rmut.mutation_type == 'core' %}Core{% endif %}
+										{% if rmut.mutation_type == 'interface' %}Interface w/ {{ rmut.inac }}{% endif %}
 										{% ifequal jm.mut.affectedType 'NO' %}<i>None</i>{% endifequal %}
 										{% if not jm.mut.affectedType %}
 											{% ifequal jm.mut.status 'error' %}

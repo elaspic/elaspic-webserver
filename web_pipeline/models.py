@@ -189,8 +189,8 @@ class ProteinLocal(_Protein):
 
 
 @functools.lru_cache(maxsize=256, typed=False)
-def get_protein_name(protein_id,  local):
-    """
+def get_protein_name(protein_id, local):
+    """Find protein name in the database. Store result in lru cache.
 
     Parameters
     ----------
@@ -200,7 +200,6 @@ def get_protein_name(protein_id,  local):
     Returns
     -------
     str | None
-
     """
     if local:
         return _get_protein_name_local(protein_id)
@@ -408,6 +407,8 @@ class CoreModelLocal(_CoreModel):
 
 # %% Core Mutation
 class _CoreMutation(models.Model):
+
+    mutation_type = 'core'
 
     @property
     def protein(self):
@@ -724,6 +725,8 @@ class InterfaceModelLocal(_InterfaceModel):
 # %% Interface Mutation
 class _InterfaceMutation(models.Model):
 
+    mutation_type = 'interface'  # interface
+
     @property
     def protein(self):
         raise NotImplementedError
@@ -802,7 +805,9 @@ class _InterfaceMutation(models.Model):
         elif self.protein_id == self.model.protein_id_2:
             return 2
         else:
-            raise ValueError('self.chain_idx: {}, self.protein_id: {}'.format(self.chain_idx, self.protein_id))
+            raise ValueError(
+                'self.chain_idx: {}, self.protein_id: {}'
+                .format(self.chain_idx, self.protein_id))
 
     def getinacprot(self, chain=None):
         c = chain or self.findChain()
