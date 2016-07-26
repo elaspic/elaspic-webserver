@@ -1,6 +1,7 @@
+from os import path, mkdir
+import os.path as op
 from re import sub
 from subprocess import Popen, PIPE
-from os import path, mkdir
 from shutil import copyfile
 import json
 import requests
@@ -29,11 +30,11 @@ from web_pipeline.models import (
     InterfaceMutation, InterfaceMutationLocal
 )
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
+import web_pipeline.functions as fn
 from web_pipeline.filemanager import FileManager
 from web_pipeline.cleanupmanager import CleanupManager
 
-from web_pipeline.supl import pdb_template
-
+from elaspic import structure_tools
 
 # def prepareAllFiles(request):
 #    if not request.GET:
@@ -66,6 +67,7 @@ logger = logging.getLogger(__name__)
 
 
 def rerunMut(request):
+    logger.debug('rerunMut({})'.format(request))
     if not request.GET:
         raise Http404
     if not ('m' in request.GET) or not ('j' in request.GET):
@@ -89,15 +91,17 @@ def rerunMut(request):
             # ##### Rerun pipeline #####
             # runPipelineWrapper.delay(m, j.jobID)
             # sleepabit.delay(5,10)
-            data_in = [{
+            data_in = {
                 'job_id': j.jobID,
                 'job_email': j.email,
                 'job_type': 'database',
-                'protein_id': mut.protein,
-                'mutations': mut.mut,
-                'uniprot_domain_pair_ids': '',
                 'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
-            }]
+                'mutations': [{
+                    'protein_id': mut.protein,
+                    'mutations': mut.mut,
+                    'uniprot_domain_pair_ids': '',
+                }]
+            }
             status = None
             n_tries = 0
             while (not status or status == 'error') and n_tries < 10:
@@ -207,9 +211,8 @@ def uploadFile(request):
         raise Http404
 
     myfile = request.FILES['fileToUpload']
-
     filetype = request.POST['filetype']
-    randomID = ''
+    random_id = ''
 
     if myfile.size > 10000000:
         jsonDict = {'msg': "File is too large (>10 MB)", 'error': 1}
@@ -247,30 +250,25 @@ def uploadFile(request):
 
     if filetype == 'pdb':
         try:
+            random_id = fn.get_random_id()
+            user_path = fn.get_user_path(random_id)
+            input_pdb = op.join(user_path, 'input.pdb')
 
-            with NamedTemporaryFile(mode='w') as temp_fh:
-                temp_fh.write(myfile.read().decode())
-                temp_fh.flush()
-                temp_fh.seek(0)
+            with open(input_pdb, 'w') as ifh:
+                ifh.write(myfile.read().decode())
 
-                structure = PDBParser(QUIET=True).get_structure('uploadedPDB', temp_fh.name)
+            sp = structure_tools.StructureParser(input_pdb)
+            sp.extract()
+            seq = [
+                (chain.id, sp.get_chain_sequence_and_numbering(chain.id)[0], )
+                for chain in sp.structure.child_list[0].child_list
+            ]
+            logger.debug("seq: '{}'".format(seq))
 
-                seq = sorted(pdb_template.get_structure_sequences(structure).items())
+            if len(seq) < 1:
+                jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
+                return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
-                if len(seq) < 1:
-                    jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
-                    return HttpResponse(json.dumps(jsonDict), content_type='application/json')
-
-                # Save uploaded pdb if it is valid.
-                while True:
-                    randomID = "%06x" % randint(1, 16777215)
-                    user_path = path.join(DB_PATH, 'user_input', randomID)
-                    if (Job.objects.filter(jobID=randomID).count() == 0 and not
-                            path.exists(user_path)):
-                        break
-                if not path.exists(user_path):
-                    mkdir(user_path)
-                copyfile(temp_fh.name, path.join(user_path, 'input.pdb'))
             with open(path.join(user_path, 'pdb_parsed.pickle'), 'bw') as f:
                 f.write(pickle.dumps(seq))
 
@@ -282,7 +280,7 @@ def uploadFile(request):
             return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
     jsonDict = {'inputfile': myfile.name or 'uploadedFile',
-                'userpath': randomID,
+                'userpath': random_id,
                 'msg': msg,
                 'error': 0}
 

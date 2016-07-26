@@ -1,3 +1,10 @@
+import os
+import os.path as op
+import re
+import random
+import time
+import logging
+
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
@@ -5,16 +12,45 @@ from django.utils.html import strip_tags
 from django.utils.timezone import now
 from django.db.models import Q
 
+from mum.settings import DB_PATH
 from web_pipeline.models import (
+    Job,
     HGNCIdentifier, UniprotIdentifier,
     Protein, ProteinLocal,
     CoreMutation, CoreMutationLocal,
     InterfaceMutation, InterfaceMutationLocal,
 )
-import logging
-from re import match
 
 logger = logging.getLogger(__name__)
+
+
+def get_random_id():
+    """
+    Return unique id for `column`.
+
+    Returns
+    -------
+        random_id : str
+            A unique id for the `jobID` / `localID` columns.
+    """
+    while True:
+        random_id = "%06x" % random.randint(1, 16777215)
+        user_path = op.join(DB_PATH, 'user_input', random_id)
+        is_valid = (
+            Job.objects.filter(Q(jobID=random_id) | Q(localID=random_id)).count() == 0 and
+            not op.exists(user_path)
+        )
+        if is_valid:
+            try:
+                os.makedirs(user_path)
+                return random_id
+            except (OSError, FileExistsError):
+                pass
+        time.sleep(0.1)
+
+
+def get_user_path(random_id):
+    return op.join(DB_PATH, 'user_input', random_id)
 
 
 def checkForCompletion(jobs):
@@ -54,18 +90,18 @@ def getResultData(jtom):
     # Update job last visited to now.
     j = jtom.job
     j.dateVisited = now()
-    j.save()
+    # j.save()
 
     local = True if j.localID else False
     CM = CoreMutationLocal if local else CoreMutation
     IM = InterfaceMutationLocal if local else InterfaceMutation
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
-    if aType == 'CO':
-        jtom.realMut = list(
-            CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
-        )
-    elif aType == 'IN':
+
+    jtom.realMut = list(
+        CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
+    )
+    if aType == 'IN':
         # TODO: Would be nice to give both a core and an interface result, but too many chages.
         # if local:
         #     jtom.realMut = (
@@ -73,11 +109,11 @@ def getResultData(jtom):
         #         list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
         #     )
         # else:
-        jtom.realMut = (
+        jtom.realMut += (
             # list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)) +
             list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
         )
-    else:
+    if aType not in ['CO', 'IN']:
         jtom.realMutErr = 'NOT'  # Not in core or in interface.
         jtom.realMut = [{}]
         return jtom
@@ -85,6 +121,7 @@ def getResultData(jtom):
         jtom.realMutErr = 'DNE'  # Does not exists.
         jtom.realMut = [{}]
         return jtom
+
     if aType == 'CO':
         if len(jtom.realMut) > 1:
             # With overlapping domains, pick first highest sequence identity,
@@ -102,13 +139,14 @@ def getResultData(jtom):
     elif aType == 'IN':
         jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
         return jtom
-
-    jtom.realMutErr = 'OTH'  # Other.
-    return jtom
+    else:
+        jtom.realMutErr = 'OTH'  # Other.
+        return jtom
 
 
 def sendEmail(j, sendType):
-    """
+    """Send email to user.
+
     Used by the jobsubmitter. Do not remove!
 
     Parameters
@@ -126,7 +164,7 @@ def sendEmail(j, sendType):
         job_id, job_email = j.jobID, j.email
 
     # Validate email address
-    if not match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$', job_email):
+    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$', job_email):
         return 0
 
     # Set Subject and content.
@@ -158,32 +196,33 @@ def sendEmail(j, sendType):
 
 
 def getPnM(p):
-    ''' Returns protein and mutation from the format PROT.MUT '''
-
-    protnMut = match(r'(.+)\.([A-Za-z]{1}[0-9]+[A-Za-z]{1}_?[0-9]*)$', p)
+    """Return protein and mutation from the format PROT.MUT."""
+    protnMut = re.match(r'(.+)\.([A-Za-z]{1}[0-9]+[A-Za-z]{1}_?[0-9]*)$', p)
     if not protnMut:
         return None, None
     return protnMut.group(1).upper(), protnMut.group(2).upper()
 
 
 def fetchProtein(pid, local=False):
-    ''' Tries to find protein in ELASPIC database, in the order:
+    """Try to find protein in ELASPIC database.
+
+    Order:
 
         1) Uniprot ID.
         2) HGNC identifiers.
         3) Uniprot identifiers.
 
-    '''
+    """
     logger.debug("fetchProtein({}, {})".format(pid, local))
     pid = pid.upper()
     try:
         # 1) Database protein
-        return Protein.objects.get(id=pid)
+        return Protein.objects.get(id=re.sub(r'[^\x00-\x7f]', r'_', pid))
     except Protein.DoesNotExist as e:
         logger.debug(e)
         try:
             # Local protein
-            return ProteinLocal.objects.get(id=pid)
+            return ProteinLocal.objects.get(id=re.sub(r'[^\x00-\x7f]', r'_', pid))
         except ProteinLocal.DoesNotExist as e:
             logger.debug(e)
             try:
@@ -241,11 +280,12 @@ def fetchProtein(pid, local=False):
 
 
 def isInvalidMut(mut, seq):
-    ''' Validates mutation of the format X001Y
-        Returns <errorMessage> if invalid or None if valid '''
+    """Validate mutation of the format X001Y.
 
+    Return <errorMessage> if invalid or None if valid.
+    """
     # Test if input is valid syntax.
-    goodSyntax = match(r'[A-Z]{1}[1-9]{1}[0-9]*[A-Z]{1}$', mut)
+    goodSyntax = re.match(r'[A-Z]{1}[1-9]{1}[0-9]*[A-Z]{1}$', mut)
     if not goodSyntax:
         return 'SNX'
 

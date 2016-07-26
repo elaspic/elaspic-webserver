@@ -18,14 +18,14 @@
         <div class="content">
 			{% if isRunning %}
 				<div id="notreadyyet">
-					<p class="wheeltext wheelon"> 
-						Your {% ifequal data.0.job.muts.count 1 %}mutation is{% else %}{{ data.0.job.muts.count }}
-						mutations are{% endifequal %} still being processed.
+					<p class="wheeltext wheelon">
+						Your {% ifequal data.0.job.muts.count 1 %}mutation is{% else %}{{ data.0.job.muts.count }} mutations are{% endifequal %} still being processed.
 					</p>
-					<p> A job takes on average 10 minutes per human mutation, but can take hours for custom structures.This page automatically reloads every 10 seconds.
+					<p>
+						You can safely close this window and come back at any time to check your results. You will be notified by email when your job is fully completed. A job takes on average 10 minutes per human mutation, but can take hours for custom structures.
 					</p>
-					<p> You can safely close this window and come back at any time to check
-						your results. You will be notified by email when your job is fully completed.
+					<p>
+						This page automatically reloads every 2 minutes...
 					</p>
 				</div>
 
@@ -37,28 +37,28 @@
 				{% endcomment %}
 
 			{% else %}
-				
+
 				<div>
 					{% ifequal data.0.job.muts.count 1 %}Your mutation is{% else %}All the mutations are{% endifequal %} done!
 				</div>
 
 			{% endif %}
-			
+
 			<!-- --------------------------------------------------- -->
 			<!-- - Filter controls.								   - -->
-			<!-- --------------------------------------------------- -->	
+			<!-- --------------------------------------------------- -->
 			<div class="contentfiller">
 
 				<div id="filtcontrols">
 					<form>
-				
+
 						<h3>Filter your results <div class="help fil"></div></h3>
-				
+
 						<div id="checkprotein">
 							<b>By protein:</b><br />
 							<input placeholder="write here" class="inputtext" type="text" id="inprot" /><br />
 						</div>
-					
+
 						<div id="checkstatus">
 							<b>By status</b>:<br />
 							<input class="checkbox" id="instacom" type="checkbox" checked="checked" />
@@ -68,7 +68,7 @@
 							<input class="checkbox" id="instaerr" type="checkbox" checked="checked" />
 							<label class="checkboxlabel" for="instaerr">Error</label><br />
 						</div>
-					
+
 						<div id="checktype">
 							<b>By type:</b><br />
 							<input class="checkbox" id="intypcor" type="checkbox" checked="checked" />
@@ -82,32 +82,32 @@
 							<div id="checkscore">
 								<b>By score:</b>
 								<div id="tableseq">
-									<input placeholder="0" class="inputtext num" type="text" id="inseqbot" /> 
+									<input placeholder="0" class="inputtext num" type="text" id="inseqbot" />
 									<span>&#8804;</span><span class="midtext">seq iden</span><span>&#8804;</span>
 									<input placeholder="0" class="inputtext num" type="text" id="inseqtop" />
 								</div>
 								<div id="tableali">
-									<input placeholder="0" class="inputtext num" type="text" id="inalibot" /> 
+									<input placeholder="0" class="inputtext num" type="text" id="inalibot" />
 									<span>&#8804;</span><span class="midtext">alignment</span><span>&#8804;</span>
 									<input placeholder="0" class="inputtext num" type="text" id="inalitop" />
 								</div>
 								<div id="tabledop">
-									<input placeholder="0" class="inputtext num" type="text" id="indopbot" /> 
+									<input placeholder="0" class="inputtext num" type="text" id="indopbot" />
 									<span>&#8804;</span><span class="midtext">model</span><span>&#8804;</span>
 									<input placeholder="0" class="inputtext num" type="text" id="indoptop" />
 								</div>
 								<div id="tablewdg">
-									<input placeholder="0" class="inputtext num" type="text" id="indgwbot" /> 
+									<input placeholder="0" class="inputtext num" type="text" id="indgwbot" />
 									<span>&#8804;</span><span class="midtext">&#916;G<sub>wt</sub></span><span>&#8804;</span>
 									<input placeholder="0" class="inputtext num" type="text" id="indgwtop" />
 								</div>
 								<div id="tablemdg">
-									<input placeholder="0" class="inputtext num" type="text" id="indgmbot" /> 
+									<input placeholder="0" class="inputtext num" type="text" id="indgmbot" />
 									<span>&#8804;</span><span class="midtext">&#916;G<sub>mut</sub></span><span>&#8804;</span>
 									<input placeholder="0" class="inputtext num" type="text" id="indgmtop" />
 								</div>
 								<div id="tableddg">
-									<input placeholder="0" class="inputtext num" type="text" id="inddgbot" /> 
+									<input placeholder="0" class="inputtext num" type="text" id="inddgbot" />
 									<span>&#8804;</span><span class="midtext">&#916;&#916;G</span><span>&#8804;</span>
 									<input placeholder="0" class="inputtext num" type="text" id="inddgtop" />
 								</div>
@@ -129,7 +129,7 @@
 
 			<!-- --------------------------------------------------- -->
 			<!-- - Tooltips. 									   - -->
-			<!-- --------------------------------------------------- -->	
+			<!-- --------------------------------------------------- -->
 			<div class="tooltip" id="tfil">
 				<div class="tinner">
 					<div class="tclose" id="tcfil">x</div>
@@ -170,18 +170,18 @@
 					<div class="tclose" id="tcdgwtf">x</div>
 					<div class="ttext">
 						<b>Final &#916;&#916;G</b>
-						<div>The final Gibbs free energy change (&#916;&#916;G) in kcal/mol is predicted using more than 70 
+						<div>The final Gibbs free energy change (&#916;&#916;G) in kcal/mol is predicted using more than 70
 						sequential, molecular and energetic features, using the Stochastic Gradient Boosting of Decision Trees algorithm.</div>
 						<div><i>For more information see <a href="/reference/" class="click2">the original publication</a>.</i></div>
 					</div>
 				</div>
 			</div>
-			
+
 			<!-- --------------------------------------------------- -->
 			<!-- - Table of results. 							   - -->
-			<!-- --------------------------------------------------- -->	
+			<!-- --------------------------------------------------- -->
 			<table id="resulttable" class="tablesorter">
-				<thead> 
+				<thead>
 					<tr>
 						<th class="tds"><div class="help oob"></div></th>
 						<th>Protein</th>
@@ -196,12 +196,12 @@
 						<th class="tdg">&#916;&#916;G <div class="help dgwtf"></div></th>
 					</tr>
 				</thead>
-				<tbody> 
+				<tbody>
 					{% for jm in data %}{% spaceless %}
 						{% for rmut in jm.realMut %}
-						<tr class="{{ jm.mut.status }}{% ifequal jm.mut.affectedType 'NO' %}NO{% endifequal  %}" data-pnt="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}{% ifequal jm.mut.affectedType 'IN' %}_{{ rmut.model.id }}{% endifequal %}">
+						<tr class="{{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}" data-pnt="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}{% if rmut.mutation_type == 'interface' %}_{{ rmut.model.id }}{% endif %}">
 							<!-- Status -->
-							<td class="tds {{ jm.mut.status }}{% ifequal jm.mut.affectedType 'NO' %}NO{% endifequal  %}">
+							<td class="tds {{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">
 									{% ifequal jm.mut.affectedType 'NO' %}
 										<span class="hidden">2</span>
@@ -223,20 +223,20 @@
 							<td class="tdp mono">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
 									<span>{{ jm.inputIdentifier }}</span>
-								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- Mutation -->
 							<td class="tdm mono">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
 									<span>{{ jm.mut.mut }}</span>
-								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- Type (core or interface) -->
 							<td {% ifnotequal jm.mut.status 'done' %}colspan="8" {% endifnotequal %}class="tdt">
 								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
 									<span>
-										{% ifequal jm.mut.affectedType 'CO' %}Core{% endifequal %}
-										{% ifequal jm.mut.affectedType 'IN' %}Interface w/ {{ rmut.inac }}{% endifequal %}
+										{% if rmut.mutation_type == 'core' %}Core{% endif %}
+										{% if rmut.mutation_type == 'interface' %}Interface w/ {{ rmut.inac }}{% endif %}
 										{% ifequal jm.mut.affectedType 'NO' %}<i>None</i>{% endifequal %}
 										{% if not jm.mut.affectedType %}
 											{% ifequal jm.mut.status 'error' %}
@@ -255,7 +255,7 @@
 														Mutation exceeded the time limit of {{ TIME_LIMIT }} hours.
 													{% endifequal %}
 													{% ifequal jm.mut.error.0 '2' %}
-														{{ SITE_NAME }} closed unexpectedly. 
+														{{ SITE_NAME }} closed unexpectedly.
 													{% endifequal %}
 													{% ifequal jm.mut.error.0 '1' %}
 														{{ SITE_NAME }} failed with the error: <i>{{ jm.mut.error|slice:"3:" }}</i>.
@@ -269,7 +269,7 @@
 											{% endifequal %}
 										{% endif %}
 									</span>
-								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
                             <!-- Template -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdi mono">
@@ -289,7 +289,7 @@
 										{% endif %}
 									{% endif %}
 
-							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- Sequence identity -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdi mono">
@@ -309,12 +309,12 @@
 										{% endif %}
 									{% endif %}
 
-							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- Alignment score -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tda mono">
 							{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
-				
+
 								{% if rmut.alignscore %}
 									<span>{{ rmut.alignscore }}</span>
 								{% else %}<span>&nbsp</span>
@@ -328,8 +328,8 @@
 											{% endifequal %}
 										{% endif %}
 								{% endif %}
-				
-							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+
+							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- DOPE score -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdd mono">
@@ -349,7 +349,7 @@
 										{% endif %}
 									{% endif %}
 
-								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- FoldX wtdG -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdwd mono">
@@ -369,7 +369,7 @@
 										{% endif %}
 									{% endif %}
 
-							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}	
+							{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- FoldX mutdG -->
 							<td {% ifnotequal jm.mut.status 'done' %}style="display: none;" {% endifnotequal %}class="tdmd mono">
@@ -421,13 +421,13 @@
 
 	<!-- --------------------------------------------------- -->
 	<!-- - Download files.	 							   - -->
-	<!-- --------------------------------------------------- -->	
+	<!-- --------------------------------------------------- -->
     <div id="download" class="field">
         <div class="top">
             <h2>Download files</h2>
             <div class="description">
             	<span id="filecount">0</span> output files
-		        <span id="dlall"> - 
+		        <span id="dlall"> -
 		        	<a href="#" data-file="allresults.zip" class="click">download them all</a>
 		        </span>
             </div>
