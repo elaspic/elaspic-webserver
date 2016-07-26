@@ -97,11 +97,11 @@ def getResultData(jtom):
     IM = InterfaceMutationLocal if local else InterfaceMutation
     aType = jtom.mut.affectedType
     jtom.realMutErr = None
-    if aType == 'CO':
-        jtom.realMut = list(
-            CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
-        )
-    elif aType == 'IN':
+
+    jtom.realMut = list(
+        CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
+    )
+    if aType == 'IN':
         # TODO: Would be nice to give both a core and an interface result, but too many chages.
         # if local:
         #     jtom.realMut = (
@@ -109,11 +109,11 @@ def getResultData(jtom):
         #         list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
         #     )
         # else:
-        jtom.realMut = (
+        jtom.realMut += (
             # list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)) +
             list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
         )
-    else:
+    if aType not in ['CO', 'IN']:
         jtom.realMutErr = 'NOT'  # Not in core or in interface.
         jtom.realMut = [{}]
         return jtom
@@ -121,6 +121,7 @@ def getResultData(jtom):
         jtom.realMutErr = 'DNE'  # Does not exists.
         jtom.realMut = [{}]
         return jtom
+
     if aType == 'CO':
         if len(jtom.realMut) > 1:
             # With overlapping domains, pick first highest sequence identity,
@@ -138,13 +139,14 @@ def getResultData(jtom):
     elif aType == 'IN':
         jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
         return jtom
-
-    jtom.realMutErr = 'OTH'  # Other.
-    return jtom
+    else:
+        jtom.realMutErr = 'OTH'  # Other.
+        return jtom
 
 
 def sendEmail(j, sendType):
-    """
+    """Send email to user.
+
     Used by the jobsubmitter. Do not remove!
 
     Parameters
@@ -194,8 +196,7 @@ def sendEmail(j, sendType):
 
 
 def getPnM(p):
-    ''' Returns protein and mutation from the format PROT.MUT '''
-
+    """Return protein and mutation from the format PROT.MUT."""
     protnMut = re.match(r'(.+)\.([A-Za-z]{1}[0-9]+[A-Za-z]{1}_?[0-9]*)$', p)
     if not protnMut:
         return None, None
@@ -203,13 +204,15 @@ def getPnM(p):
 
 
 def fetchProtein(pid, local=False):
-    ''' Tries to find protein in ELASPIC database, in the order:
+    """Try to find protein in ELASPIC database.
+
+    Order:
 
         1) Uniprot ID.
         2) HGNC identifiers.
         3) Uniprot identifiers.
 
-    '''
+    """
     logger.debug("fetchProtein({}, {})".format(pid, local))
     pid = pid.upper()
     try:
@@ -277,9 +280,10 @@ def fetchProtein(pid, local=False):
 
 
 def isInvalidMut(mut, seq):
-    ''' Validates mutation of the format X001Y
-        Returns <errorMessage> if invalid or None if valid '''
+    """Validate mutation of the format X001Y.
 
+    Return <errorMessage> if invalid or None if valid.
+    """
     # Test if input is valid syntax.
     goodSyntax = re.match(r'[A-Z]{1}[1-9]{1}[0-9]*[A-Z]{1}$', mut)
     if not goodSyntax:

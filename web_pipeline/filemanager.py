@@ -87,6 +87,7 @@ class FileManager(object):
                 data.realMutErr = None
             else:
                 data = getResultData(jtom[0])
+                data.realMut = [data.realMut[0]]
             self.muts.append(data)
 
     def makeFile(self, fileToMake):
@@ -118,8 +119,10 @@ class FileManager(object):
             body = []
             for m in self.muts:
 
-                mutCompleted = True if (m.mut.status == 'done' and m.mut.affectedType != 'NO') \
-                                    and (self.job.isDone or not(m.mut.rerun)) else False
+                mutCompleted = (
+                    m.mut.status == 'done' and m.mut.affectedType != 'NO' and
+                    (self.job.isDone or not m.mut.rerun)
+                )
                 c = 1
                 if mutCompleted:
                     logger.info("m.realMut: {}".format(m.realMut))
@@ -136,7 +139,9 @@ class FileManager(object):
                         for i, m in enumerate([y for y in x for _ in [1, 2]])
                     ]
 
-                inInterface = True if m.mut.affectedType == 'IN' else False
+                assert m.realMut[0].mutation_type in ['core', 'interface']
+                inInterface = m.realMut[0].mutation_type == 'interface'
+
                 ic = (2 if c == 1 else 1) if inInterface else 0
 
                 # Protein name, mutation, status, and type.
@@ -157,7 +162,7 @@ class FileManager(object):
                 ]
                 bodyline = [m.inputIdentifier, m.mut.protein, m.mut.mut,
                             m.mut.status if self.job.isDone or not(m.mut.rerun) else 'running',
-                            mutTypes[m.mut.affectedType] if m.mut.affectedType else '-',
+                            m.realMut[0].mutation_type,
                             db_cosmic, db_clinvar, db_uniprot]
 
                 # Domain definitions IF allresults.
@@ -246,24 +251,29 @@ class FileManager(object):
                     if mutCompleted:
                         # Remaining core features.
                         if not inInterface:
-                            bodyline += rm.stability_energy_wt.split(',') + \
-                                        rm.stability_energy_mut.split(',') + \
-                                        r(9)
+                            bodyline += (
+                                rm.stability_energy_wt.split(',') +
+                                rm.stability_energy_mut.split(',') +
+                                r(9)
+                            )
                         # Remaining interface features.
                         else:
-                            energyComplexWt = rm.stability_energy_wt.split(',')
-                            energyComplexMut = rm.stability_energy_mut.split(',')
-                            bodyline += (energyComplexWt[2:] +
-                                         energyComplexMut[2:] +
-                                         [energyComplexWt[0],
-                                          energyComplexMut[0],
-                                          energyComplexWt[1],
-                                          energyComplexMut[1],
-                                          mo.interface_area_hydrophobic,
-                                          mo.interface_area_hydrophilic,
-                                          mo.interface_area_total,
-                                          rm.contact_distance_wt,
-                                          rm.contact_distance_mut])
+                            energyComplexWt = rm.analyse_complex_energy_wt.split(',')
+                            energyComplexMut = rm.analyse_complex_energy_mut.split(',')
+                            bodyline += (
+                                energyComplexWt[2:] +
+                                energyComplexMut[2:] + [
+                                    energyComplexWt[0],
+                                    energyComplexMut[0],
+                                    energyComplexWt[1],
+                                    energyComplexMut[1],
+                                    mo.interface_area_hydrophobic,
+                                    mo.interface_area_hydrophilic,
+                                    mo.interface_area_total,
+                                    rm.contact_distance_wt,
+                                    rm.contact_distance_mut
+                                ]
+                            )
                     else:
                         bodyline += r(55)
 
@@ -294,7 +304,9 @@ class FileManager(object):
                     try:
                         p = self.P.objects.get(id=m.mut.protein)
                     except (self.P.DoesNotExist, self.P.MultipleObjectsReturned) as e:
-                        logger.error("Failed to get protein with error: '{}: {}'".format(type(e), e))
+                        logger.error(
+                            "Failed to get protein with error: '{}: {}'"
+                            .format(type(e), e))
                         continue
                     fname = m.inputIdentifier + '.fasta'
                     if not (fname in files['sequences']):
