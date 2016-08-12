@@ -4,15 +4,15 @@
 /log
 
 # temporary, while tests are in progress
-tests 
+tests
 
 __pycache__
 
 # Prefixes
 .*
+!.gitignore
 celerybeat-schedule*
 
 # Extensions
 *.pyc
 *.bak
-
