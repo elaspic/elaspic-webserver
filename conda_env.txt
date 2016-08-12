@@ -1,1 +1,0 @@
-conda create -n mum 'python=3.5' elaspic django celery django-celery
