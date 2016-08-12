@@ -232,8 +232,8 @@
 								{% ifequal jm.mut.status 'done' %}</a>{% endifequal %}
 							</td>
 							<!-- Type (core or interface) -->
-							<td {% ifnotequal jm.mut.status 'done' %}colspan="8" {% endifnotequal %}class="tdt">
-								{% ifequal jm.mut.status 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endifequal %}
+							<td {% if jm.mut.status != 'done' %}colspan="8"{% endif %}class="tdt">
+								{% if jm.mut.status == 'done' %}<a href="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}/{% if rmut.inacd %}?p={{ rmut.inacd }}{% endif %}">{% endif %}
 									<span>
 										{% if rmut.mutation_type == 'core' %}Core{% endif %}
 										{% if rmut.mutation_type == 'interface' %}Interface w/ {{ rmut.inac }}{% endif %}

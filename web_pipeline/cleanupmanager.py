@@ -1,6 +1,5 @@
 import os
 from shutil import rmtree
-from socket import gethostname
 from time import time, sleep
 from datetime import timedelta
 
@@ -9,10 +8,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.db.models import Q
 
-# from celery.task.control import inspect
-# from celery.result import AsyncResult
-
-from web_pipeline.models import Job, Mut
+from web_pipeline.models import Job
 from web_pipeline.functions import checkForCompletion
 
 
@@ -30,9 +26,15 @@ class CleanupManager(object):
             js = list(Job.objects.filter(isDone=False))
 
         for j in js:
-            muts = list(j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2)))
+            muts = list(
+                j.muts.filter(
+                    Q(status='queued') |
+                    Q(status='running') |
+                    Q(rerun=1) |
+                    Q(rerun=2)))
             for mut in muts:
-                if AsyncResult(mut.taskId).failed():
+                # if AsyncResult(mut.taskId).failed():
+                if mut.taskId.failed():
                     mut.status = 'error'
                     mut.affectedType = None
                     mut.error = '2: PIPELINECRASH: DB ERROR'
@@ -42,11 +44,12 @@ class CleanupManager(object):
 
         checkForCompletion(js)
 
-
-
     def removeOldJobs(self):
-        """ Fetch and delete all jobs last visited too long ago. """
-        js = list(Job.objects.filter(dateVisited__lte=now()-timedelta(days=settings.JOB_EXPIRY_DAY )))
+        """Fetch and delete all jobs last visited too long ago."""
+        js = list(
+            Job.objects.filter(
+                dateVisited__lte=now() - timedelta(days=settings.JOB_EXPIRY_DAY))
+        )
         for j in js:
             # Delete link to all mutations.
             j.jobtomut_set.all().delete()
@@ -64,54 +67,11 @@ class CleanupManager(object):
         # Delete old temp files.
         for somefolder in [d for d in os.listdir('/tmp/') if d[:8] == 'elaspic_']:
             mtime = os.path.getmtime(os.path.join('/tmp', somefolder))
-            if mtime < time() - settings.CELERYD_TASK_TIME_LIMIT:
+            if mtime < time() - settings.TASK_TIME_LIMIT:
                 try:
                     rmtree(os.path.join('/tmp', somefolder))
                 except Exception:
                     pass
-
-
-    def checkForStalledJobs(self):
-        """ Checks that all running and queued mutations actually are doing so.
-            THIS DOES NOT WORK PROPERLY. SEVERAL JOBS ARE STARTED THAT ARE NOT
-            NEEDED. DO NOT CALL THIS METHOD. """
-
-        # Set hostname and celery inspect object.
-        pc = 'w1@elaspic' if settings.COMPUTERNAME == 'elaspic' else 'celery@' + gethostname()
-        i = inspect()
-        lostMutations, toRunAgain  = [], []
-
-        # Check that queued jobs are in Celery.
-        queuedMutsDB = list(Mut.objects.filter(Q(status='queued') | Q(rerun=1)))
-        queuedMutsCel = [t['args'].split('<Mut: ')[1].split('>, ')[0] if '<Mut:' in t['args'] else 'cleanup' for t in i.reserved()[pc]]
-        for mdb in queuedMutsDB:
-            mdbstring = "%s.%s" % (mdb.protein, mdb.mut)
-            if not mdbstring in queuedMutsCel:
-                lostMutations.append(mdb)
-
-        # Check that all runnings jobs are in celery active list.
-        activeMutsDB = list(Mut.objects.filter(Q(status='running') | Q(rerun=2)))
-        activeMutsCel = [t['args'].split('<Mut: ')[1].split('>, ')[0] if '<Mut:' in t['args'] else 'cleanup' for t in i.active()[pc]]
-        for mdb in activeMutsDB:
-            mdbstring = "%s.%s" % (mdb.protein, mdb.mut)
-            if not mdbstring in activeMutsCel:
-                mdb.rerun = 1 if mdb.rerun == 2 else mdb.rerun
-                mdb.status = 'queued' if mdb.status == 'running' else mdb.status
-                mdb.save()
-                lostMutations.append(mdb)
-
-        # Return lost mutations.
-        for m in lostMutations:
-            try:
-                job = m.jobs.all()[0]
-            except Exception:
-                m.delete()
-                continue
-            toRunAgain.append([m, job.jobID])
-
-        return toRunAgain
-
-
 
     def sendCrashLogs(self):
 

@@ -30,9 +30,9 @@ urlpatterns += [
     url(r'^run/$', web_pipeline.views.runPipeline),
 
     # Results sites.
-    url(r'^result/[a-zA-Z0-9]{6}/$',
+    url(r'^result/[a-zA-Z0-9]{6,12}/$',
         web_pipeline.views.displayResult),
-    url(r'^result/[a-zA-Z0-9]{6}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$',
+    url(r'^result/[a-zA-Z0-9]{6,12}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$',
         web_pipeline.views.displaySecondaryResult),
 
     url(r'^popup/jsmol/$', web_pipeline.views.jsmolpopup),

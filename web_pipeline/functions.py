@@ -86,6 +86,9 @@ def checkForCompletion(jobs):
 
 
 def getResultData(jtom):
+    """
+    """
+    logger.debug("getResultData({})".format(jtom))
 
     # Update job last visited to now.
     j = jtom.job
@@ -96,37 +99,23 @@ def getResultData(jtom):
     CM = CoreMutationLocal if local else CoreMutation
     IM = InterfaceMutationLocal if local else InterfaceMutation
     aType = jtom.mut.affectedType
+    logger.debug("aType: {}".format(aType))
+
     jtom.realMutErr = None
 
     jtom.realMut = list(
         CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
     )
     if aType == 'IN':
-        # TODO: Would be nice to give both a core and an interface result, but too many chages.
-        # if local:
-        #     jtom.realMut = (
-        #         list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)) +
-        #         list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
-        #     )
-        # else:
-        jtom.realMut += (
-            # list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)) +
-            list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
+        jtom.realMut += list(
+            IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
         )
-    if aType not in ['CO', 'IN']:
-        jtom.realMutErr = 'NOT'  # Not in core or in interface.
-        jtom.realMut = [{}]
-        return jtom
-    if not jtom.realMut:
-        jtom.realMutErr = 'DNE'  # Does not exists.
-        jtom.realMut = [{}]
-        return jtom
 
+    # Return one by one
     if aType == 'CO':
         if len(jtom.realMut) > 1:
             # With overlapping domains, pick first highest sequence identity,
             # then lowest model score.
-            # jtom.realMutErr = 'MOR'
             muts = sorted(jtom.realMut, key=lambda m: m.model.seq_id, reverse=True)
             highestSeqID = []
             for m in muts:
@@ -136,12 +125,22 @@ def getResultData(jtom):
                     highestSeqID.append(m)
             jtom.realMut = [min(highestSeqID, key=lambda m: m.model.dope_score)]
         return jtom
-    elif aType == 'IN':
+
+    if aType == 'IN':
         jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
         return jtom
-    else:
-        jtom.realMutErr = 'OTH'  # Other.
+
+    if jtom.realMut:
+        jtom.realMutErr = 'NOT'  # not in core or in interface.
         return jtom
+
+    if not jtom.realMut:
+        jtom.realMutErr = 'DNE'  # does not exists.
+        jtom.realMut = [CM()]
+        return jtom
+
+    jtom.realMutErr = 'OTH'  # other.
+    return jtom
 
 
 def sendEmail(j, sendType):

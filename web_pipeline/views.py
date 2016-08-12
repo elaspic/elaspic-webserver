@@ -302,8 +302,13 @@ def displayResult(request):
             j.save()
 
     data = [getResultData(jtom) for jtom in jtoms]
+    logger.debug("data: {}".format(data))
 
     for m in data:
+        logger.debug("m: {}".format(m))
+        logger.debug("m.realMut: {}".format(m.realMut))
+        logger.debug("m.realMutErr: {}".format(m.realMutErr))
+
         doneInt, toRemove = [], []
         # Set mutation status temporarily as 'running' if its rerunning.
 #            if m.mut.rerun and not(job.isDone):
@@ -351,6 +356,7 @@ def displayResult(request):
     }
     logger.debug('job: {}'.format(job))
     logger.debug('context: {}'.format(context))
+    logger.debug('context.data: {}'.format([d.realMut for d in context['data']]))
     return render(request, 'result.html', context)
 
 
@@ -497,7 +503,7 @@ def displaySecondaryResult(request):
         # Show error page if database fetching failed.
         if fileError:
             # Could not read mutation from database. Return error.
-            logger.error("{}: {}".format(type(e), e))
+            logger.error("{}: {}".format(type(fileError), fileError))
             return render(request, 'result2.html', {'url': returnUrl,
                                                     'current': 'result2',
                                                     'job': j,

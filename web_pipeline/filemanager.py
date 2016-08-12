@@ -1,7 +1,8 @@
 import six
 from zipfile import ZipFile
 from os import path
-from tempfile import NamedTemporaryFile
+import tempfile
+import shutil
 import logging
 
 from Bio import SeqIO
@@ -23,8 +24,6 @@ from web_pipeline.functions import getPnM, getResultData
 
 from elaspic.call_foldx import names_rows_stability as energyHeader
 
-
-# Create logger to redirect output.
 logger = logging.getLogger(__name__)
 
 
@@ -112,13 +111,19 @@ class FileManager(object):
 
         # ##### Make files. #####
         # Result text files.
-        mutTypes = {'CO': 'core', 'IN': 'interface', 'NO': 'not in domain'}
+        # mutTypes = {'CO': 'core', 'IN': 'interface', 'NO': 'not in domain'}
 
         if filename == 'allresults' or filename == 'simpleresults' or al:
             self.fileCount = 1
             body = []
             for m in self.muts:
 
+                # if m.realMutErr:
+                #     logger.debug(
+                #         "Skipping mutation '{}' with data '{}' because it has an error '{}'"
+                #         .format(m, m.realMut, m.realMutErr))
+                #     continue
+                #
                 mutCompleted = (
                     m.mut.status == 'done' and m.mut.affectedType != 'NO' and
                     (self.job.isDone or not m.mut.rerun)
@@ -286,20 +291,20 @@ class FileManager(object):
             myfile.write(six.b('\r\n'.join(body)))
 
         elif filetype == 'zip':
-
+            tempdir = tempfile.mkdtemp()
             self.type = 'application/zip'
 
             # Result text files.
             if al:
-                temp2 = NamedTemporaryFile(mode='w+')
+                temp2 = tempfile.NamedTemporaryFile(mode='w+', dir=tempdir, delete=False)
                 temp2.write('\t'.join(header) + '\r\n')
                 temp2.write('\r\n'.join(body))
                 temp2.flush()
+                temp2.close()
                 files['allresults'] = temp2.name
 
             # Sequences.
             if filename == 'sequences' or al:
-                tempfiles = []
                 for m in self.muts:
                     try:
                         p = self.P.objects.get(id=m.mut.protein)
@@ -313,10 +318,12 @@ class FileManager(object):
                         seq = SeqRecord(Seq(p.seq, generic_protein),
                                         id="%s|%s|%s" % (m.inputIdentifier, p.id, p.name),
                                         description=p.description)
-                        tempfiles.append(NamedTemporaryFile())
-                        SeqIO.write([seq], tempfiles[-1].name, 'fasta')
-                        tempfiles[-1].flush()
-                        files['sequences'][fname] = tempfiles[-1].name
+                        seqfile = tempfile.NamedTemporaryFile(dir=tempdir, delete=False)
+
+                        SeqIO.write([seq], seqfile.name, 'fasta')
+                        seqfile.flush()
+                        files['sequences'][fname] = seqfile.name
+                        seqfile.close()
                         self.fileCount += 1
 
             # Structures.
@@ -419,6 +426,7 @@ class FileManager(object):
                 for f in files[fold]:
                     z.write(files[fold][f], (fold + '/' if al else '') + f)
             z.close()
+            shutil.rmtree(tempdir, ignore_errors=True)
 
         # Return buffer file.
         self.fileSize = len(myfile.getvalue())
