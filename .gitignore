@@ -3,9 +3,6 @@
 /static
 /log
 
-# temporary, while tests are in progress
-tests
-
 __pycache__
 
 # Prefixes

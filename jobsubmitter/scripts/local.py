@@ -2,13 +2,10 @@
 import os
 import os.path as op
 import argparse
-import json
 import time
 
 import MySQLdb
-import numpy as np
 import pandas as pd
-import sqlalchemy as sa
 
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
@@ -30,7 +27,7 @@ def parse_args():
     parser.add_argument('-u', '--unique_id')
     parser.add_argument('-m', '--mutations')
     parser.add_argument('-t', '--run_type')
-    parser.add_argument('-d', '--data_dir',  nargs='?', default=os.getcwd())
+    parser.add_argument('-d', '--data_dir', nargs='?', default=os.getcwd())
     args = parser.parse_args()
     return args
 
@@ -142,7 +139,7 @@ def upload_sequence(unique_id, data_dir):
         provean_supset_length=None,
     )
     #
-    sequence_result = pd.read_json(op.join(data_dir, 'sequence.json'))
+    sequence_result = pd.read_json(op.join(data_dir, '.elaspic', 'sequence.json'))
     print("sequence_result:\n'{}'".format(sequence_result))
     sequence_result = sequence_result.rename(columns={'protein_id': 'protein_name'})
     sequence_result['protein_id'] = unique_id
@@ -189,7 +186,7 @@ def upload_model(unique_id, data_dir):
         pfam_clan=('structure_id', None),
         pdbfam_name=('structure_id', None),
         alignment_def=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[0])),
-        path_to_data=('structure_file', lambda x: op.dirname(x)),
+        path_to_data=('structure_file', lambda x: op.join(op.dirname(op.abspath(x)), '.elaspic')),
 
         # template
         template_errors=('', lambda: None),
@@ -218,7 +215,7 @@ def upload_model(unique_id, data_dir):
         # domain_idx_2=('idxs', lambda x: x[1]),
 
         # domain pair
-        path_to_data=('structure_file', lambda x: op.dirname(x)),
+        path_to_data=('structure_file', lambda x: op.join(op.dirname(op.abspath(x)), '.elaspic')),
 
         # template
         template_errors=('', lambda: None),
@@ -248,7 +245,7 @@ def upload_model(unique_id, data_dir):
         model_domain_def_2=('model_domain_defs', lambda x: ':'.join(str(i) for i in x[1])),
     )
     # Load data
-    model_result = pd.read_json(op.join(data_dir, 'model.json'))
+    model_result = pd.read_json(op.join(data_dir, '.elaspic', 'model.json'))
     print("model_result:\n'{}'".format(model_result))
     model_result['protein_id'] = unique_id
 
@@ -376,7 +373,8 @@ def upload_mutation(unique_id, mutation, data_dir):
         mut_date_modified=('', lambda: time.strftime('%Y-%m-%d %H:%M:%S')),
     )
     # Load data
-    mutation_result = pd.read_json(op.join(data_dir, 'mutation_{}.json'.format(mutation)))
+    mutation_result = pd.read_json(
+        op.join(data_dir, '.elaspic', 'mutation_{}.json'.format(mutation)))
     print("mutation_result:\n'{}'".format(mutation_result))
 
     if 'idxs' in mutation_result.columns:
@@ -421,14 +419,14 @@ def upload_mutation(unique_id, mutation, data_dir):
     def get_chain_idx(x):
         idx, idxs = x
         if idx == idxs[0]:
-             return 0
+            return 0
         elif idx == idxs[1]:
-            return  1
+            return 1
         else:
             raise ValueError("idx '{}' not in idxs '{}'".format(idx, idxs))
 
     mutation_result_interface['chain_idx'] = (
-            mutation_result_interface[['idx', 'idxs']].apply(get_chain_idx, axis=1)
+        mutation_result_interface[['idx', 'idxs']].apply(get_chain_idx, axis=1)
     )
     format_columns(mutation_result_interface, interface_mutation_columns)
 

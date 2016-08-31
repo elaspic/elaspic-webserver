@@ -11,7 +11,7 @@ import aiomysql
 from email.mime.text import MIMEText
 from collections import deque, defaultdict
 from concurrent.futures import ThreadPoolExecutor
-import sh
+import socket
 
 import config
 
@@ -33,20 +33,14 @@ SLEEP_FOR_ERROR = 5
 SLEEP_FOR_QSUB = 0.01
 SLEEP_FOR_LOOP = 0.01
 
-DATA_DIR = '/home/kimlab1/database_data/elaspic_v2'
-DB_SCHEMA = 'elaspic_webserver'
-
-# SCRIPTS_DIR is for beagle01
-# SCRIPTS_DIR = op.join(config.BASE_DIR, 'scripts')
-SCRIPTS_DIR = '/home/kimlab1/jobsubmitter/mum/jobsubmitter/scripts'
-PROVEAN_LOCK_DIR = op.join(DATA_DIR, 'locks', 'sequence')
-MODEL_LOCK_DIR = op.join(DATA_DIR, 'locks', 'model')
-MUTATION_LOCK_DIR = op.join(DATA_DIR, 'locks', 'mutation')
+PROVEAN_LOCK_DIR = op.join(config.DATA_DIR, 'locks', 'sequence')
+MODEL_LOCK_DIR = op.join(config.DATA_DIR, 'locks', 'model')
+MUTATION_LOCK_DIR = op.join(config.DATA_DIR, 'locks', 'mutation')
 
 JOB_ID_RE = re.compile('^Your job (\d.*) \(.*$')
 
 SSH_STRING = (
-    '' if sh.hostname().strip() == 'beagle01'
+    '' if socket.gethostname().strip() == 'beagle01'
     else 'ssh jobsubmitter@192.168.6.201 '
 )
 
@@ -147,12 +141,12 @@ def get_lock_path(run_type, args, finished=False):
 def get_log_paths(job_type, job_id, protein_id):
     if job_type == 'database':
         # Database
-        args = dict(data_dir=DATA_DIR, job_id=job_id)
+        args = dict(data_dir=config.DATA_DIR, job_id=job_id)
         stdout_path = "{data_dir}/pbs-output/{job_id}.out".format(**args)
         stderr_path = "{data_dir}/pbs-output/{job_id}.err".format(**args)
     else:
         # Local
-        args = dict(data_dir=DATA_DIR, protein_id=protein_id, job_id=job_id)
+        args = dict(data_dir=config.DATA_DIR, protein_id=protein_id, job_id=job_id)
         stdout_path = "{data_dir}/user_input/{protein_id}/pbs-output/{job_id}.out".format(**args)
         stderr_path = "{data_dir}/user_input/{protein_id}/pbs-output/{job_id}.err".format(**args)
     return stdout_path, stderr_path
@@ -295,7 +289,7 @@ async def set_job_status(j):
     # Update database
     async with aiomysql.connect(
             host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
-            db=DB_SCHEMA, loop=loop) as conn:
+            db=config.DB_SCHEMA, loop=loop) as conn:
         async with conn.cursor() as cur:
             db_command = (
                 "update jobs "
@@ -313,8 +307,8 @@ async def set_db_errors(error_queue):
 
     async def helper(cur, item):
         remove_from_monitored_jobs(item)
-        protein_id = item.args['protein_id']
-        mutation = item.args['mutations'].split('_')[-1]
+        # protein_id = item.args['protein_id']
+        # mutation = item.args['mutations'].split('_')[-1]
         db_command = (
             "CALL update_muts('{}', '{}')"
             .format(item.args['protein_id'], item.args['mutations'])
@@ -324,7 +318,7 @@ async def set_db_errors(error_queue):
 
     async with aiomysql.connect(
             host='192.168.6.19', port=3306, user='elaspic-web', password='elaspic',
-            db=DB_SCHEMA, loop=loop) as conn:
+            db=config.DB_SCHEMA, loop=loop) as conn:
         async with conn.cursor() as cur:
             try:
                 if isinstance(error_queue, asyncio.Queue):
@@ -511,7 +505,7 @@ async def qsub():
                 'run_type': item.run_type,
                 'lock_filename': item.lock_path,
                 'lock_filename_finished': item.finished_lock_path,
-                'SCRIPTS_DIR': SCRIPTS_DIR
+                'SCRIPTS_DIR': config.SCRIPTS_DIR
             })
             logger.debug("Running system command:\n{}".format(system_command))
             proc = await asyncio.create_subprocess_exec(

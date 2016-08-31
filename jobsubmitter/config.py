@@ -1,16 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 16 00:49:05 2015
-
-@author: strokach
-"""
 import os
 import os.path as op
 import sys
 import django
 
 
-# %%
+DATA_DIR = '/home/kimlab1/database_data/elaspic_v2'
+DB_SCHEMA = 'elaspic_webserver'
+SCRIPTS_DIR = op.join(DATA_DIR, 'scripts')
+
 BASE_DIR = op.abspath(op.dirname(__file__))
 PROJECT_DIR = op.abspath(op.join(BASE_DIR, '..'))
 sys.path.insert(0, PROJECT_DIR)

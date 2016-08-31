@@ -2,9 +2,8 @@
 
 set -ex
 
-sudo apt install apache2-dev
+sudo apt install apache2-dev postfix  # to send mail
 
-conda create -n mum 'python=3.5' elaspic django
-source activate mum
-pip install mod_wsgi aiohttp aiomysql
-
+conda create -n elaspic_webserver 'python=3.5' elaspic django
+source activate elaspic_webserver
+pip install mod_wsgi aiohttp aiomysql pytest pytest-asyncio
