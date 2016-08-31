@@ -1,32 +1,23 @@
-from os import path, mkdir
 import os.path as op
 from re import sub
 from subprocess import Popen, PIPE
-from shutil import copyfile
 import json
 import requests
 from collections import defaultdict, Counter
-from tempfile import NamedTemporaryFile
-from random import randint
 import pickle
 import logging
-import time
-
-from Bio.PDB.PDBParser import PDBParser
 
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.utils import html
 from django.conf import settings
 from django.core.mail import EmailMessage
 
-from mum.settings import DB_PATH
-
 from web_pipeline.models import (
-    Job, JobToMut, Mut, findInDatabase, get_protein_name,
-    Protein, ProteinLocal,
-    CoreModel, CoreModelLocal,
+    Job, JobToMut, findInDatabase,
+    # Protein, # ProteinLocal,
+    CoreModel,  # CoreModelLocal,
     CoreMutation, CoreMutationLocal,
-    InterfaceModel, InterfaceModelLocal,
+    InterfaceModel,  # InterfaceModelLocal,
     InterfaceMutation, InterfaceMutationLocal
 )
 from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
@@ -35,31 +26,6 @@ from web_pipeline.filemanager import FileManager
 from web_pipeline.cleanupmanager import CleanupManager
 
 from elaspic import structure_tools
-
-# def prepareAllFiles(request):
-#    if not request.GET:
-#        raise Http404
-#    if not 'j' in request.GET:
-#        raise Http404
-#    if not 'f' in request.GET:
-#        raise Http404
-#    jid = request.GET['j']
-#    fold = request.GET['f']
-#    pth = path.join(settings.SAVE_PATH, jid, fold)
-#    respth = path.join(pth, 'job_' + jid + '_allresults.zip')
-#    if path.exists(respth):
-#        success = True
-#    else:
-#        try:
-#            files = []
-#            for aFile in walk(pth).next()[2]:
-#                files.append(path.join(pth, aFile))
-#            saveZip(respth, files)
-#            success = True
-#        except:
-#            success = False
-#
-#    return HttpResponse(json.dumps({'success': success}), content_type='application/json')
 
 
 # Create logger to redirect output.
@@ -184,7 +150,7 @@ def checkIfJobIsReady(request):
 def _move_hetatm_to_hetatm_chain(chain, hetatm_chain, res):
     chain.detach_child(res.id)
     hetatm_res = res
-    hetatm_res.id = (hetatm_res.id[0], len(hetatm_chain)+1, hetatm_res.id[2],)
+    hetatm_res.id = (hetatm_res.id[0], len(hetatm_chain) + 1, hetatm_res.id[2],)
     hetatm_chain.add(hetatm_res)
 
 
@@ -269,7 +235,7 @@ def uploadFile(request):
                 jsonDict = {'msg': "PDB does not have any valid chains. ", 'error': 1}
                 return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
-            with open(path.join(user_path, 'pdb_parsed.pickle'), 'bw') as f:
+            with open(op.join(user_path, 'pdb_parsed.pickle'), 'bw') as f:
                 f.write(pickle.dumps(seq))
 
             msg = seq
@@ -379,18 +345,22 @@ def getProtein(request):
                     .exclude(aa1__isnull=True).exclude(aa1__exact='').exclude(aa1__exact=',')
                 )
                 for m in model1:
-                    partner_protein_id, partner_protein_name = m.protein_id_2, m.get_protein_name(2)
+                    partner_protein_id = m.protein_id_2
+                    partner_protein_name = m.get_protein_name(2)
                     pidToName[partner_protein_id] = partner_protein_name
-                    inacs[partner_protein_id] = set.union(inacs[partner_protein_id], set(m.aa1.split(',')))
+                    inacs[partner_protein_id] = (
+                        set.union(inacs[partner_protein_id], set(m.aa1.split(','))))
                     all_interface_models.add((m, partner_protein_id, partner_protein_name))
                 model2 = (
                     InterfaceModel.objects.filter(domain2=d)
                     .exclude(aa2__isnull=True).exclude(aa2__exact='').exclude(aa2__exact=',')
                 )
                 for m in model2:
-                    partner_protein_id, partner_protein_name = m.protein_id_1, m.get_protein_name(1)
+                    partner_protein_id = m.protein_id_1
+                    partner_protein_name = m.get_protein_name(1)
                     pidToName[partner_protein_id] = partner_protein_name
-                    inacs[partner_protein_id] = set.union(inacs[partner_protein_id], set(m.aa2.split(',')))
+                    inacs[partner_protein_id] = (
+                        set.union(inacs[partner_protein_id], set(m.aa2.split(','))))
                     all_interface_models.add((m, partner_protein_id, partner_protein_name))
 
             inacsum = defaultdict(int)
@@ -440,13 +410,15 @@ def getProtein(request):
             muts = [
                 m for m in muts
                 if ((isinstance(m[0], (CoreMutationLocal, InterfaceMutationLocal))) or
-                    (isinstance(m[0], (CoreMutation, InterfaceMutation)) and len(mut_dbs[m[0].mut])))
+                    (isinstance(m[0], (CoreMutation, InterfaceMutation)) and
+                        len(mut_dbs[m[0].mut])))
             ]
             # If still > 100 mutations, keep residues with the largest number of mutants
             MAX_NUM_MUTATIONS = 100
             if len(muts) > MAX_NUM_MUTATIONS:
                 mutated_residue_counts = Counter([m[0].mut[:-1] for m in muts])
-                most_common_mutated_residues = {x[0] for x in mutated_residue_counts.most_common(MAX_NUM_MUTATIONS)}
+                most_common_mutated_residues = {
+                    x[0] for x in mutated_residue_counts.most_common(MAX_NUM_MUTATIONS)}
                 muts = [m for m in muts if m[0].mut[:-1] in most_common_mutated_residues]
 
             for m_tuple in muts:
@@ -454,7 +426,7 @@ def getProtein(request):
                 chain = m.findChain()
                 isInt = partner_protein_name
                 iId = partner_protein_id
-                
+
                 mut_dbs_html = ''
                 if mut_dbs[m.mut]:
                     mut_dbs_html = (

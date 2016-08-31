@@ -1,4 +1,4 @@
-import six
+import io
 from zipfile import ZipFile
 from os import path
 import tempfile
@@ -99,7 +99,7 @@ class FileManager(object):
             return ""
 
         # Create temporary buffer file.
-        myfile = six.BytesIO()
+        myfile = io.BytesIO()
         files = {'sequences': {},
                  'alignments': {},
                  'simpleresults': {},
@@ -287,8 +287,8 @@ class FileManager(object):
 
         if filetype == 'txt':
             self.type = 'text/plain'
-            myfile.write(six.b('\t'.join(header) + '\r\n'))
-            myfile.write(six.b('\r\n'.join(body)))
+            myfile.write(('\t'.join(header) + '\r\n').encode('utf-8'))
+            myfile.write(('\r\n'.join(body)).encode('utf-8'))
 
         elif filetype == 'zip':
             tempdir = tempfile.mkdtemp()
