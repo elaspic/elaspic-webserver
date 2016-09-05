@@ -1,9 +1,8 @@
 # Folders
 /.coverage
 /static
-/log
-
 __pycache__
+jobsubmitter/tests/data/nm9omiv6
 
 # Prefixes
 .*
@@ -12,4 +11,3 @@ celerybeat-schedule*
 
 # Extensions
 *.pyc
-*.bak

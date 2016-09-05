@@ -43,6 +43,9 @@ class Mut(models.Model):
 
     class Meta:
         db_table = 'muts'
+        index_together = [
+            ("protein", "mut"),
+        ]
         # ordering = ['protein', 'mut']
 
 
@@ -350,7 +353,9 @@ class _CoreModel(models.Model):
 
     class Meta:
         abstract = True
-        unique_together = (("protein_id", "domain_idx"),)
+        unique_together = [
+            ("protein_id", "domain_idx"),
+        ]
         ordering = ['id']
 
 
@@ -470,7 +475,12 @@ class _CoreMutation(models.Model):
     class Meta:
         abstract = True
         # ordering = ['id']
-        unique_together = (("protein_id", "model", "mut"),)
+        unique_together = [
+            ("protein_id", "model", "mut"),
+        ]
+        index_together = [
+            ("protein_id", "mut"),
+        ]
 
 
 class CoreMutation(_CoreMutation):
