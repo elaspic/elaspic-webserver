@@ -157,7 +157,7 @@ def send_email(item, system_command, restarting=False):
     TODO: Rework this to be asyncronous.
     """
     me = 'no-reply@kimlab.org'
-    you = 'ostrokach@gmail.com'
+    you = 'kimlab.webserver@gmail.com'
     body = []
     body.extend([
         'A job with job id {} did not run successfully!'

@@ -39,7 +39,7 @@ elaspic run \
     --blast_db_dir='/home/kimlab1/database_data/blast/db' \
     --archive_dir='/home/kimlab1/database_data/elaspic_v2/' \
     --connection_string='mysql://elaspic:elaspic@192.168.6.19/elaspic' \
-    -u "${protein_id}" -m "${mutations}" -i "${uniprot_domain_pair_ids}" -t ${elaspic_run_type}
+    -u "${protein_id}" -m "${mutations}" -t ${elaspic_run_type}
 
 python "${SCRIPTS_DIR}/database.py" -u "${protein_id}" -m "${mutations}" -t ${run_type}
 
