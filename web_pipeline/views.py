@@ -374,7 +374,7 @@ def displaySecondaryResult(request):
             return HttpResponseRedirect(url)
 
     # Check jmol mode.
-    mode = request.session['jmol'] if 'jmol' in request.session else 'JAVA'
+    mode = request.session['jmol'] if 'jmol' in request.session else 'HTML5'
 
     # Set initial protein if requested
     initialProtein, initialHomodimer = False, None
