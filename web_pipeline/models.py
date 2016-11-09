@@ -1,22 +1,12 @@
 import functools
 import logging
-
 from django.db import models
-
 from django.utils.timezone import localtime
-
 from collections import defaultdict
-
-#
-# To install: python /home/witvliet/Dropbox/django/mum/manage.py syncdb
-#
-# Run shell: from web_pipeline.models import *
-#
 
 logger = logging.getLogger(__name__)
 
 
-# %% Database: 'default'
 class Mut(models.Model):
     TYPE_CHOICES = (
         ('NO', 'None'),
@@ -311,12 +301,6 @@ class _CoreModel(models.Model):
     def getAlnSc(self, chain=1):
         if chain == 1:
             return self.align_score
-        elif chain == 2:
-            return '-'
-
-    def getAlnFi(self, chain=1):
-        if chain == 1:
-            return self.alignment_filename
         elif chain == 2:
             return '-'
 
@@ -616,12 +600,6 @@ class _InterfaceModel(models.Model):
         elif chain == 2:
             return self.align_score2
 
-    def getAlnFi(self, chain):
-        if chain == 1:
-            return self.alignment_filename_1
-        elif chain == 2:
-            return self.alignment_filename_2
-
     def getsequenceidentity(self, chain):
         if chain == 1:
             return '%0.3f, %0.3f' % (self.seq_id1, self.seq_id2)
@@ -664,7 +642,7 @@ class _InterfaceModel(models.Model):
             return self.chain_2
 
     def __str__(self):
-        return '%d' % self.template_id
+        return '{}-{}-{}'.format(self.id, self.protein_id_1, self.protein_id_2)
 
     class Meta:
         abstract = True

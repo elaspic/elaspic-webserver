@@ -36,8 +36,8 @@ urlpatterns += [
     # Results sites.
     url(r'^json/checkjob/$', views_json.checkIfJobIsReady),
     url(r'^json/rerun/$', views_json.rerunMut),
-    url(r'^json/getdownloads/$', views_json.prepareDownloadFiles),
-    url(r'^getfile/', views_json.dlFile),
+    url(r'^getfile/', views_json.getfile),
+    url(r'^json/getdownloads/$', views_json.getdownloads),
 
     # Generic.
     url(r'^json/contactmail/$', views_json.sendContactMail),

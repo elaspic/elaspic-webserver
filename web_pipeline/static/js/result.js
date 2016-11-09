@@ -50,11 +50,11 @@ function filterResultTable() {
     joFiltered = jo.filter(function () {
     	var toKeep = true;
         var $row = $(this);
-        
+
         // Filter by each column.
         var test = $row.find('td').each(function() {
 	        $cell = $(this);
-	        
+
 	        // Protein.
 	        if ($cell.hasClass('tdp')) {
 		    	if ($cell.text().toLowerCase().indexOf(inProt.toLowerCase()) == -1) return toKeep = false;
@@ -113,7 +113,7 @@ function filterResultTable() {
 
     // Hide all the rows, then show the rows that match.
     jo.hide();
-    joFiltered.show(); 
+    joFiltered.show();
 
 	setRowColors();
 	updateDlLinks()
@@ -122,18 +122,19 @@ function filterResultTable() {
 function updateDlLinks() {
 	// Get all filtered mutations.
 	var filteredMuts = [];
-    $('#resulttable tbody tr:visible').each(function(index){ 
+    $('#resulttable tbody tr:visible').each(function(index){
     	filteredMuts.push( $(this).attr('data-pnt') );
     });
     filteredMuts = filteredMuts.join(' ');
-    
+
     // Put them in the href of all download links.
-    $('#download a').each(function(index){ 
+    $('#download a').each(function(index){
     	var thisFile = $(this).attr('data-file');
     	var baseHref = '/getfile/?j=' + jobID + '&f=' + thisFile + '&m='
     	$(this).attr('href', baseHref + filteredMuts);
     });
 }
+
 function bytesToKilo(bytes) {
 	if (bytes < 1024) {
 		return bytes + ' B';
@@ -149,6 +150,7 @@ function bytesToKilo(bytes) {
 	var gigabytes = megabytes / 1024;
 	return megabytes.toFixed(1) + ' GB';
 }
+
 function updateDlCell(celldata, cellid) {
 	if (celldata[0]) {
 		var files, size;
@@ -158,7 +160,7 @@ function updateDlCell(celldata, cellid) {
 			files = celldata[0] + ' files'
 		}
 		size = bytesToKilo(celldata[1]);
-		
+
 		$('#' + cellid + ' .desc').text('(' + files + ', ' + size + ')');
 
 		$('#' + cellid + ' span, #' + cellid + ' a').show();
@@ -176,8 +178,8 @@ function updateDlTable(data, length) {
 		updateDlCell(data.mutmodels, 'pdbmut');
 		updateDlCell(data.alignments, 'aligns');
 		updateDlCell(data.sequences, 'seqs');
-		var totalFiles = data.simpleresults[0] + data.allresults[0] + 
-						 data.wtmodelsori[0] + data.wtmodelsopt[0] + data.mutmodels[0] + 
+		var totalFiles = data.simpleresults[0] + data.allresults[0] +
+						 data.wtmodelsori[0] + data.wtmodelsopt[0] + data.mutmodels[0] +
 						 data.alignments[0] + data.sequences[0];
 		$('#filecount').text(totalFiles);
 		if (totalFiles) {
@@ -192,15 +194,15 @@ function updateDownloadableFiles(ajaxReqs) {
 
 	// Get filtered mutations.
     var filteredMuts = [];
-    $('#resulttable tbody tr:visible').each(function(index){ 
+    $('#resulttable tbody tr:visible').each(function(index){
     	filteredMuts.push( $(this).attr('data-pnt') );
     });
-    
+
     // Abort old ajax request.
 	if (ajaxReqs[ajaxReqs.length - 1]) {
 		ajaxReqs[ajaxReqs.length - 1].abort();
 	}
-	
+
 	// Ajax!
 	$('#dltable td a').hide();
 	$('#dltable td span').html('');
@@ -229,14 +231,14 @@ $(document).ready(function(){
 	var ajaxRequests = new Array();
 
 	// Enable the sortable table.
-	$('#resulttable').tablesorter({ 
+	$('#resulttable').tablesorter({
         sortList: [[0,0],[1,0],[2,0]], // Pre-sort: status, protein, mutation.
-    }).bind("sortEnd", function() { 
+    }).bind("sortEnd", function() {
     	filterResultTable();
     	if (first) updateDownloadableFiles(ajaxRequests);
     	first = false;
     });
-    
+
     // Enable filtering of table.
     $("#filtcontrols input").click(function() {
     	filterResultTable();
@@ -272,7 +274,7 @@ $(document).ready(function(){
     	var offTop = $(this).offset().top - 10;
     	var offLeft = $(this).offset().left + 30;
     	$('.tooltip#' + tooltip).css('top', offTop + 'px').css('left', offLeft + 'px');
-    	
+
     	// Insert protein and mutation for error tooltip.
     	if (tooltip == 'term') {
 	    	$('#toolpnm').html( $(this).attr('data-pnm') );
@@ -285,7 +287,7 @@ $(document).ready(function(){
 		}
 		lastHelp = this;
     });
-    
+
     // Rerun.
     $('#rerun').click(function() {
     	rerunMut( $('#toolpnm').html() );
