@@ -2,11 +2,10 @@ name: elaspic_webserver
 channels: !!python/tuple
 - defaults
 - omnia
-- kimlab
 - bioconda
 - conda-forge
+- kimlab
 - ostrokach
-- r
 dependencies:
 - bioconda::blast=2.2.31=1
 - bioconda::cd-hit=4.6.4=1
@@ -59,13 +58,10 @@ dependencies:
 - conda-forge::zlib=1.2.8=3
 - cryptography=1.4=py35_0
 - kimlab::kmtools=0.0.13=py35_0
-- libgcc=5.2.0=0
 - libgfortran=3.0.0=1
 - libxslt=1.1.28=0
-- llvmlite=0.12.1=py35_0
 - lxml=3.6.4=py35_0
 - mkl=11.3.3=0
-- numba=0.27.0=np111py35_0
 - numpy=1.11.1=py35_0
 - omnia::boost=1.59.0=py35_1
 - omnia::hdf5-1814=1.8.14=0
@@ -86,18 +82,12 @@ dependencies:
   - aiohttp==0.22.5
   - aiomysql==0.0.8
   - chardet==2.3.0
-  - conda-kapsel==0.3.1
-  - datapkg==0.0.5
   - django==1.10
   - fake-factory==0.7.2
   - hypothesis==3.6.0
-  - jobsubmitter==0.0.2
-  - kmtools-extra==0.0.1
   - multidict==1.2.2
   - py==1.4.31
-  - pymysql==0.7.7
   - pytest==3.0.3
   - pytest-logging==2015.11.4
   - tables==3.2.3.1
-  - transvar==2.2.15.20161002
 prefix: /home/kimlab1/strokach/anaconda/envs/elaspic_webserver
