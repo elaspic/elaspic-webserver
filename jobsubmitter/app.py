@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Dec  9 09:45:19 2015
-
-@author: strokach
-"""
+import os
+import os.path as op
+import shutil
 import asyncio
 import logging
 import logging.config
@@ -17,7 +14,6 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
-# %%
 async def generic_handler(request, request_type):
     """
     """
@@ -64,7 +60,6 @@ app.router.add_route('GET', '/elaspic/api/1.0/', get)
 app.router.add_route('POST', '/elaspic/api/1.0/', post)
 
 
-# %%
 if __name__ == '__main__':
     import argparse
     import logging.config
@@ -78,6 +73,18 @@ if __name__ == '__main__':
     else:
         config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['debug_log']  # ['info_log']
     logging.config.dictConfig(config.LOGGING_CONFIGS)
+
+    # Copy scripts
+    local_script_dir = op.abspath(op.join(op.dirname(__file__), 'scripts'))
+    os.makedirs(config.SCRIPTS_DIR, exist_ok=True)
+    logger.info("Copying script files to remote ('{}')...".format(config.SCRIPTS_DIR))
+    for file in os.listdir(local_script_dir):
+        logger.debug(file)
+        shutil.copy(
+            op.join(local_script_dir, file),
+            op.join(config.SCRIPTS_DIR, file)
+        )
+    logger.info("Done!")
 
     loop = asyncio.get_event_loop()
     handler = app.make_handler()

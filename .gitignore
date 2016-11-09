@@ -1,18 +1,13 @@
 # Folders
 /.coverage
 /static
-/log
-
-# temporary, while tests are in progress
-tests 
-
 __pycache__
+jobsubmitter/tests/data/nm9omiv6
 
 # Prefixes
 .*
+!.gitignore
 celerybeat-schedule*
 
 # Extensions
 *.pyc
-*.bak
-
