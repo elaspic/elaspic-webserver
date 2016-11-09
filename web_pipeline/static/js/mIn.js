@@ -40,116 +40,116 @@ jQuery.fn.autoGrow = function() {
 
 function handleResults(result, ajaxRequests) {
 
-	$("#validation div").remove();
-	var validationArray = [];
-	var validated = 0;
-	var nothumancount = 0;
-	
-	if (!result) {
-		var proteins = $("#proteinsinput").val().split("\n");
-		for (var i = 0; i < proteins.length; i++) {
-			if (proteins[i]) {
-		        validationArray.push('<div class="validating"></div>');
-		    } else {
-		    	validationArray.push('<div class="empty"></div>');
-		    }
-	    }
-	} else {
-	
-		for (var i = 0; i < result.r.length; i++) {
-				
-			// Line is empty.
-			if (result.r[i].emsg == "EMP") {
-				validationArray.push('<div class="empty"></div>');
-				continue;
-			}
-			// Syntax error. (0)
-			if (result.r[i].emsg == "SNX" || result.r[i].muterr == "SNX") {
-				validationArray.push('<div class="error"></div>');
-				continue;
-			}
-		    // Protein not found (1) or mutation: out of bounds or wrong residue error. (5)
-		   	if (result.r[i].emsg == "DNE" || result.r[i].muterr == "OOB") {
-		    	validationArray.push('<div class="unknown"></div>');
-			    continue;
-			}
-			// Mutation: self error (2), or line is a duplicate (3) or synonym. (4)
-			if (result.r[i].muterr == "SLF" || result.r[i].emsg == "DUP" || result.r[i].emsg == "SYN") {
-				validationArray.push('<div class="warning"></div>');
-			    continue;
-			}
+  $("#validation div").remove();
+  var validationArray = [];
+  var validated = 0;
+  var nothumancount = 0;
 
-			// Line is validated.
-			validationArray.push('<div class="good"></div>');
-			validated++;
-			
-			// Check if protein is human.
-			if (result.r[i].nothuman) {
-				nothumancount++;
-			}	
-		}
-    
-   
-		if (validated || result.e) {
+  if (!result) {
+    var proteins = $("#proteinsinput").val().split("\n");
+    for (var i = 0; i < proteins.length; i++) {
+      if (proteins[i]) {
+        validationArray.push('<div class="validating"></div>');
+      } else {
+        validationArray.push('<div class="empty"></div>');
+      }
+    }
+  } else {
+    for (var i = 0; i < result.r.length; i++) {
+      // Line is empty.
+      if (result.r[i].emsg == "EMP") {
+        validationArray.push('<div class="empty"></div>');
+        continue;
+      }
+      // Syntax error. (0)
+      if (result.r[i].emsg == "SNX" || result.r[i].muterr == "SNX") {
+        validationArray.push('<div class="error"></div>');
+        continue;
+      }
+      // Protein not found (1) or mutation: out of bounds or wrong residue error. (5)
+       if (result.r[i].emsg == "DNE" || result.r[i].muterr == "OOB") {
+        validationArray.push('<div class="unknown"></div>');
+        continue;
+      }
+      // Mutation does not fall inside a domain.
+       if (result.r[i].emsg == "OOD" || result.r[i].muterr == "OOD") {
+        validationArray.push('<div class="unknown"></div>');
+        continue;
+      }
+      // Mutation: self error (2), or line is a duplicate (3) or synonym. (4)
+      if (result.r[i].muterr == "SLF" || result.r[i].emsg == "DUP" || result.r[i].emsg == "SYN") {
+        validationArray.push('<div class="warning"></div>');
+        continue;
+      }
+      // Line is validated.
+      validationArray.push('<div class="good"></div>');
+      validated++;
 
-			if (validated) {
-				if (validated == 1) {
-					var s = '';
-					var ve = 's'
-				} else {
-					var s = 's';
-					var ve = 've'
-				}
-				var validateHtml = "<div><h4>" + validated + " mutation" + s + " ha" + ve + " been correctly input.</h4>" +
-								   "<p><b></b><i>To continue, input your email address (optional) and click Submit.</i></p></div>"
-				$("#input_resp").html(validateHtml);		 
-				$("#input_resp").show() 
-				$("#input_err").css('margin-top', '27px');
-			} else {
-				$("#input_resp").hide();
-				$("#input_err").css('margin-top', '0px');
-			}
-		
-			if (result.e.title) {
-				var validateErr = "<div><h4>" + result.e.title + "</h4>";
-				for (var i = 0; i < result.e.errors.length; i++) {
-					if (result.e.header[i]) {
-						validateErr += '<p><span class="ico ' + result.e.eclass[i] + '"></span>' + result.e.header[i]
-						validateErr += '<span class="resp">' + result.e.errors[i].join(',&nbsp; ') + "</span></p>";
-					}
-				}
-				validateErr += "</div>";
-				$("#input_err").html(validateErr);		 
-				$("#input_err").show() 
-			} else {
-				$("#input_err").hide() 
-			}
+      // Check if protein is human.
+      if (result.r[i].nothuman) {
+        nothumancount++;
+      }
+    }
 
-		} else {
-			$("#validation").html('<div class="empty"></div>');
-			$("#input_resp").hide();
-		}
-		
-		$("#fakearea").val(result.e.good.join(' '));
-	}
-	$("#validation").append(validationArray);
-	
-	if ($("#proteinsinput").val() == "") {
-		$("#input_resp").hide();
-		$("#input_err").hide() 
-	}
-	
-	
-	
-	if (ajaxRequests) {
-		if (nothumancount) {
-			$("#nothumanwarning").animate({height: 50}, {duration: 500});
-		} else {
-			$("#nothumanwarning").animate({height: 0}, {duration: 300});
-		}
-	}
+    if (validated || result.e) {
 
+      if (validated) {
+        if (validated == 1) {
+          var s = '';
+          var ve = 's'
+        } else {
+          var s = 's';
+          var ve = 've'
+        }
+        var validateHtml = "<div><h4>" + validated + " mutation" + s + " ha" + ve + " been correctly input.</h4>" +
+                   "<p><b></b><i>To continue, input your email address (optional) and click Submit.</i></p></div>"
+        $("#input_resp").html(validateHtml);
+        $("#input_resp").show()
+        $("#input_err").css('margin-top', '27px');
+      } else {
+        $("#input_resp").hide();
+        $("#input_err").css('margin-top', '0px');
+      }
+
+      if (result.e.title) {
+        var validateErr = "<div><h4>" + result.e.title + "</h4>";
+        for (var i = 0; i < result.e.errors.length; i++) {
+          if (result.e.header[i]) {
+            validateErr += '<p><span class="ico ' + result.e.eclass[i] + '"></span>' + result.e.header[i]
+            validateErr += '<span class="resp">' + result.e.errors[i].join(',&nbsp; ') + "</span></p>";
+          }
+        }
+        validateErr += "</div>";
+        $("#input_err").html(validateErr);
+        $("#input_err").show()
+      } else {
+        $("#input_err").hide()
+      }
+
+    } else {
+      $("#validation").html('<div class="empty"></div>');
+      $("#input_resp").hide();
+    }
+
+    $("#fakearea").val(result.e.good.join(' '));
+  }
+
+  $("#validation").append(validationArray);
+
+  if ($("#proteinsinput").val() == "") {
+    $("#input_resp").hide();
+    $("#input_err").hide()
+  }
+
+  if (ajaxRequests) {
+    if (nothumancount) {
+      $("#nothumanwarning").animate({height: 50}, {duration: 500});
+    } else {
+      $("#nothumanwarning").animate({height: 0}, {duration: 300});
+    }
+  }
 }
+
 
 function getProteins(ajaxRequests) {
 
@@ -160,26 +160,26 @@ function getProteins(ajaxRequests) {
 
     // Add loading icons.
     handleResults(false);
-    
+
     // Check proteins.
-		if (proteins != "") {
-		ajaxRequests[ajaxRequests.length] = $.ajax({
-			url: "/json/getprotein/",
-			data: {
-				p: proteins.join(" "),
-				m: 1,
-				e: 1,
-			},
-			type: "GET",
-			dataType: "json",
-			cache: false,
-			success: function (data) {
-				
-				handleResults(data, ajaxRequests);
-				
-			}
-		});
-	  }
+    if (proteins != "") {
+    ajaxRequests[ajaxRequests.length] = $.ajax({
+      url: "/json/getprotein/",
+      data: {
+        p: proteins.join(" "),
+        m: 1,
+        e: 1,
+      },
+      type: "GET",
+      dataType: "json",
+      cache: false,
+      success: function (data) {
+
+        handleResults(data, ajaxRequests);
+
+      }
+    });
+    }
 
 }
 function setSelectionRange(input, selectionStart, selectionEnd) {
@@ -198,7 +198,7 @@ function setSelectionRange(input, selectionStart, selectionEnd) {
 
 $(document).ready(function(){
 
-	var ajaxRequests = new Array();
+  var ajaxRequests = new Array();
 
     if ($("#proteinsinput").val()) {
         getProteins(ajaxRequests);
@@ -226,7 +226,7 @@ $(document).ready(function(){
                 $("#proteinsinput").val(response.msg);
                 // Adjust input height.
                 $("#proteinsinput").trigger( "keyup" );
-                
+
                 // Trigger input validation.
                 getProteins(ajaxRequests);
             }
@@ -272,7 +272,7 @@ $(document).ready(function(){
         var example = ['CCM1.E567Q', 'O00522.E567A', 'KRIT1_HUMAN.E567F',
                        'HLA-DRB1.V209R', 'KRas2.I36M', 'ENSG00000133703.V8R',
                        'P68871.V35D', 'KIAA0145.S66T', '3PPJ.R575F',
-                       'Q9Y2L6.G109S', 'EIF4E3.V130A', 
+                       'Q9Y2L6.G109S', 'EIF4E3.V130A',
                        'ROCK2.S264Y', 'Cx46.R133T'];
         $("#proteinsinput").val( example.join("\n") );
         $("#proteinsinput").trigger( "keyup" );

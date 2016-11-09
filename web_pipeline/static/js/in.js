@@ -59,6 +59,7 @@
         }
     }
 })(jQuery);
+
 function validate(m, s) {
     // Is valid substitution.
     if (/^[ACDEFGHIKLMNPQRSTVWY]{1}[1-9]{1}[0-9]*[ACDEFGHIKLMNPQRSTVWY]{1}$/.test(m.toUpperCase())) {
@@ -78,36 +79,39 @@ function validate(m, s) {
 }
 
 function validateForm() {
-
-    var noError = true;
-    if ($("#fakearea").val() == "") {
+  var noError = true;
+  if ($("#fakearea").val() == "") {
+    noError = false;
+    if ($("#me").val() == "sIn") {
+      if (! $("#selectbox").width()) {
+        // No protein
+        $("#submiterr").text("Please input a valid protein and select a mutation")
+      } else {
+        //. No mutation selected
+        $("#submiterr").text("Please select a valid mutation")
+      }
+    } else if ($("#me").val() == "mIn") {
+      $("#submiterr").text("Please input at least one protein with a valid mutation")
+    }
+  } else if ($('#notdomainwarning').is(":visible")) {
+    // Selected mutation outside domain
+    noError = false;
+    $("#submiterr").text("Mutation must fall inside a domain")
+  }
+  if (noError) {
+    if ($("#emailtext").val()) {
+      if (!$("#emailtext").val().match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$/)) {
         noError = false;
-        if ($("#me").val() == "sIn") {
-            if ($("#selectbox").width()) {
-                $("#submiterr").text("Please select a valid mutation")
-            } else {
-                $("#submiterr").text("Please input a valid protein and select a mutation")
-            }
-        } else if ($("#me").val() == "mIn") {
-            $("#submiterr").text("Please input at least one protein with a valid mutation")
-        }
+        $("#submiterr").text("Please input a valid or no email address")
+      }
     }
-    if (noError) {
-        if ($("#emailtext").val()) {
-            if (!$("#emailtext").val().match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$/)) {
-                noError = false;
-                $("#submiterr").text("Please input a valid or no email address")
-            }
-        }
-    }
-    if (noError == false) {
-        $("#submiterr").fadeIn("slow", function() {
-            setTimeout(function () {
-                $("#submiterr").fadeOut("slow");
-            }, 2000);
-
-        });
-    }
-
-    return noError;
+  }
+  if (noError == false) {
+    $("#submiterr").fadeIn("slow", function() {
+      setTimeout(function () {
+        $("#submiterr").fadeOut("slow");
+      }, 2000);
+    });
+  }
+  return noError;
 }

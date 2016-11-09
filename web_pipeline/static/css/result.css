@@ -146,10 +146,10 @@ tr.error td.tdt span {
 	width: 410px;
 	float: right;
 	margin-bottom: 30px;
-	
+
 	text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.2);
 	border-radius: 5px;
-	
+
 	background: #6AADCF;
 	border: 1px solid #8294C4;
 
@@ -200,7 +200,7 @@ div[id="filtcontrols"] {
 	margin: 0;
 	padding: 14px 30px;
 }
-#filtcontrols #checkstatus, #filtcontrols #checktype, 
+#filtcontrols #checkstatus, #filtcontrols #checktype,
 #filtcontrols #checkscore, #filtcontrols #checkprotein {
 	position: absolute;
 }
@@ -262,7 +262,7 @@ div[id="filtcontrols"] {
 	font-size: 13px;
 	padding: 0px 2px;
     background-color: #345677;
-	
+
 }
 #filtcontrols #reset:hover {
     background-color: #446687;
@@ -303,7 +303,7 @@ input[type=checkbox] {
    display: none;
 }
 input[type='checkbox'] + label {
-	padding-left: 18px; 
+	padding-left: 18px;
 	background-image: url('../images/check-off15.png');
 	background-repeat: no-repeat;
 	background-position: left center;

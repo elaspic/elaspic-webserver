@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>{% block title %}{{ SITE_NAME }}{% endblock %}
-            {% ifequal current 'result' %}- Result #{{ job.jobID }}{% endifequal %}
-            {% ifequal current 'result2' %}- {{ data.inputIdentifier }}.{{ data.mut.mut }}{% endifequal %}
-            {% ifequal current 'generic' %}- {{ this|capfirst }}{% endifequal %}
-        </title>
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/base.css" media="all" />
-        <link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/print.css" media="print" />
-        {% if current %}<link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/{{ current }}.css" media="all" />{% endif %}
-        <!--[if lt IE 7]><style media="all" type="text/css">#container {height:100%}</style><![endif]-->
-        <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery-1.11.0.min.js"></script>
-		{% block headscript %}{% endblock %}
-        {% if current %}<script type="text/javascript" src="{{ STATIC_FOLDER }}js/{{ current }}.js"></script>{% endif %}
-    </head>
+  <head>
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}
+          {% ifequal current 'result' %}- Result #{{ job.jobID }}{% endifequal %}
+          {% ifequal current 'result2' %}- {{ data.inputIdentifier }}.{{ data.mut.mut }}{% endifequal %}
+          {% ifequal current 'generic' %}- {{ this|capfirst }}{% endifequal %}
+      </title>
+      <link rel="shortcut icon" href="/favicon.ico" />
+      <meta charset="utf-8">
+      <link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/base.css" media="all" />
+      <link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/print.css" media="print" />
+      {% if current %}<link rel="stylesheet" type="text/css" href="{{ STATIC_FOLDER }}css/{{ current }}.css" media="all" />{% endif %}
+      <!--[if lt IE 7]><style media="all" type="text/css">#container {height:100%}</style><![endif]-->
+      <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery-1.11.0.min.js"></script>
+  {% block headscript %}{% endblock %}
+      {% if current %}<script type="text/javascript" src="{{ STATIC_FOLDER }}js/{{ current }}.js"></script>{% endif %}
+  </head>
+
     <body>
         <div id="container">
             <div id="header_banner">
                 <div id="header">
-					<a href="/" id="homelink">
-						<img src="/static/images/p2t.png" id="structure" />
-						<!--<div id="logo">ELASPIC</div>
-						<div id="title">Ensemble Learning Approach for Stability <br />Prediction of Interface and Core mutations</div>-->
-						<img src="/static/images/logotitle{{ SITE_NAME}}.png" id="mutationModeller" alt="{{ SITE_NAME}}" />
-					</a>
+          <a href="/" id="homelink">
+            <img src="/static/images/p2t.png" id="structure" />
+            <!--<div id="logo">ELASPIC</div>
+            <div id="title">Ensemble Learning Approach for Stability <br />Prediction of Interface and Core mutations</div>-->
+            <img src="/static/images/logotitle{{ SITE_NAME}}.png" id="mutationModeller" alt="{{ SITE_NAME}}" />
+          </a>
                     <div id="menu">
                         <a href="/"{% ifequal type 'input' %} class="active"{% endifequal %}>Home</a><span></span>
                         <a href="/help/"{% if help %} class="active"{% endif %}>Help</a><span></span>
@@ -36,29 +37,29 @@
             </div>
             <div id="body">
                 {% if debug %}
-                	<!--
-					<span id="log"></span>, <span id="error"></span>
-					-->
+                  <!--
+          <span id="log"></span>, <span id="error"></span>
+          -->
                 {% endif %}
 
-				{% block body %} {% endblock %}
+        {% block body %} {% endblock %}
 
             </div>
             <div id="footer_banner">
                 <div id="footer">
                     <div id="copy">
-                    	&copy; 2016 &#8211;
-                    	<a target="_blank" href="http://www.kimlab.org/" class="click">
-                    		Kim Lab
-                    	</a>
-                    	&#8211;
-                    	<a target="_blank" href="http://tdccbr.med.utoronto.ca/" class="click">
-                    		Donnelly Centre
-                    	</a>
-                    	&#8211;
-                    	<a target="_blank" href="http://www.utoronto.ca/" class="click">
-                    		University of Toronto
-                    	</a>
+                      &copy; 2016 &#8211;
+                      <a target="_blank" href="http://www.kimlab.org/" class="click">
+                        Kim Lab
+                      </a>
+                      &#8211;
+                      <a target="_blank" href="http://tdccbr.med.utoronto.ca/" class="click">
+                        Donnelly Centre
+                      </a>
+                      &#8211;
+                      <a target="_blank" href="http://www.utoronto.ca/" class="click">
+                        University of Toronto
+                      </a>
                     </div>
                 </div>
             </div>
