@@ -94,14 +94,16 @@ function create2dBar(protein) {
 
   // Draw domains
   var domaindefs = [];
-  for (var i = 0; i < protein.doms.length; i++) {
+  var i;
+  var pxsize, pxstart;
+  for (i = 0; i < protein.doms.length; i++) {
 
     var domStart = parseInt(protein.defs[i].split(':')[0]);
     var domEnd = parseInt(protein.defs[i].split(':')[1]);
     domaindefs.push([domStart, domEnd]);
 
-    var pxsize = (domEnd - domStart) / psize * barSize;
-    var pxstart = domStart / psize * barSize - border;
+    pxsize = (domEnd - domStart) / psize * barSize;
+    pxstart = domStart / psize * barSize - border;
 
     var dname, dpopup;
 
@@ -133,7 +135,7 @@ function create2dBar(protein) {
     var protCount = protein.inacs.length;
     for (var j = 0; j < protCount; j++) {
       var color = blue_rainbow(protCount, j);
-      for (var i = 0; i < protein.inacs[j].aa.length; i++) {
+      for (i = 0; i < protein.inacs[j].aa.length; i++) {
         var aa = protein.inacs[j].aa[i];
         // Hide interfaces outside domains.
         var in_domain = false;
@@ -146,9 +148,9 @@ function create2dBar(protein) {
         if (!in_domain) {
           continue;
         }
-        var pxsize = 1 / psize * barSize;
+        pxsize = 1 / psize * barSize;
         var center1px = (pxsize - 1) / 2;
-        var pxstart = aa / psize * barSize - center1px - 0.5;
+        pxstart = aa / psize * barSize - center1px - 0.5;
         var height = Math.min(38 / protCount, 10);
         var top = j * height;
         var inac = '<div style="width:' + pxsize + 'px; left:' + pxstart + 'px;';
@@ -245,16 +247,19 @@ function fixBarMut() {
 
   var steps = Math.ceil($inacs.length / 2);
 
+  // This adds protein interaction data
+  function _loopFunction() {
+    if (count % steps === i) {
+      inac = '<div><div class="inaccolor" style="background-color:' + $(this).css('background-color') + ';"></div>';
+      inac += '<a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + $(this).attr('data-pid') + '">' + $(this).attr('data-prot') + '</a></div>';
+      $('.inacsummary').append(inac);
+    }
+    count += 1;
+  }
+
   for (var i = 0; i < steps; i++) {
     var count = 0;
-    $inacs.each(function() {
-      if (count % steps === i) {
-        inac = '<div><div class="inaccolor" style="background-color:' + $(this).css('background-color') + ';"></div>';
-        inac += '<a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + $(this).attr('data-pid') + '">' + $(this).attr('data-prot') + '</a></div>';
-        $('.inacsummary').append(inac);
-      }
-      count += 1;
-    });
+    $inacs.each(_loopFunction);
   }
   if (inac) {
     $('#inacbox').show();
@@ -289,7 +294,7 @@ function fixBarMuts(muts) {
   $('.protsvg').html('');
 
   var svg = d3.select(".protsvg");
-
+  var i;
   var n = 100;
   var w = 920,
     h = 100,
@@ -315,7 +320,7 @@ function fixBarMuts(muts) {
     console.log(muts[key][0][0]['m']);
   }
 
-  for (var i = 0; i < svgdata.length; i++) {
+  for (i = 0; i < svgdata.length; i++) {
     svgdata[i].y = getY(i, svgdata);
   }
 
@@ -404,7 +409,7 @@ function fixBarMuts(muts) {
     }
     // Print data to popup.
     $('.muttooltip .tlabels').attr('data-mut', mutData[0][0].m.substr(0, mutData[0][0].m.length - 1));
-    for (var i = 0; i < mutData.length; i++) {
+    for (i = 0; i < mutData.length; i++) {
       var extraclass = (!i) ? 'active' : 'inactive';
       var curmut = (!i) ? mutData[i][0].m : mutData[i][0].m.slice(-1);
       var ele = (i < 10) ? $('.muttooltip .tlabels .l1') : $('.muttooltip .tlabels .l2');
@@ -437,10 +442,10 @@ function fixBarMuts(muts) {
     fixMutPopupBorders(manyMuts);
   });
 
-  anchors.call(labelForce.update)
+  anchors.call(labelForce.update);
 
   labelForce.start();
-  for (var i = 10000; i > 0; --i) labelForce.tick();
+  for (i = 10000; i > 0; --i) labelForce.tick();
   labelForce.stop();
 
   $('.protsvg').css('height', svgHeight + 'px');
@@ -463,7 +468,7 @@ function fixMutPopupData(data, num) {
       sbdop = data[num][0].sm,
       muttsid = 'Seq iden<span id="sbseq" class="mono">' + data[num][0].si + '</span>';
     if (sbseq.split(', ').length > 1) {
-      var sbseq = data[num][0].si.split(', ');
+      sbseq = data[num][0].si.split(', ');
       sbseq = sbseq[0] + '<span class="nonmono">, </span>' + sbseq[1];
       muttsid = 'Seq idens<span id="sbseq" class="mono">' + sbseq + '</span>';
     }
@@ -518,27 +523,29 @@ function showHover(element) {
 
 
   // Check if arrow should be placed.
+  var arrow;
   if (width) {
-    var arrow = '<div class="arrow" style="margin-left: ' + parseInt((width) / 2 - 4 + 5) + 'px;"></div>';
+    arrow = '<div class="arrow" style="margin-left: ' + parseInt((width) / 2 - 4 + 5) + 'px;"></div>';
   } else {
-    var arrow = '';
+    arrow = '';
   }
 
   right += 2;
 
   // Replace domain definitions if domain is too small.
   var domWidth = parseInt($(element).css("width"));
-  var defWidth = $(element).attr("data-end").toString().length * 7
+  var defWidth = $(element).attr("data-end").toString().length * 7;
   if (domWidth < defWidth) {
     left -= 30;
   } else {
     left -= 15;
     right -= 15;
   }
+  var barid;
   if ($(element).attr('data-bar')) {
-    var barid = '#bar' + $(element).attr('data-bar') + ' ';
+    barid = '#bar' + $(element).attr('data-bar') + ' ';
   } else {
-    var barid = ''
+    barid = '';
   }
   $(barid + ".tooltip2d").html('<div class="ttmid" style="left: ' + mid + 'px; width: ' + width + 'px;"><div class="txt">' + text + '</div>' + arrow + '</div>' +
     '<div class="ttstart" style="left: ' + left + 'px;">' + $(element).attr("data-start") + '</div>' +
@@ -563,7 +570,7 @@ function linkPfam(domain) {
     families = domain.html().trim();
   }
   families = families.split('+');
-  var uniqueFams = []
+  var uniqueFams = [];
   for (var i = 0; i < families.length; ++i) {
     var u = true;
     for (var j = 0; j < uniqueFams.length; ++j) {

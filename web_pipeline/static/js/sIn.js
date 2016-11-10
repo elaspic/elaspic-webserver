@@ -10,7 +10,7 @@
     this.opts = $.extend({}, this.defaults, options);
     // Non-configurable variables
     this.$el = $(el);
-    this.items = new Array();
+    this.items = [];
   }
 
   // Separate functionality from object creation
@@ -73,6 +73,7 @@
   };
 })(jQuery);
 
+
 function saveMut(startup) {
   var protein = $("#proteininput").val();
   var aa1 = $("#selectsub").find("option:selected").text();
@@ -87,10 +88,9 @@ function saveMut(startup) {
   }
 }
 
+
 function fixSelLink() {
-
-  var n = 5
-
+  var n = 5;
   var aa = $("#selectsub").find("option:selected").text().substring(0, 1);
   if ($("#select2sub").data("hidden")) {
     $("#select2sub").data("extraBox").enable($("#select2sub").data("hidden"));
@@ -106,11 +106,10 @@ function fixSelLink() {
     $('#select2sub').prop('disabled', 'disabled');
     $('#select2sub').addClass('cursornormal');
   }
-
 }
 
-function fixSelects(seq) {
 
+function fixSelects(seq) {
   // Print primary selects.
   var i = 0;
   $(".allaa option").remove();
@@ -118,25 +117,22 @@ function fixSelects(seq) {
     i++;
     return '<option value="sel' + i + '">' + n + i + '</option>';
   });
-
   options.unshift('<option value="sel0">-</option>');
-
   $(".allaa").append(options.join(""));
   stri = seq.length + "";
   $(".allaa").css("width", stri.length * 9 + 40);
   $(".fewaa").css("width", stri.length * 9 + 40);
   $("#select2sub").css("width", 47);
-
   $("#fakearea").val("");
   fixSelLink();
-
 }
 
-function proteinReceived(result) {
 
+function proteinReceived(result) {
   // Get protein name from inpit field.
+  var protName;
   if (result.inputfile) {
-    var protName = $("#proteininput").val();
+    protName = $("#proteininput").val();
     protName = protName.substring(6, protName.length - 1);
     result.prot = protName;
     result.desc = 'chain ' + result.msg[0][0];
@@ -155,7 +151,7 @@ function proteinReceived(result) {
       $('#selectchain').append('<option value="' + i + '" id="' + chain + '">chain ' + chain + '</option>');
     }
   } else {
-    var protName = $.trim($("#proteininput").val()).toUpperCase();
+    protName = $.trim($("#proteininput").val()).toUpperCase();
     $('#barbox').data('data-pdb', false);
     $('#selectchaindiv').hide();
     $('.first-switch').addClass('first');
@@ -196,11 +192,12 @@ function proteinReceived(result) {
         duration: 500,
         queue: false,
       });
+      var pheight;
       if (result.nothuman) {
-        var pheight = 305;
+        pheight = 305;
         $("#nothumanwarning").show(0);
       } else {
-        var pheight = 250;
+        pheight = 250;
         $("#nothumanwarning").hide(0);
       }
       $("#protein").animate({
@@ -212,8 +209,8 @@ function proteinReceived(result) {
   });
 }
 
-function stopFetch(ajaxRequests) {
 
+function stopFetch(ajaxRequests) {
   $("#uploaderr").hide();
   $("#protein").animate({
     height: 120
@@ -240,30 +237,22 @@ function stopFetch(ajaxRequests) {
       $("#nothumanwarning").hide(0);
     }
   });
-
   $("#pwheel").text("");
   $("#pwheel").removeClass("wheelerr");
   $("#pwheel").removeClass("wheelon");
   $('#selectchain option').remove();
   $('#inacbox').hide();
-
   if (ajaxRequests[ajaxRequests.length - 1]) {
     ajaxRequests[ajaxRequests.length - 1].abort();
   }
-
 }
 
 
 function getProtein(protein, ajaxRequests) {
-
-
   stopFetch(ajaxRequests);
-
   var trimmedProtein = $.trim(protein);
-
-  if (trimmedProtein != "" && trimmedProtein.substring(0, 6) != '<file=') {
+  if (trimmedProtein && trimmedProtein.substring(0, 6) != '<file=') {
     $("#pwheel").addClass("wheelon");
-
     ajaxRequests[ajaxRequests.length] = $.ajax({
       url: "/json/getprotein/",
       data: {
@@ -282,11 +271,10 @@ function getProtein(protein, ajaxRequests) {
           $("#pwheel").removeClass("wheelon");
           $("#pwheel").addClass("wheelerr");
         } else {
-          proteinReceived(data.r[0])
+          proteinReceived(data.r[0]);
         }
       }
     });
-
   } else {
     $("#error").text("Error: No data entered");
     $("#pwheel").removeClass("wheelon");
@@ -297,7 +285,7 @@ function getProtein(protein, ajaxRequests) {
 $(document).ready(function() {
 
   // Create ajax request array.
-  var ajaxRequests = new Array();
+  var ajaxRequests = [];
 
   // Set proteininput previous data if applicable.
   if ($("#proteininput").val()) {
@@ -306,7 +294,7 @@ $(document).ready(function() {
   saveMut(true);
 
   // Get protein if saved with browser.
-  if ($("#proteininput").val() != "") {
+  if ($("#proteininput").val()) {
     getProtein($("#proteininput").val(), ajaxRequests);
   }
 
@@ -412,13 +400,14 @@ $(document).ready(function() {
   $('.help').click(function(e) {
     e.stopPropagation();
     var tooltip = 't' + $(this).attr('class').split(' ')[1];
+    var offTop, offLeft;
     if (!$(this).hasClass('dgwtf')) {
       $('.muttooltip').hide();
-      var offTop = $(this).offset().top - $('.tooltip#' + tooltip).height() - 14;
-      var offLeft = $(this).offset().left - 156;
+      offTop = $(this).offset().top - $('.tooltip#' + tooltip).height() - 14;
+      offLeft = $(this).offset().left - 156;
     } else {
-      var offTop = $(this).offset().top - 10;
-      var offLeft = $(this).offset().left + 30;
+      offTop = $(this).offset().top - 10;
+      offLeft = $(this).offset().left + 30;
     }
 
     $('.tooltip#' + tooltip).css('top', offTop + 'px').css('left', offLeft + 'px');
@@ -430,5 +419,4 @@ $(document).ready(function() {
     }
     lastHelp = this;
   });
-
 });

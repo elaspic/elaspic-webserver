@@ -57,52 +57,52 @@ function filterResultTable() {
 
       // Protein.
       if ($cell.hasClass('tdp')) {
-        if ($cell.text().toLowerCase().indexOf(inProt.toLowerCase()) == -1) return toKeep = false;
+        if ($cell.text().toLowerCase().indexOf(inProt.toLowerCase()) == -1) return (toKeep = false);
         // Status.
       } else if ($cell.hasClass('tds')) {
         if (!$('#instacom').prop('checked')) {
-          if ($cell.hasClass('done') || $cell.hasClass('doneNO')) return toKeep = false;
+          if ($cell.hasClass('done') || $cell.hasClass('doneNO')) return (toKeep = false);
         }
         if (!$('#instarun').prop('checked')) {
-          if ($cell.hasClass('running') || $cell.hasClass('queued')) return toKeep = false;
+          if ($cell.hasClass('running') || $cell.hasClass('queued')) return (toKeep = false);
         }
         if (!$('#instaerr').prop('checked')) {
-          if ($cell.hasClass('error')) return toKeep = false;
+          if ($cell.hasClass('error')) return (toKeep = false);
         }
         // Type.
       } else if ($cell.hasClass('tdt')) {
-        if (!$('#intypcor').prop('checked') && $cell.text().trim() == 'Core') return toKeep = false;
-        if (!$('#intypint').prop('checked') && $cell.text().trim().split(' ')[0] == 'Interface') return toKeep = false;
-        if (!$('#intypunk').prop('checked') && $cell.text().trim() == 'None') return toKeep = false;
+        if (!$('#intypcor').prop('checked') && $cell.text().trim() == 'Core') return (toKeep = false);
+        if (!$('#intypint').prop('checked') && $cell.text().trim().split(' ')[0] == 'Interface') return (toKeep = false);
+        if (!$('#intypunk').prop('checked') && $cell.text().trim() == 'None') return (toKeep = false);
         // Sequence identity score.
       } else if ($cell.hasClass('tdi')) {
         if (inSeqBot > parseFloat($cell.text()) || inSeqTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return toKeep = false;
+          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
         }
         // Alignment score.
       } else if ($cell.hasClass('tda')) {
         if (inAliBot > parseFloat($cell.text()) || inAliTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return toKeep = false;
+          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
         }
         // DOPE score.
       } else if ($cell.hasClass('tdd')) {
         if (inDOPBot > parseFloat($cell.text()) || inDOPTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return toKeep = false;
+          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
         }
         // dG_wt.
       } else if ($cell.hasClass('tdwd')) {
         if (indGwBot > parseFloat($cell.text()) || indGwTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return toKeep = false;
+          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
         }
         // dG_mut.
       } else if ($cell.hasClass('tdmd')) {
         if (indGmBot > parseFloat($cell.text()) || indGmTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return toKeep = false;
+          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
         }
         // ddG.
       } else if ($cell.hasClass('tdg')) {
         if (inddGBot > parseFloat($cell.text()) || inddGTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return toKeep = false;
+          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
         }
       }
     });
@@ -116,7 +116,7 @@ function filterResultTable() {
   joFiltered.show();
 
   setRowColors();
-  updateDlLinks()
+  updateDlLinks();
 
 }
 
@@ -131,7 +131,7 @@ function updateDlLinks() {
   // Put them in the href of all download links.
   $('#download a').each(function(index) {
     var thisFile = $(this).attr('data-file');
-    var baseHref = '/getfile/?j=' + jobID + '&f=' + thisFile + '&m='
+    var baseHref = '/getfile/?j=' + jobID + '&f=' + thisFile + '&m=';
     $(this).attr('href', baseHref + filteredMuts);
   });
 }
@@ -158,7 +158,7 @@ function updateDlCell(celldata, cellid) {
     if (celldata[0] == 1) {
       files = '1 file';
     } else {
-      files = celldata[0] + ' files'
+      files = celldata[0] + ' files';
     }
     size = bytesToKilo(celldata[1]);
 
@@ -229,7 +229,7 @@ $(document).ready(function() {
 
   // Download files ajax.
   var first = true;
-  var ajaxRequests = new Array();
+  var ajaxRequests = [];
 
   // Enable the sortable table.
   $('#resulttable').tablesorter({
