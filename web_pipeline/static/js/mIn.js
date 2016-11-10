@@ -4,15 +4,15 @@ jQuery.fn.autoGrow = function() {
     var createMirror = function(textarea) {
       jQuery(textarea).after('<div class="autogrow-textarea-mirror"></div>');
       return jQuery(textarea).next('.autogrow-textarea-mirror')[0];
-    }
+    };
     var sendContentToMirror = function(textarea) {
       mirror.innerHTML = String(textarea.value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br />') + '.<br/>.';
       if (jQuery(textarea).height() != jQuery(mirror).height())
         jQuery(textarea).height(jQuery(mirror).height());
-    }
+    };
     var growTextarea = function() {
         sendContentToMirror(this);
-      }
+      };
       // Create a mirror
     var mirror = createMirror(this);
     mirror.style.display = 'none';
@@ -44,10 +44,10 @@ function handleResults(result, ajaxRequests) {
   var validationArray = [];
   var validated = 0;
   var nothumancount = 0;
-
+  var i;
   if (!result) {
     var proteins = $("#proteinsinput").val().split("\n");
-    for (var i = 0; i < proteins.length; i++) {
+    for (i = 0; i < proteins.length; i++) {
       if (proteins[i]) {
         validationArray.push('<div class="validating"></div>');
       } else {
@@ -55,7 +55,7 @@ function handleResults(result, ajaxRequests) {
       }
     }
   } else {
-    for (var i = 0; i < result.r.length; i++) {
+    for (i = 0; i < result.r.length; i++) {
       // Line is empty.
       if (result.r[i].emsg == "EMP") {
         validationArray.push('<div class="empty"></div>');
@@ -94,17 +94,18 @@ function handleResults(result, ajaxRequests) {
     if (validated || result.e) {
 
       if (validated) {
+        var s, ve;
         if (validated == 1) {
-          var s = '';
-          var ve = 's'
+          s = '';
+          ve = 's';
         } else {
-          var s = 's';
-          var ve = 've'
+          s = 's';
+          ve = 've';
         }
         var validateHtml = "<div><h4>" + validated + " mutation" + s + " ha" + ve + " been correctly input.</h4>" +
-          "<p><b></b><i>To continue, input your email address (optional) and click Submit.</i></p></div>"
+          "<p><b></b><i>To continue, input your email address (optional) and click Submit.</i></p></div>";
         $("#input_resp").html(validateHtml);
-        $("#input_resp").show()
+        $("#input_resp").show();
         $("#input_err").css('margin-top', '27px');
       } else {
         $("#input_resp").hide();
@@ -113,17 +114,17 @@ function handleResults(result, ajaxRequests) {
 
       if (result.e.title) {
         var validateErr = "<div><h4>" + result.e.title + "</h4>";
-        for (var i = 0; i < result.e.errors.length; i++) {
+        for (i = 0; i < result.e.errors.length; i++) {
           if (result.e.header[i]) {
-            validateErr += '<p><span class="ico ' + result.e.eclass[i] + '"></span>' + result.e.header[i]
+            validateErr += '<p><span class="ico ' + result.e.eclass[i] + '"></span>' + result.e.header[i];
             validateErr += '<span class="resp">' + result.e.errors[i].join(',&nbsp; ') + "</span></p>";
           }
         }
         validateErr += "</div>";
         $("#input_err").html(validateErr);
-        $("#input_err").show()
+        $("#input_err").show();
       } else {
-        $("#input_err").hide()
+        $("#input_err").hide();
       }
 
     } else {
@@ -136,9 +137,9 @@ function handleResults(result, ajaxRequests) {
 
   $("#validation").append(validationArray);
 
-  if ($("#proteinsinput").val() == "") {
+  if (!$("#proteinsinput").val()) {
     $("#input_resp").hide();
-    $("#input_err").hide()
+    $("#input_err").hide();
   }
 
   if (ajaxRequests) {
@@ -170,7 +171,7 @@ function getProteins(ajaxRequests) {
   handleResults(false);
 
   // Check proteins.
-  if (proteins != "") {
+  if (proteins) {
     ajaxRequests[ajaxRequests.length] = $.ajax({
       url: "/json/getprotein/",
       data: {
@@ -207,7 +208,7 @@ function setSelectionRange(input, selectionStart, selectionEnd) {
 
 $(document).ready(function() {
 
-  var ajaxRequests = new Array();
+  var ajaxRequests = [];
 
   if ($("#proteinsinput").val()) {
     getProteins(ajaxRequests);
@@ -261,14 +262,14 @@ $(document).ready(function() {
         return str.replace(/\s+/g, "").substring(0, 65);
     });
 
+    var currentPosition;
     if (allinput.join("\n").length < $(this).val().length) {
-      var currentPosition = this.selectionStart;
+      currentPosition = this.selectionStart;
     }
-
 
     // Print output back if trimmed.
     if (allinput.join("\n").length < $(this).val().length) {
-      var currentPosition = this.selectionStart;
+      currentPosition = this.selectionStart;
       $("#proteinsinput").val(allinput.join("\n"));
       setSelectionRange(this, currentPosition - 1, currentPosition - 1);
     }

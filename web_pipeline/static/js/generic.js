@@ -14,25 +14,25 @@ function checkContactForm() {
   var errorMsg;
   var errorArr = [];
 
-  if ($('.fname').val() == '') {
+  if (!$('.fname').val()) {
     errorMsg = 'Please fill in your name.';
     errorArr.push($('.fname')[0]);
   }
-  if ($('.fmail').val() == '') {
+  if (!$('.fmail').val()) {
     errorMsg = 'Please fill in your email address.';
     errorArr.push($('.fmail')[0]);
   }
-  if ($('.ftitle').val() == '') {
+  if (!$('.ftitle').val()) {
     errorMsg = 'Please input a subject for your message.';
     errorArr.push($('.ftitle')[0]);
   }
-  if ($('.fmsg').val() == '') {
-    errorMsg = "You didn't write any message!"
+  if (!$('.fmsg').val()) {
+    errorMsg = "You didn't write any message!";
     errorArr.push($('.fmsg')[0]);
   }
   if (!errorMsg) {
     if (!validateMail($('.fmail').val())) {
-      errorMsg = 'There is something wrong with your email.'
+      errorMsg = 'There is something wrong with your email.';
       errorArr.push($('.fmail')[0]);
     }
   }
@@ -42,7 +42,7 @@ function checkContactForm() {
     var errorPause = 1500;
 
     if (errorArr.length > 1) {
-      errorMsg = "Please fill in all fields."
+      errorMsg = "Please fill in all fields.";
     }
 
     $('form#cont .error').text(errorMsg);
@@ -82,10 +82,11 @@ function checkContactForm() {
 }
 
 function responseAjax(error, msg) {
+  var $responseElement;
   if (error) {
-    var $responseElement = $('form#cont .error');
+    $responseElement = $('form#cont .error');
   } else {
-    var $responseElement = $('form#cont .form-response');
+    $responseElement = $('form#cont .form-response');
     $('form#cont input[type="text"], form#cont textarea').val('');
   }
   $('.form-response').stop();
