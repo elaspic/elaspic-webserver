@@ -1,32 +1,34 @@
 function makeInitiationScript(domainID) {
   return 'load FILES "' + mutPath + domainID + 'wt.pdb" "' + mutPath + domainID + 'mut.pdb";' +
-       'select all; spacefill off; color label [0,25,72]; set labeloffset -7 0;' +
-       'data "property_resno"|end "property_resno"; {*}.property_resno = for(x;{*};x.resno+' + resNumDiff + '); ' +
-       'select *' + chainself + ' or *' + chaininac + '; define ~prot selected; select all and not ~prot; wireframe 0.2; define ~on ' + defaultShow + ';';
+    'select all; spacefill off; color label [0,25,72]; set labeloffset -7 0;' +
+    'data "property_resno"|end "property_resno"; {*}.property_resno = for(x;{*};x.resno+' + resNumDiff + '); ' +
+    'select *' + chainself + ' or *' + chaininac + '; define ~prot selected; select all and not ~prot; wireframe 0.2; define ~on ' + defaultShow + ';';
 }
+
 function jmolisready() {
 
   $("#appletloading").remove();
-  if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     var quality = (jmolmode == 'JAVA') ? 'normal' : 'worst';
-  } else  {
+  } else {
     var quality = 'normal';
   }
 
 
   var script = makeInitiationScript(initialdomain);
-    script += color(defaultColor);
-    script += closeby($("#stickFormRange").val(), true, true);
-    script += label("sticks", "model 0");
-    script += setMode(quality);
-    script += centerAt('mut');
+  script += color(defaultColor);
+  script += closeby($("#stickFormRange").val(), true, true);
+  script += label("sticks", "model 0");
+  script += setMode(quality);
+  script += centerAt('mut');
 
-  Jmol.script(jmol1,script);
+  Jmol.script(jmol1, script);
 
 }
+
 function jmolscript(toRun, arg1, arg2) {
   var script;
-  switch(toRun) {
+  switch (toRun) {
     case "cart":
       script = cartoon(arg1);
       break;
@@ -34,7 +36,7 @@ function jmolscript(toRun, arg1, arg2) {
       script = sticks(arg1);
       break;
     case "label":
-      script = label(arg1,arg2)
+      script = label(arg1, arg2)
       break;
     case "color":
       script = color(arg1);
@@ -52,7 +54,7 @@ function jmolscript(toRun, arg1, arg2) {
       script = setMode(arg1);
       break;
   }
-  Jmol.script(jmol1,script);
+  Jmol.script(jmol1, script);
 }
 
 
@@ -79,7 +81,7 @@ function updateSecondary2dbar(protein, isdimer) {
   $('#bar2 .enddesc').html(curDomainData['psize']);
   $('#sbdom').html(curDomainData['dname']);
   $('#sbseq').html(curDomainData['seqid']);
-    $('#sbpdb').html(curDomainData['pdb']);
+  $('#sbpdb').html(curDomainData['pdb']);
   $('#sbdop').html(curDomainData['dopescore']);
   $('#sbdgwt').html(curDomainData['dgwt']);
   $('#sbdgmut').html(curDomainData['dgmut']);
@@ -90,32 +92,37 @@ function updateSecondary2dbar(protein, isdimer) {
 
   // Add new domains.
   var d2;
-  for(var i = 0; i < curDomains.length; i++) {
+  for (var i = 0; i < curDomains.length; i++) {
     var domhtml = '<div title="Click to open Pfam description." class="domain popup';
-      if (curDomains[i]['status']) {
-        domhtml += ' current2';
-        d2 = {
-            'pxsize': parseInt(curDomains[i]['pxsize']),
-              'pxstart': parseInt(curDomains[i]['pxstart'])
-           }
+    if (curDomains[i]['status']) {
+      domhtml += ' current2';
+      d2 = {
+        'pxsize': parseInt(curDomains[i]['pxsize']),
+        'pxstart': parseInt(curDomains[i]['pxstart'])
       }
-      domhtml += '" style="width: '+ curDomains[i]['pxsize'];
-      domhtml += 'px; left: ' + curDomains[i]['pxstart'];
-      domhtml += 'px;" data-start="' + curDomains[i]['start'];
-      domhtml += '" data-end="' + curDomains[i]['end'];
-      domhtml += '" data-text="' + curDomains[i]['popup'];
-      domhtml += '" data-bar="2">'
-      domhtml += curDomains[i]['name'];
-      domhtml += '</div>';
+    }
+    domhtml += '" style="width: ' + curDomains[i]['pxsize'];
+    domhtml += 'px; left: ' + curDomains[i]['pxstart'];
+    domhtml += 'px;" data-start="' + curDomains[i]['start'];
+    domhtml += '" data-end="' + curDomains[i]['end'];
+    domhtml += '" data-text="' + curDomains[i]['popup'];
+    domhtml += '" data-bar="2">'
+    domhtml += curDomains[i]['name'];
+    domhtml += '</div>';
     $('#bar2').append(domhtml);
   }
 
   // Renew domain interaction shadow. Copied from views.py.
   // d1s: domain 1 start, d1w: domain 1 width.
-  var d2s = d2['pxstart'], d2w = d2['pxsize'];
-  var d1e = d1s + d1w, d2e = d2s + d2w;
-  var d1 = {'pxstart': d1s, 'pxsize': d1w}
-  //Find width of overlap/space.
+  var d2s = d2['pxstart'],
+    d2w = d2['pxsize'];
+  var d1e = d1s + d1w,
+    d2e = d2s + d2w;
+  var d1 = {
+      'pxstart': d1s,
+      'pxsize': d1w
+    }
+    //Find width of overlap/space.
   var mid_left = Math.min(Math.max(d1s, d2s), Math.min(d1e, d2e));
   var mid_right = Math.max(Math.max(d1s, d2s), Math.min(d1e, d2e));
   var mid_width = mid_right - mid_left;
@@ -143,13 +150,13 @@ function updateSecondary2dbar(protein, isdimer) {
   var mid_side = (overlap) ? 'solid' : left_side;
   //Calculate heights.
   if (overlap) {
-    var left_height = right_height = Math.round(d_full_height/2);
-    var mid_top_height = mid_bot_height = Math.round(d_full_height/4);
+    var left_height = right_height = Math.round(d_full_height / 2);
+    var mid_top_height = mid_bot_height = Math.round(d_full_height / 4);
   } else {
-    var left_height = Math.round((d_full_height*first_d['pxsize']/(mid_width + first_d['pxsize']))/2);
-    var right_height = Math.round((d_full_height*last_d['pxsize']/(mid_width + last_d['pxsize']))/2);
-    var mid_top_height = (left_side == 'down') ? Math.round(d_full_height/2) - right_height : Math.round(d_full_height/2) - left_height;
-    var mid_bot_height = (left_side == 'down') ? Math.round(d_full_height/2) - left_height : Math.round(d_full_height/2) - right_height;
+    var left_height = Math.round((d_full_height * first_d['pxsize'] / (mid_width + first_d['pxsize'])) / 2);
+    var right_height = Math.round((d_full_height * last_d['pxsize'] / (mid_width + last_d['pxsize'])) / 2);
+    var mid_top_height = (left_side == 'down') ? Math.round(d_full_height / 2) - right_height : Math.round(d_full_height / 2) - left_height;
+    var mid_bot_height = (left_side == 'down') ? Math.round(d_full_height / 2) - left_height : Math.round(d_full_height / 2) - right_height;
   }
   //Reset shadow.
   var bord_color = '#E8EAE8';
@@ -162,33 +169,33 @@ function updateSecondary2dbar(protein, isdimer) {
   $('#protein2dinac .before, #protein2dinac .after').css('top', 'auto').css('bottom', 'auto');
   //Set shadow.
   $('#protein2dinac').css('left', mid_left + 'px').css('width', mid_width + 'px');
-  $('#protein2dinac .toptria, #protein2dinac .bottria').css('border-left-width', Math.round(mid_width/2) + 'px')
-                             .css('border-right-width', Math.round(mid_width/2) + 'px');
+  $('#protein2dinac .toptria, #protein2dinac .bottria').css('border-left-width', Math.round(mid_width / 2) + 'px')
+    .css('border-right-width', Math.round(mid_width / 2) + 'px');
   $('#protein2dinac .toptria').css('border-top-width', mid_top_height + 'px')
-                .css('border-bottom-width', mid_top_height + 'px');
+    .css('border-bottom-width', mid_top_height + 'px');
   $('#protein2dinac .bottria').css('border-top-width', mid_bot_height + 'px')
-                .css('border-bottom-width', mid_bot_height + 'px');
+    .css('border-bottom-width', mid_bot_height + 'px');
   $('#protein2dinac .before').css('border-top-width', left_height + 'px')
-                .css('border-bottom-width', left_height + 'px')
-                .css('border-left-width', Math.round(left_width/2) + 'px')
-                .css('border-right-width', Math.round(left_width/2) + 'px')
-                .css('left', '-' + left_width + 'px');
+    .css('border-bottom-width', left_height + 'px')
+    .css('border-left-width', Math.round(left_width / 2) + 'px')
+    .css('border-right-width', Math.round(left_width / 2) + 'px')
+    .css('left', '-' + left_width + 'px');
   $('#protein2dinac .after').css('border-top-width', right_height + 'px')
-               .css('border-bottom-width', right_height + 'px')
-               .css('border-left-width', Math.round(right_width/2) + 'px')
-               .css('border-right-width', Math.round(right_width/2) + 'px')
-               .css('right', '-' + right_width + 'px');
+    .css('border-bottom-width', right_height + 'px')
+    .css('border-left-width', Math.round(right_width / 2) + 'px')
+    .css('border-right-width', Math.round(right_width / 2) + 'px')
+    .css('right', '-' + right_width + 'px');
 
   if (mid_side == 'down') {
     $('#protein2dinac .toptria').css('border-top-color', back_color)
-                  .css('border-right-color', back_color);
+      .css('border-right-color', back_color);
     $('#protein2dinac .bottria').css('border-bottom-color', back_color)
-                  .css('border-left-color', back_color);
+      .css('border-left-color', back_color);
   } else if (mid_side == 'up') {
     $('#protein2dinac .toptria').css('border-top-color', back_color)
-                  .css('border-left-color', back_color);
+      .css('border-left-color', back_color);
     $('#protein2dinac .bottria').css('border-bottom-color', back_color)
-                  .css('border-right-color', back_color);
+      .css('border-right-color', back_color);
   }
   if (left_side == 'down') {
     $('#protein2dinac .before').css('border-bottom-color', 'transparent').css('top', '0px');
@@ -240,17 +247,18 @@ function updateSecondary2dbar(protein, isdimer) {
   $('#pdbdl #dlmut').attr('href', mutPath + domainID + 'mut.pdb')
 
   // Set saved jmol options.
-      script += setMode(mode) + cartoon(defaultCartoon) + label(defaultLabel, "model " + defaultModel);
-    script += color(defaultColor) + showModel(defaultModel) + sticks(stcks);
-    script += centerAt(cntrat) + showProtein(defaultShow) + pZoom;
-  Jmol.script(jmol1,script);
+  script += setMode(mode) + cartoon(defaultCartoon) + label(defaultLabel, "model " + defaultModel);
+  script += color(defaultColor) + showModel(defaultModel) + sticks(stcks);
+  script += centerAt(cntrat) + showProtein(defaultShow) + pZoom;
+  Jmol.script(jmol1, script);
 
 }
+
 function setMode(mode) {
   $(".bmode").removeClass('underline');
   $("#bmode" + mode).addClass('underline');
   var script;
-  switch(mode) {
+  switch (mode) {
     case "best":
       script = "set platformSpeed 8; set antialiasDisplay true; set cartoonFancy true;";
       break;
@@ -263,12 +271,14 @@ function setMode(mode) {
   }
   return script;
 }
+
 function showModel(num) {
   $(".bshow").removeClass('underline');
   $("#b" + num.replace(".", "\\.")).addClass('underline');
   defaultModel = num;
   return label(defaultLabel, "model " + num);
 }
+
 function showProtein(mode) {
   $(".pshow").removeClass('underline');
   $("#pshow" + mode).addClass('underline');
@@ -279,7 +289,7 @@ function showProtein(mode) {
     cartoonmode = 'cartoon on; color cartoon translucent 0.9; select selected and (helix or sheet); color cartoon translucent 0.5;'
   }
   var script = 'select all; cartoon off; wireframe off;';
-  switch(mode) {
+  switch (mode) {
     case "self":
       defaultShow = '*' + chainself;
       script += 'select *' + chainself + ' and ~sticks; wireframe 0.2; select *' + chainself + '; ';
@@ -301,6 +311,7 @@ function showProtein(mode) {
   script += label(defaultLabel, "model " + defaultModel);
   return script;
 }
+
 function centerAt(mode) {
   $(".bcenter").removeClass('underline');
   $("#b" + mode).addClass('underline');
@@ -312,11 +323,12 @@ function centerAt(mode) {
   }
   return script;
 }
+
 function cartoon(mode, selected) {
   $(".bcart").removeClass('underline');
   $("#bcart" + mode).addClass('underline');
   var script;
-  switch(mode) {
+  switch (mode) {
     case "on":
       script = 'select all; cartoon on; color cartoon translucent 0;';
       break;
@@ -330,12 +342,14 @@ function cartoon(mode, selected) {
   defaultCartoon = mode;
   return script;
 }
+
 function cartoonTranslucent() {
   return "select all; cartoon on; color cartoon translucent 0.9; select helix or sheet; color cartoon translucent 0.5;"
 }
+
 function closeby(distance, doStick, doZoom) {
   var script = "select group within(" + distance + ", " + currentMut + ") and protein; " +
-         'script "' + staticFolder + 'jsmol/ras.scr"; ';
+    'script "' + staticFolder + 'jsmol/ras.scr"; ';
 
 
   script += "define ~closeby selected;"
@@ -349,6 +363,7 @@ function closeby(distance, doStick, doZoom) {
   return script
 
 }
+
 function sticks(mode) {
   $(".bstick").removeClass('underline');
   var script;
@@ -367,6 +382,7 @@ function sticks(mode) {
   }
   return script;
 }
+
 function label(mode, model) {
   $(".blabel").removeClass('underline');
   $("#blabel" + mode).addClass('underline');
@@ -404,11 +420,12 @@ function label(mode, model) {
   defaultLabel = mode;
   return script + showModel;
 }
+
 function surface(mode) {
   $(".bsur").removeClass('underline');
   $("#bsur" + mode).addClass('underline');
   var script;
-  switch(mode) {
+  switch (mode) {
     case "on":
       script = 'select all; isosurface off;';
       break;
@@ -425,52 +442,52 @@ function surface(mode) {
 function color(mode, chains) {
   $(".bcolor").removeClass('underline');
   $("#bcolor" + mode).addClass('underline');
-    //alert(chainself + ' ' + chaininac);
+  //alert(chainself + ' ' + chaininac);
   var extra = ''
-  switch(mode) {
+  switch (mode) {
     case "chain":
       var script = "select all; color [153,153,153]; color cartoon [153,153,153]; select not _C; color [250,100,0];" +
-             '{nitrogen}.color = "[20,120,210]"; {oxygen}.color = "[200,20,20]"; {sulfur}.color = "[250,250,0]"; {phosphorus}.color = "[40,130,70]";' +
-             "select *" + chainself + " and _C;  color [160,210,250]; color cartoon [160,210,250];" +
-             "select *" + chaininac + " and _C;  color [241,175,183]; color cartoon [241,175,183];";
+        '{nitrogen}.color = "[20,120,210]"; {oxygen}.color = "[200,20,20]"; {sulfur}.color = "[250,250,0]"; {phosphorus}.color = "[40,130,70]";' +
+        "select *" + chainself + " and _C;  color [160,210,250]; color cartoon [160,210,250];" +
+        "select *" + chaininac + " and _C;  color [241,175,183]; color cartoon [241,175,183];";
       break;
     case "structure":
       var script = "select protein; color structure; color cartoon structure;";
       break;
-    //case "residue":
-    //  var script = "select protein; color amino; color cartoon amino;";
-    //  break;
+      //case "residue":
+      //  var script = "select protein; color amino; color cartoon amino;";
+      //  break;
     case "atom":
       var script = '{all}.color = "[250,100,0]"; {nitrogen}.color = "[20,120,210]"; {oxygen}.color = "[200,20,20]"; {sulfur}.color = "[250,250,0]"; {phosphorus}.color = "[40,130,70]";' +
-             "select model=1.1 and _C; color [153,153,153]; color cartoon [153,153,153];" +
-             "select model=2.1 and _C; color [115,194,255]; color cartoon [115,194,255];";
+        "select model=1.1 and _C; color [153,153,153]; color cartoon [153,153,153];" +
+        "select model=2.1 and _C; color [115,194,255]; color cartoon [115,194,255];";
       extra = ' and _C';
       break;
     case "hydro":
       var script = 'select [ile]; color [0.996,0.062,0.062]; color cartoon [0.996,0.062,0.062]; ' +
-             'select [phe]; color [0.996,0.109,0.109]; color cartoon [0.996,0.109,0.109]; ' +
-             'select [val]; color [0.992,0.156,0.156]; color cartoon [0.992,0.156,0.156]; ' +
-             'select [leu]; color [0.992,0.207,0.207]; color cartoon [0.992,0.207,0.207]; ' +
-             'select [trp]; color [0.992,0.254,0.254]; color cartoon [0.992,0.254,0.254]; ' +
-             'select [met]; color [0.988,0.301,0.301]; color cartoon [0.988,0.301,0.301]; ' +
-             'select [ala]; color [0.988,0.348,0.348]; color cartoon [0.988,0.348,0.348]; ' +
-             'select [gly]; color [0.984,0.394,0.394]; color cartoon [0.984,0.394,0.394]; ' +
-             'select [cys]; color [0.984,0.445,0.445]; color cartoon [0.984,0.445,0.445]; ' +
-             'select [tyr]; color [0.984,0.492,0.492]; color cartoon [0.984,0.492,0.492]; ' +
-             'select [pro]; color [0.980,0.539,0.539]; color cartoon [0.980,0.539,0.539]; ' +
-             'select [thr]; color [0.980,0.586,0.586]; color cartoon [0.980,0.586,0.586]; ' +
-             'select [ser]; color [0.980,0.637,0.637]; color cartoon [0.980,0.637,0.637]; ' +
-             'select [his]; color [0.977,0.684,0.684]; color cartoon [0.977,0.684,0.684]; ' +
-             'select [glu]; color [0.977,0.730,0.730]; color cartoon [0.977,0.730,0.730]; ' +
-             'select [asn]; color [0.973,0.777,0.777]; color cartoon [0.973,0.777,0.777]; ' +
-             'select [gln]; color [0.973,0.824,0.824]; color cartoon [0.973,0.824,0.824]; ' +
-             'select [asp]; color [0.973,0.875,0.875]; color cartoon [0.973,0.875,0.875]; ' +
-             'select [lys]; color [0.899,0.922,0.922]; color cartoon [0.899,0.922,0.922]; ' +
-             'select [arg]; color [0.899,0.969,0.969]; color cartoon [0.899,0.969,0.969]; '
+        'select [phe]; color [0.996,0.109,0.109]; color cartoon [0.996,0.109,0.109]; ' +
+        'select [val]; color [0.992,0.156,0.156]; color cartoon [0.992,0.156,0.156]; ' +
+        'select [leu]; color [0.992,0.207,0.207]; color cartoon [0.992,0.207,0.207]; ' +
+        'select [trp]; color [0.992,0.254,0.254]; color cartoon [0.992,0.254,0.254]; ' +
+        'select [met]; color [0.988,0.301,0.301]; color cartoon [0.988,0.301,0.301]; ' +
+        'select [ala]; color [0.988,0.348,0.348]; color cartoon [0.988,0.348,0.348]; ' +
+        'select [gly]; color [0.984,0.394,0.394]; color cartoon [0.984,0.394,0.394]; ' +
+        'select [cys]; color [0.984,0.445,0.445]; color cartoon [0.984,0.445,0.445]; ' +
+        'select [tyr]; color [0.984,0.492,0.492]; color cartoon [0.984,0.492,0.492]; ' +
+        'select [pro]; color [0.980,0.539,0.539]; color cartoon [0.980,0.539,0.539]; ' +
+        'select [thr]; color [0.980,0.586,0.586]; color cartoon [0.980,0.586,0.586]; ' +
+        'select [ser]; color [0.980,0.637,0.637]; color cartoon [0.980,0.637,0.637]; ' +
+        'select [his]; color [0.977,0.684,0.684]; color cartoon [0.977,0.684,0.684]; ' +
+        'select [glu]; color [0.977,0.730,0.730]; color cartoon [0.977,0.730,0.730]; ' +
+        'select [asn]; color [0.973,0.777,0.777]; color cartoon [0.973,0.777,0.777]; ' +
+        'select [gln]; color [0.973,0.824,0.824]; color cartoon [0.973,0.824,0.824]; ' +
+        'select [asp]; color [0.973,0.875,0.875]; color cartoon [0.973,0.875,0.875]; ' +
+        'select [lys]; color [0.899,0.922,0.922]; color cartoon [0.899,0.922,0.922]; ' +
+        'select [arg]; color [0.899,0.969,0.969]; color cartoon [0.899,0.969,0.969]; '
       break;
-    //case "charge":
-    //  var script = 'select protein;';
-    //  break;
+      //case "charge":
+      //  var script = 'select protein;';
+      //  break;
   }
   defaultColor = mode;
 
