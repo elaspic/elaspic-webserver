@@ -1,0 +1,15 @@
+{
+  "name": "MUM",
+  "private": true,
+  "devDependencies": {
+    "browserify": "latest",
+    "jshint": "latest",
+    "grunt": "^0.4.5",
+    "grunt-blanket-qunit": "^0.2.0",
+    "grunt-cli": "^0.1.13"
+  },
+  "scripts": {
+    "lint": "jshint web_pipeline/static/js/ js_tests/",
+    "test": "grunt test --verbose"
+  }
+}
