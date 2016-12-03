@@ -91,22 +91,19 @@ def upload_data(connection, df, table_name):
         )
         print(db_command)
         cur.executemany(db_command, list(df.to_records(index=False)))
-        print('Uploaded data.')
     connection.commit()
+    print('Uploaded data.')
 
 
 def finalize_mutation(connection, uniprot_id, mutation):
     """Mark mutation as done or errored in the webserver database."""
-    connection = MySQLdb.connect(
-        host='192.168.6.19', port=3306, user='elaspic-web', passwd='elaspic', db=DB_SCHEMA,
-    )
-    try:
-        with connection.cursor() as cur:
-            cur.execute(SQL_COMMAND.format(protein_id=uniprot_id, mutation=mutation))
-        connection.commit()
-        print('Success!')
-    finally:
-        connection.close()
+    mutation = mutation.split('_')[-1]  # the only difference between database and local
+    with connection.cursor() as cur:
+        sql_command = SQL_COMMAND.format(protein_id=uniprot_id, mutation=mutation)
+        print(sql_command)
+        cur.execute(sql_command)
+    connection.commit()
+    print('Finalized mutation!')
 
 
 def get_domain_id_lookup(connection, unique_id):
