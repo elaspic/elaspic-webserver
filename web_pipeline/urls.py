@@ -40,7 +40,7 @@ urlpatterns += [
     url(r'^json/getdownloads/$', views_json.getdownloads),
 
     # Generic.
-    url(r'^json/contactmail/$', views_json.sendContactMail),
+    url(r'^json/contactmail/$', views_json.contactmail),
 
     # Cleanup.
     url(r'^cleanup/$', views_json.cleanup),
