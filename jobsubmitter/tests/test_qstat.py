@@ -16,7 +16,7 @@ if PROJECT_DIR not in sys.path:
     sys.path.insert(0, PROJECT_DIR)
 
 
-# %% Logger
+# Logger
 LOGGING_CONFIGS = {
     'version': 1,
     'disable_existing_loggers': False,  # this fixes the problem
@@ -45,7 +45,6 @@ logging.config.dictConfig(LOGGING_CONFIGS)
 logger = logging.getLogger(__name__)
 
 
-# %%
 from elaspic_rest_api import jobsubmitter
 
 jobsubmitter.running_jobs |= {1, 2, 3, 4, 5}
