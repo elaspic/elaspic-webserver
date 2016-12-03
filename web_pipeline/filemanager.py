@@ -109,7 +109,7 @@ class FileManager:
 
         # Return empty buffer if mutation list is empty
         if not self.muts:
-            return io.BytesIO()
+            return b''
 
         # Data (allresults)
         if self.file_name in ['simpleresults', 'allresults']:
