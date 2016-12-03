@@ -11,7 +11,7 @@ SCRIPTS_DIR = op.join(DATA_DIR, 'scripts')
 BASE_DIR = op.abspath(op.dirname(__file__))
 PROJECT_DIR = op.abspath(op.join(BASE_DIR, '..'))
 sys.path.insert(0, PROJECT_DIR)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mum.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mum.settings.local")
 django.setup()
 
 
