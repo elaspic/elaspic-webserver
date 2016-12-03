@@ -655,7 +655,7 @@ def _get_error_info(idx, is_single_error):
     return title, header, myclass
 
 
-def sendContactMail(request):
+def contactmail(request):
     # Check if the page was reached legitimately.
     if not request.POST:
         raise Http404
