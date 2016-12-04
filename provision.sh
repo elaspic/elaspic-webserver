@@ -17,6 +17,8 @@ rsync -rv --chown=9284:7300 ~/mum/jobsubmitter/scripts/ /home/kimlab1/database_d
 
 sudo rsync -av ./conf/jobsubmitter.conf /etc/supervisor/conf.d/jobsubmitter.conf 
 
+sudo supervisorctl reload
+sudo supervisorctl reread
 sudo supervisorctl restart jobsubmitter
 
 
