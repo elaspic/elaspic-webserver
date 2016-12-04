@@ -80,10 +80,13 @@ if __name__ == '__main__':
     logger.info("Copying script files to remote ('{}')...".format(config.SCRIPTS_DIR))
     for file in os.listdir(local_script_dir):
         logger.debug(file)
-        shutil.copy(
-            op.join(local_script_dir, file),
-            op.join(config.SCRIPTS_DIR, file)
-        )
+        try:
+            shutil.copy(
+                op.join(local_script_dir, file),
+                op.join(config.SCRIPTS_DIR, file)
+            )
+        except PermissionError:
+            logger.warning("Do not have permission to copy file %s.", file)
     logger.info("Done!")
 
     loop = asyncio.get_event_loop()
