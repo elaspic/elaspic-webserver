@@ -1,20 +1,20 @@
+import asyncio
+import logging
 import os
 import os.path as op
-import shlex
 import re
-import time
-import logging
-import subprocess
+import shlex
 import smtplib
-import asyncio
-import aiomysql
-from email.mime.text import MIMEText
-from collections import deque, defaultdict
-from concurrent.futures import ThreadPoolExecutor
 import socket
+import subprocess
+import time
+from collections import defaultdict, deque
+from concurrent.futures import ThreadPoolExecutor
+from email.mime.text import MIMEText
+
+import aiomysql
 
 import config
-
 # For sendEmail
 from web_pipeline import functions
 
@@ -233,6 +233,7 @@ class Item:
 # %% Job cache
 precalculated = dict()
 precalculated_cache = dict()
+
 
 async def get_precalculated():
     global precalculated

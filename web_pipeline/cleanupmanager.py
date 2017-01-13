@@ -1,15 +1,15 @@
 import os
-from shutil import rmtree
-from time import time, sleep
 from datetime import timedelta
+from shutil import rmtree
+from time import sleep, time
 
-from django.utils.timezone import now, localtime
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.db.models import Q
+from django.utils.timezone import localtime, now
 
-from web_pipeline.models import Job
 from web_pipeline.functions import checkForCompletion
+from web_pipeline.models import Job
 
 
 class CleanupManager(object):

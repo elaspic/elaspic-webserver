@@ -1,8 +1,9 @@
 import functools
 import logging
+from collections import defaultdict
+
 from django.db import models
 from django.utils.timezone import localtime
-from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -167,12 +168,12 @@ class Protein(_Protein):
 class ProteinLocal(_Protein):
     """
     """
-#    id = models.IntegerField(primary_key=True, db_column='s_id')
-#
-#    unique_id = models.CharField(max_length=255)
-#    idx = models.IntegerField()
-#
-#    sequence = models.TextField(null=True, blank=True)
+    # id = models.IntegerField(primary_key=True, db_column='s_id')
+    #
+    # unique_id = models.CharField(max_length=255)
+    # idx = models.IntegerField()
+    #
+    # sequence = models.TextField(null=True, blank=True)
 
     def getname(self):
         return get_protein_name(self.id, local=True)
@@ -280,8 +281,8 @@ class _CoreModel(models.Model):
             return self.domain_def
         return self.alignment_def
 
-#    def __str__(self):
-#        return self.name
+    # def __str__(self):
+    #     return self.name
 
     # Template
     # align_file = models.CharField(max_length=255, blank=True, db_column='alignment_filename')
@@ -318,8 +319,8 @@ class _CoreModel(models.Model):
             return self.template_errors
         return None
 
-#    def __str__(self):
-#        return '%d' % self.domain_id
+    # def __str__(self):
+    #     return '%d' % self.domain_id
 
     # Model
     model_errors = models.TextField(blank=True, null=True, db_column='model_errors')
@@ -564,8 +565,8 @@ class _InterfaceModel(models.Model):
         elif chain == 2:
             return self.domain2
 
-#    def __str__(self):
-#        return '%s-%s' % (self.domain1_id, self.domain2_id)
+    # def __str__(self):
+    #     return '%s-%s' % (self.domain1_id, self.domain2_id)
 
     # domain pair template
     align_score1 = models.IntegerField(null=True, blank=True, db_column='alignment_score_1')
@@ -612,8 +613,8 @@ class _InterfaceModel(models.Model):
         elif chain == 2:
             return '%0.3f, %0.3f' % (self.align_score2, self.align_score1)
 
-#    def __str__(self):
-#        return '%d' % self.domain_id
+    # def __str__(self):
+    #     return '%d' % self.domain_id
 
     # domain pair model
     model_domain_def_1 = models.CharField(max_length=255)
