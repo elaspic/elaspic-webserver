@@ -1,28 +1,22 @@
+import logging
 import os
-from tempfile import mkdtemp
-from shutil import copyfile
-import requests
 import pickle
+from shutil import copyfile
+from tempfile import mkdtemp
 
-from django.shortcuts import render
-from django.http import Http404, HttpResponseRedirect
+import requests
 from django.conf import settings
+from django.http import Http404, HttpResponseRedirect
+from django.shortcuts import render
 from django.utils.timezone import now
 
-from web_pipeline.models import (
-    Job, JobToMut, Mut, findInDatabase,
-    Protein, ProteinLocal,
-    CoreModel,
-    _CoreMutation, CoreMutation,
-    _InterfaceMutation, InterfaceMutation
-)
-
-from web_pipeline.functions import (
-    getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail
-)
 import web_pipeline.functions as fn
-
-import logging
+from web_pipeline.functions import (fetchProtein, getPnM, getResultData,
+                                    isInvalidMut, sendEmail)
+from web_pipeline.models import (CoreModel, CoreMutation, InterfaceMutation,
+                                 Job, JobToMut, Mut, Protein, ProteinLocal,
+                                 _CoreMutation, _InterfaceMutation,
+                                 findInDatabase)
 
 logger = logging.getLogger(__name__)
 

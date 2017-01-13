@@ -1,16 +1,18 @@
 import io
-from zipfile import ZipFile
-import os.path as op
-import tempfile
-import shutil
 import logging
+import os.path as op
+import shutil
+import tempfile
+from zipfile import ZipFile
+
 from Bio import SeqIO
+from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from Bio.Alphabet import generic_protein
 from django.conf import settings
-from web_pipeline import models, functions
+
 from elaspic.call_foldx import names_rows_stability as energyHeader
+from web_pipeline import functions, models
 
 logger = logging.getLogger(__name__)
 

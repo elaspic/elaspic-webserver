@@ -1,32 +1,28 @@
-import os.path as op
-from re import sub
-from subprocess import Popen, PIPE
 import json
-import requests
-from collections import defaultdict, Counter
-import pickle
 import logging
+import os.path as op
+import pickle
+from collections import Counter, defaultdict
+from re import sub
+from subprocess import PIPE, Popen
 
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.utils import html
+import requests
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.utils import html
 
-from web_pipeline.models import (
-    Job, JobToMut, findInDatabase,
-    # Protein, # ProteinLocal,
-    CoreModel,  # CoreModelLocal,
-    CoreMutation, CoreMutationLocal,
-    InterfaceModel,  # InterfaceModelLocal,
-    InterfaceMutation, InterfaceMutationLocal
-)
-from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
 import web_pipeline.functions as fn
-from web_pipeline.filemanager import FileManager
-from web_pipeline.cleanupmanager import CleanupManager
-
 from elaspic import structure_tools
-
+from web_pipeline.cleanupmanager import CleanupManager
+from web_pipeline.filemanager import FileManager
+from web_pipeline.functions import fetchProtein, getPnM, isInvalidMut
+from web_pipeline.models import \
+    CoreModel  # Protein, # ProteinLocal,; CoreModelLocal,
+from web_pipeline.models import InterfaceModel  # InterfaceModelLocal,
+from web_pipeline.models import (CoreMutation, CoreMutationLocal,
+                                 InterfaceMutation, InterfaceMutationLocal,
+                                 Job, JobToMut, findInDatabase)
 
 # Create logger to redirect output.
 logger = logging.getLogger(__name__)

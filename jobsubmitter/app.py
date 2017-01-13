@@ -1,9 +1,9 @@
-import os
-import os.path as op
-import shutil
 import asyncio
 import logging
 import logging.config
+import os
+import os.path as op
+import shutil
 
 from aiohttp import web
 
