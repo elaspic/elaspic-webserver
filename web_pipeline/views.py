@@ -449,14 +449,14 @@ def displaySecondaryResult(request):
                         copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_wt),
                                  os.path.join(pdbpath, 'wt.pdb'))
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
                 if not os.path.exists(os.path.join(pdbpath, 'mut.pdb')):
                     try:
                         copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_mut),
                                  os.path.join(pdbpath, 'mut.pdb'))
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
 
             elif isinstance(mu, _InterfaceMutation):
@@ -488,14 +488,14 @@ def displaySecondaryResult(request):
                         copyfile(os.path.join(copyfrom, mu.model_filename_wt),
                                  copyto + 'wt.pdb')
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
                 if not os.path.exists(copyto + 'mut.pdb'):
                     try:
                         copyfile(os.path.join(copyfrom, mu.model_filename_mut),
                                  copyto + 'mut.pdb')
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
 
         data.realMut = [data.realMut[i] for i in range(len(data.realMut)) if i not in toRemove]
