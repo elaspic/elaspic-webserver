@@ -1,6 +1,8 @@
 image: condaforge/linux-anvil:latest
 
 test:
+  tags:
+    - elaspic
   stage: test
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
@@ -10,16 +12,20 @@ test:
     - flake8
 
 deploy:
+  tags:
+    - elaspic_webserver
   stage: deploy
+  environment:
+    name: production
+    url: http://elaspic.kimlab.org
   # only:
   #   - master
   script:
     - echo "Deploying..."
-    - curl https://api.rollbar.com/api/1/deploy/
-        -F access_token="b9f0b75f30fc4de6ba04c7933a1a11b8"
-        -F environment="production"
-        -F revision=`git log -n 1 --pretty=format:"%H"`
-        -F local_username=`whoami`
+    - "curl https://sentry.io/api/hooks/release/builtin/129313/3284ec114189c6eac1528760d12a29ceda54ecf39ca9402ff0e2dcf831a5be95/
+        -X POST
+        -H 'Content-Type: application/json'
+        -d \"{version: `git log -n 1 --pretty=format:%H`}\""
     - conda env create -f environment.yml -n elaspic_webserver_test
     - source activate elaspic_webserver_test
     - python manage.py

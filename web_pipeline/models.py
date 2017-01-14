@@ -33,7 +33,7 @@ class Mut(models.Model):
         return '%s.%s' % (self.protein, self.mut)
 
     class Meta:
-        app_label = 'Mut'
+        # app_label = 'Mut'
         db_table = 'muts'
         index_together = [
             ("protein", "mut"),
