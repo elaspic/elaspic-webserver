@@ -93,6 +93,7 @@ dependencies:
   - aiohttp==0.22.5
   - aiomysql==0.0.8
   - chardet==2.3.0
+  - contextlib2==0.5.4
   - coverage==4.3.1
   - django==1.10
   - fake-factory==0.7.2
@@ -109,7 +110,7 @@ dependencies:
   - pytest==3.0.3
   - pytest-cov==2.4.0
   - pytest-logging==2015.11.4
-  - rollbar==0.13.9
+  - raven==5.32.0
   - tables==3.2.3.1
   - urllib3==1.19.1
 prefix: /home/kimlab1/strokach/anaconda/envs/elaspic_webserver
