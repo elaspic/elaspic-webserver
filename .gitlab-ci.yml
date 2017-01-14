@@ -1,26 +1,26 @@
 image: condaforge/linux-anvil:latest
 
-build:
-  stage: build
-  script:
-    - conda env create -f environment.yml -n elaspic_webserver -q --force
-    - source activate elaspic_webserver
-
 test:
   stage: test
   script:
+    - conda env create -f environment.yml -n elaspic_webserver -q --force
+    - source activate elaspic_webserver
     - echo "$PATH"
     - py.test
+    - flake8
 
 deploy:
   stage: deploy
-  only:
-    - master
+  # only:
+  #   - master
   script:
-    - |
-      echo "Deploying..."
-      curl https://api.rollbar.com/api/1/deploy/ \
-        -F access_token="b9f0b75f30fc4de6ba04c7933a1a11b8" \
-        -F environment="production" \
-        -F revision=`git log -n 1 --pretty=format:"%H"` \
+    - echo "Deploying..."
+    - curl https://api.rollbar.com/api/1/deploy/
+        -F access_token="b9f0b75f30fc4de6ba04c7933a1a11b8"
+        -F environment="production"
+        -F revision=`git log -n 1 --pretty=format:"%H"`
         -F local_username=`whoami`
+    - conda env create -f environment.yml -n elaspic_webserver_test
+    - source activate elaspic_webserver_test
+    - python manage.py
+    - ls

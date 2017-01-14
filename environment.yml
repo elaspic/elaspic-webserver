@@ -96,11 +96,15 @@ dependencies:
   - coverage==4.3.1
   - django==1.10
   - fake-factory==0.7.2
+  - flake8==3.2.1
   - hypothesis==3.6.0
   - jobsubmitter==0.0.2
+  - mccabe==0.5.3
   - multidict==1.2.2
   - pdbx-mmcif==0.0.2
   - py==1.4.31
+  - pycodestyle==2.2.0
+  - pyflakes==1.3.0
   - pymysql==0.7.9
   - pytest==3.0.3
   - pytest-cov==2.4.0
