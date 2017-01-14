@@ -2,7 +2,7 @@ from django.conf.urls import url
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 
-from . import views, views_json
+from web_pipeline import views, views_json
 
 admin.autodiscover()
 

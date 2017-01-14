@@ -611,7 +611,7 @@ async def cleanup():
     await set_db_errors(qsub_queue)
     await set_db_errors(pre_qsub_queue)
     system_command = (
-        'bash -c "rm -f \"/home/kimlab1/database_data/elaspic_v2/locks/*/*.lock\""'
+        'bash -c "rm -f \"/home/kimlab1/database_data/elaspic/locks/*/*.lock\""'
     )
     subprocess.check_output(shlex.split(system_command))
 

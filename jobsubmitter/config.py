@@ -4,7 +4,7 @@ import sys
 import django
 
 
-DATA_DIR = '/home/kimlab1/database_data/elaspic_v2'
+DATA_DIR = '/home/kimlab1/database_data/elaspic'
 DB_SCHEMA = 'elaspic_webserver'
 SCRIPTS_DIR = op.join(DATA_DIR, 'scripts')
 

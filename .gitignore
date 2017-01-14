@@ -5,6 +5,7 @@ npm-debug.log
 # Folders
 /.coverage
 /static
+htmlcov
 __pycache__
 jobsubmitter/tests/data/nm9omiv6
 

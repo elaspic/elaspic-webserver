@@ -1,6 +1,4 @@
 import io
-import os.path as op
-import tempfile
 
 import pandas as pd
 import pytest
@@ -8,7 +6,7 @@ import pytest
 # from hypothesis.strategies import text
 from faker import Faker
 
-import filemanager
+from web_pipeline import filemanager
 
 fake = Faker()
 
