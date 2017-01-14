@@ -1,5 +1,8 @@
 image: condaforge/linux-anvil:latest
 
+variables:
+  - SENTRY_URL:
+
 test:
   tags:
     - elaspic
@@ -7,7 +10,8 @@ test:
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
-    - echo "$PATH"
+    # To create a new test database, run:
+    # - DJANGO_SETTINGS_MODULE=mum.settings.pytest python manage.py migrate --run-syncdb
     - py.test
     - flake8
 
@@ -22,11 +26,7 @@ deploy:
   #   - master
   script:
     - echo "Deploying..."
-    - "curl https://sentry.io/api/hooks/release/builtin/129313/3284ec114189c6eac1528760d12a29ceda54ecf39ca9402ff0e2dcf831a5be95/
-        -X POST
-        -H 'Content-Type: application/json'
-        -d \"{version: `git log -n 1 --pretty=format:%H`}\""
-    - conda env create -f environment.yml -n elaspic_webserver_test
+    - ./devtools/sentry_release.sh
+    - conda env create -f environment.yml -n elaspic_webserver_test -q --force
     - source activate elaspic_webserver_test
-    - python manage.py
-    - ls
+    - python manage.py test
