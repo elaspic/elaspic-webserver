@@ -1,24 +1,19 @@
 image: condaforge/linux-anvil:latest
 
-variables:
-  - SENTRY_URL:
-
 test:
+  stage: test
   tags:
     - elaspic
-  stage: test
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
-    # To create a new test database, run:
-    # - DJANGO_SETTINGS_MODULE=mum.settings.pytest python manage.py migrate --run-syncdb
     - py.test
     - flake8
 
 deploy:
+  stage: deploy
   tags:
     - elaspic_webserver
-  stage: deploy
   environment:
     name: production
     url: http://elaspic.kimlab.org
@@ -29,4 +24,4 @@ deploy:
     - ./devtools/sentry_release.sh
     - conda env create -f environment.yml -n elaspic_webserver_test -q --force
     - source activate elaspic_webserver_test
-    - python manage.py test
+    - py.test
