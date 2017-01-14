@@ -9,7 +9,7 @@ print(BASE_DIR)
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mum.settings.test')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mum.settings.pytest')
 
 import django
 django.setup()
