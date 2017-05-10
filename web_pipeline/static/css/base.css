@@ -17,8 +17,8 @@ html, body, div, form, fieldset, h2, hr, input, img, select, pre, label, textare
     padding: 0;
     border: 0;
     outline: 0;
-    -webkit-text-size-adjust: none; 
-    text-size-adjust: none; 
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
 }
 a:active, a:focus {
 	outline: none;
@@ -35,13 +35,13 @@ p {
     min-width: 960px;   /* Site width */
     position: relative;
 }
-#header_banner {
+#header_block {
     background-image: url('../images/header.png');
-	background-repeat: repeat-x;
+    background-repeat: repeat-x;
     height: 40px;
     position: relative;
 }
-#footer_banner {
+#footer_block {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -224,7 +224,7 @@ textarea {
 /* Tooltip */
 .help {
 	display: inline-block;
-	height: 14px; 
+	height: 14px;
 	width: 14px;
 	background-position: center center;
 	padding: 0 !important;
@@ -289,14 +289,14 @@ textarea {
 	line-height: 20px;
 	text-align: center;
 	font-weight: 300;
-	
+
 	z-index: 11;
-	
+
 	border-top-right-radius: 4px;
 	border-left-width: 1px;
 	border-bottom-width: 1px;
 	border-style: solid;
-	
+
 	margin-left: 5px;
 }
 .tooltip .ttext {
@@ -322,7 +322,7 @@ textarea {
 a {
     text-decoration: none;
 }
-#header_banner {
+#header_block {
 	box-shadow: 0px 0px 5px #444;
 }
 #body, #body div, #footer, input, p, h2, span, .nonmono {
@@ -455,7 +455,7 @@ input.text, .select-text input, insert, .tds.running, .tds.queued, .img.running,
 .submit {
 	color: #fff;
 }
-#error, .error, .wheel, #uploaderr, #submiterr, .protein2d .barmutdesc, 
+#error, .error, .wheel, #uploaderr, #submiterr, .protein2d .barmutdesc,
 #dberror, #appletloading, #appletloading a, #notdomainwarning {
     color: #CC0D37 !important;
 }
@@ -500,7 +500,7 @@ table.tablesorter tbody td, table.tablesorter tbody td span {
     background-color: #ddd;
     border-radius: 0;
 }
-.tooltip .tinner:before { 
+.tooltip .tinner:before {
 	border-right-color: #2F7293;
 }
 .paper a:hover {
@@ -511,7 +511,7 @@ table.tablesorter tbody td, table.tablesorter tbody td span {
 .tooltip .tclose {
 	background-color: #D5EAF9;
 }
-input.text, select, .styled-select, .selection label:before, 
+input.text, select, .styled-select, .selection label:before,
 .text-area, #appletplace {
     background-color: #fff;
 }
@@ -588,8 +588,8 @@ input.text, select, .styled-select, .selection label:before,
 }
 .descbar.muttooltip .tinner:after {
 	border-bottom-color: #ddd;
-	-moz-border-image:url(border.png) 30 30 round; 
-	-webkit-border-image:url(border.png) 30 30 round; 
+	-moz-border-image:url(border.png) 30 30 round;
+	-webkit-border-image:url(border.png) 30 30 round;
     -o-border-image:url(border.png) 30 30 round;
     border-image:url(border.png) 30 30 round;
 }
