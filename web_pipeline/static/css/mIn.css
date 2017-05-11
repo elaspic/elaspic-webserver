@@ -1,98 +1,116 @@
 @import url("in.css");
 .leftcontent {
-    float: left;
+  float: left;
 }
+
 .text-area {
-    border-width: 1px;
-    border-style: solid;
-    width: 500px;
-    min-height: 100px;
-    max-height: 500px;
-    position: relative;
-    overflow: auto;
-    margin: 10px 5px;
-    border-radius: 5px;
+  border-width: 1px;
+  border-style: solid;
+  width: 500px;
+  min-height: 100px;
+  max-height: 500px;
+  position: relative;
+  overflow: auto;
+  margin: 10px 5px;
+  border-radius: 5px;
 }
+
 .text-area #validation {
-    width: 20px;
-    position: absolute;
-    left: 0px;
-    top: 5px;
+  width: 20px;
+  position: absolute;
+  left: 0px;
+  top: 5px;
 }
+
 .text-area #validation div {
-    width: 20px;
-    height: 20px;
-    background-repeat: no-repeat;
-    background-position: center center;
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
+
 .text-area .textwrap {
-    padding: 5px 0px 0px 20px;
+  padding: 5px 0px 0px 20px;
 }
+
 .text-area textarea {
-    width: 100%;
-    line-height: 20px;
-    white-space: pre; /* AS change  for firefox compatibility */
-    background: white; /* AS change for firefox compatibility */
+  width: 100%;
+  line-height: 20px;
+  white-space: pre;
+  /* AS change  for firefox compatibility */
+  background: white;
+  /* AS change for firefox compatibility */
 }
+
 #nothumanwarning {
-	overflow: hidden;
-	height: 0px;
+  overflow: hidden;
+  height: 0px;
 }
+
 #nothumanwarning div {
-	padding-top: 30px;
-	color: inherit;
-	font-size: inherit;
+  padding-top: 30px;
+  color: inherit;
+  font-size: inherit;
 }
 
 #resp_wrapper {
-	width: 320px;
-	float: left;
-	margin-left: 20px;
-	margin-top: 10px;
-}
-#resp_wrapper div {
-	width: 100%;
-	display: none;
-}
-#resp_wrapper div div {
-	display: inherit;
-}
-#resp_wrapper p {
-	font-size: 13px;
-}
-#input_err {
-	margin-top: 27px;
-	border-color: #faa;
-	max-height: 372px;
-	overflow: auto;
-}
-#input_err p {
-	font-size: 13px;
-}
-#input_err p span.ico {
-	display: inline-block;
-	width: 12px;
-	height: 10px;
-	margin-right: 3px;
-}
-#input_err p span.resp {
-	margin-left: 15px;
-	font-size: 12px;
-	display: block;
-	background-color: rgba(0, 0, 0, 0.1);
-	padding: 3px 7px;
-	border-radius: 3px;
-}
-#input_err p span.resp b {
-	font-weight: 600;
-	font-size: 13px;
-}
-#input_resp div {
-	background-color: rgba(0, 0, 0, 0.2);
-	border-radius: 5px;
-}
-#input_err div {
-	background-color: rgba(150, 0, 0, 0.3);
-	border-radius: 5px;
+  width: 320px;
+  float: left;
+  margin-left: 20px;
+  margin-top: 10px;
 }
 
+#resp_wrapper div {
+  width: 100%;
+  display: none;
+}
+
+#resp_wrapper div div {
+  display: inherit;
+}
+
+#resp_wrapper p {
+  font-size: 13px;
+}
+
+#input_err {
+  margin-top: 27px;
+  border-color: #faa;
+  max-height: 372px;
+  overflow: auto;
+}
+
+#input_err p {
+  font-size: 13px;
+}
+
+#input_err p span.ico {
+  display: inline-block;
+  width: 12px;
+  height: 10px;
+  margin-right: 3px;
+}
+
+#input_err p span.resp {
+  margin-left: 15px;
+  font-size: 12px;
+  display: block;
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 3px 7px;
+  border-radius: 3px;
+}
+
+#input_err p span.resp b {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+#input_resp div {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+#input_err div {
+  background-color: rgba(150, 0, 0, 0.3);
+  border-radius: 5px;
+}

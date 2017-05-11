@@ -11,30 +11,36 @@
   font-weight: 400;
   src: local('Ubuntu'), url('../fonts/Ubuntu.woff') format('woff');
 }
+
 @font-face {
   font-family: 'Ubuntu';
   font-style: normal;
   font-weight: 300;
   src: local('Ubuntu Light'), url('../fonts/Ubuntu-Light.woff') format('woff');
 }
+
 @font-face {
   font-family: 'Source Code Pro';
   font-style: normal;
   font-weight: 400;
   src: local('Source Code Pro'), local('SourceCodePro-Regular'), url('../fonts/SourceCodePro-Regular') format('woff');
 }
+
 @font-face {
   font-family: 'Source Code Pro';
   font-style: normal;
   font-weight: 500;
   src: local('Source Code Pro Medium'), local('SourceCodePro-Medium'), url('../fonts/SourceCodePro-Medium') format('woff');
 }
+
 @font-face {
   font-family: 'Source Code Pro';
   font-style: normal;
   font-weight: 600;
   src: local('Source Code Pro Semibold'), local('SourceCodePro-Semibold'), url('../fonts/'SourceCodePro-Semibold') format('woff');
+
 }
+
 @font-face {
   font-family: 'Source Code Pro';
   font-style: normal;
