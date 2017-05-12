@@ -5,14 +5,13 @@ import shutil
 import tempfile
 from zipfile import ZipFile
 
+import elaspic.tools.foldx
 from Bio import SeqIO
 from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
-from django.conf import settings
 
-from elaspic.call_foldx import names_rows_stability as energyHeader
-from web_pipeline import functions, models
+from . import conf, functions, models
 
 logger = logging.getLogger(__name__)
 
@@ -286,8 +285,8 @@ class FileManager:
                          rm.physchem_wt_ownchain.split(',') +
                          rm.physchem_mut_ownchain.split(',') if mutCompleted else r(23))
 
-            header += ([n[0] + '_wt' for n in energyHeader] +
-                       [n[0] + '_mut' for n in energyHeader] +
+            header += ([n[0] + '_wt' for n in elaspic.tools.foldx._names_stability] +
+                       [n[0] + '_mut' for n in elaspic.tools.foldx._names_stability] +
                        wtmut(['IntraclashesEnergy1',
                              'IntraclashesEnergy2']) +
                        ['Interface_hydrophobic_area',
@@ -364,17 +363,17 @@ class FileManager:
                 if rm.model.model_filename:
                     fname = '%s_%s%s original.pdb' % (m.inputIdentifier, defs, extratext)
                     self.files['wtmodels-ori'][fname] = op.join(
-                        settings.DB_PATH, mpath, rm.model.model_filename)
+                        conf.DB_PATH, mpath, rm.model.model_filename)
             if self.file_name in ['wtmodels-opt', 'allresults']:
                 if rm.model_filename_wt:
                     fname = '%s_%s%s optimized.pdb' % (m.inputIdentifier, defs, extratext)
                     self.files['wtmodels-opt'][fname] = op.join(
-                        settings.DB_PATH, mpath, rm.model_filename_wt)
+                        conf.DB_PATH, mpath, rm.model_filename_wt)
             if self.file_name in ['mutmodels', 'allresults']:
                 if rm.model_filename_mut:
                     fname = '%s_%s%s %s.pdb' % (m.inputIdentifier, defs, extratext, m.mut.mut)
                     self.files['mutmodels'][fname] = op.join(
-                        settings.DB_PATH, mpath, rm.model_filename_mut)
+                        conf.DB_PATH, mpath, rm.model_filename_mut)
 
     def add_alignment_files(self):
         for m in self.muts:
@@ -387,7 +386,7 @@ class FileManager:
                 fname = '%s_%s.aln' % (m.inputIdentifier, defs)
                 if not (fname in self.files['alignments']):
                     self.files['alignments'][fname] = op.join(
-                        settings.DB_PATH, rm.model.data_path, rm.model.alignment_filename)
+                        conf.DB_PATH, rm.model.data_path, rm.model.alignment_filename)
                 logger.debug("fname: {}".format(fname))
             else:
                 # Interface.
@@ -424,10 +423,10 @@ class FileManager:
 
                 if not (fname in self.files['alignments']):
                     self.files['alignments'][fname] = op.join(
-                        settings.DB_PATH, rm.model.data_path, alignment_filename_1)
+                        conf.DB_PATH, rm.model.data_path, alignment_filename_1)
                 if not (fname2 in self.files['alignments']):
                     self.files['alignments'][fname2] = op.join(
-                        settings.DB_PATH, rm.model.data_path, alignment_filename_2)
+                        conf.DB_PATH, rm.model.data_path, alignment_filename_2)
 
     def _get_txt_buffer(self):
         ofh = io.BytesIO()  # output file handle
