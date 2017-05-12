@@ -7,8 +7,8 @@ test:
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
-    - py.test
     - flake8
+    - py.test
 
 deploy:
   stage: deploy
@@ -20,8 +20,11 @@ deploy:
   # only:
   #   - master
   script:
-    - echo "Deploying..."
-    - ./devtools/sentry_release.sh
+    - STAGING_DIR=/home/kimadmin/mum_test
+    - rm -rf ${STAGING_DIR}
+    - cp -a . ${STAGING_DIR}
+    - cd ${STAGING_DIR}
+    - ./devtools/gitlab-ci/sentry_release.sh
     - conda env create -f environment.yml -n elaspic_webserver_test -q --force
     - source activate elaspic_webserver_test
     - py.test
