@@ -9,20 +9,19 @@ from subprocess import PIPE, Popen
 import requests
 from django.conf import settings
 from django.core.mail import EmailMessage
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse
 from django.utils import html
 
-import web_pipeline.functions as fn
-from elaspic import structure_tools
-from web_pipeline.cleanupmanager import CleanupManager
-from web_pipeline.filemanager import FileManager
-from web_pipeline.functions import fetchProtein, getPnM, isInvalidMut
-from web_pipeline.models import \
-    CoreModel  # Protein, # ProteinLocal,; CoreModelLocal,
-from web_pipeline.models import InterfaceModel  # InterfaceModelLocal,
-from web_pipeline.models import (CoreMutation, CoreMutationLocal,
-                                 InterfaceMutation, InterfaceMutationLocal,
-                                 Job, JobToMut, findInDatabase)
+from kmtools import structure_tools
+
+from . import functions as fn
+from . import conf
+from .filemanager import FileManager
+from .functions import fetchProtein, getPnM, isInvalidMut
+from .models import InterfaceModel  # InterfaceModelLocal,
+from .models import (CoreModel, CoreMutation, CoreMutationLocal,
+                     InterfaceMutation, InterfaceMutationLocal, Job, JobToMut,
+                     findInDatabase)
 
 # Create logger to redirect output.
 logger = logging.getLogger(__name__)
@@ -59,7 +58,7 @@ def rerunMut(request):
                 'job_id': j.jobID,
                 'job_email': j.email,
                 'job_type': 'database',
-                'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+                'secret_key': conf.JOBSUBMITTER_SECRET_KEY,
                 'mutations': [{
                     'protein_id': mut.protein,
                     'mutations': mut.mut,
@@ -234,11 +233,11 @@ def uploadFile(request):
             with open(input_pdb, 'w') as ifh:
                 ifh.write(myfile.read().decode())
 
-            sp = structure_tools.StructureParser(input_pdb)
-            sp.extract()
+            structure = structure_tools.load_structure(input_pdb)
+            structure_tools.process_structure(structure)
             seq = [
-                (chain.id, sp.get_chain_sequence_and_numbering(chain.id)[0], )
-                for chain in sp.structure.child_list[0].child_list
+                (chain.id, structure_tools.get_chain_sequence(chain.id))
+                for chain in structure.get_chains()
             ]
             logger.debug("seq: '{}'".format(seq))
 
@@ -687,27 +686,3 @@ def contactmail(request):
         )
     return HttpResponse(
         json.dumps({'response': response, 'error': error}), content_type='application/json')
-
-
-def cleanupServer():
-
-    c = CleanupManager()
-
-    # Remove jobs last visited too long ago.
-    c.removeOldJobs()
-
-#    c.checkForStalledMuts()
-
-    # Restart stalled jobs, and delete orphan mutations still running/queued.
-#    m_runAgain = c.checkForStalledJobs()
-#    for m in m_runAgain:
-#        runPipelineWrapper.delay(m[0], m[1])
-
-    # Send crash logs to admins.
-    c.sendCrashLogs()
-
-
-def cleanup(request):
-    # TODO: Send this to a different thread
-    cleanupServer()
-    return HttpResponseRedirect('/')

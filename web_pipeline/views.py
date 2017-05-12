@@ -5,18 +5,17 @@ from shutil import copyfile
 from tempfile import mkdtemp
 
 import requests
-from django.conf import settings
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.timezone import now
 
-import web_pipeline.functions as fn
-from web_pipeline.functions import (fetchProtein, getPnM, getResultData,
-                                    isInvalidMut, sendEmail)
-from web_pipeline.models import (CoreModel, CoreMutation, InterfaceMutation,
-                                 Job, JobToMut, Mut, Protein, ProteinLocal,
-                                 _CoreMutation, _InterfaceMutation,
-                                 findInDatabase)
+from . import functions as fn
+from . import conf
+from .functions import (fetchProtein, getPnM, getResultData, isInvalidMut,
+                        sendEmail)
+from .models import (CoreModel, CoreMutation, InterfaceMutation, Job, JobToMut,
+                     Mut, Protein, ProteinLocal, _CoreMutation,
+                     _InterfaceMutation, findInDatabase)
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +186,7 @@ def runPipeline(request):
             'job_id': j.jobID,
             'job_email': j.email,
             'job_type': 'local',
-            'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+            'secret_key': conf.JOBSUBMITTER_SECRET_KEY,
             'mutations': [{
                 'protein_id': random_id,
                 'mutations': '{}_{}'.format(int(chain) + 1, mut),
@@ -201,7 +200,7 @@ def runPipeline(request):
             'job_id': j.jobID,
             'job_email': j.email,
             'job_type': 'database',
-            'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+            'secret_key': conf.JOBSUBMITTER_SECRET_KEY,
             'mutations': []
         }
         for m in newMuts:
@@ -261,11 +260,6 @@ def displayResult(request):
     except Job.DoesNotExist:
         raise Http404
 
-#    # Check for crashed tasks.
-#    if not(job.isDone):
-#        c = CleanupManager(dosleep=False)
-#        c.checkForStalledMuts(requestID)
-    #
     # # Fetch data
     # local = True if job.localID else False
 
@@ -347,6 +341,7 @@ def displayResult(request):
         'isRunning': not(job.isDone),
         'job': job,  # {'jobID': 'asd'},
         'data': data,
+        'conf': conf,
     }
     logger.debug('job: {}'.format(job))
     logger.debug('context: {}'.format(context))
@@ -417,7 +412,7 @@ def displaySecondaryResult(request):
                                                     'dbError': True})
 
         # Create pdb folder if not accessed before.
-        pdbpath = os.path.join(settings.SAVE_PATH, job, currentIDs[3])
+        pdbpath = os.path.join(conf.SAVE_PATH, job, currentIDs[3])
         if not os.path.exists(pdbpath):
             original_umask = os.umask(0)
             try:
@@ -437,7 +432,7 @@ def displaySecondaryResult(request):
                     toRemove.append(i)
                     continue
                 # Transfer PDBs if not done before.
-                copyfrom = os.path.join(settings.DB_PATH, data.realMut[0].model.data_path)
+                copyfrom = os.path.join(conf.DB_PATH, data.realMut[0].model.data_path)
                 if not os.path.exists(os.path.join(pdbpath, 'wt.pdb')):
                     try:
                         copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_wt),
@@ -475,7 +470,7 @@ def displaySecondaryResult(request):
                 intmuts.append({'mut': mu, 'domain': d})
 
                 # Transfer PDBs if not done before.
-                copyfrom = os.path.join(settings.DB_PATH, mu.model.data_path)
+                copyfrom = os.path.join(conf.DB_PATH, mu.model.data_path)
                 copyto = os.path.join(pdbpath, str(d.id))
                 if not os.path.exists(copyto + 'wt.pdb'):
                     try:
@@ -755,7 +750,11 @@ def displaySecondaryResult(request):
         'job': j,
         'size': pSize,
         'domains': ds,
-        'curdomain': curdom,
+        'curdomain': (
+            [[xx if xx is not None else '' for xx in x] for x in curdom]
+            if curdom is not None
+            else [['']]),
+        'conf': conf,
         'curmut': curmut,
         # 'type': 'result',
         'barsize': barSize,
