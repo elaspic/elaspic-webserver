@@ -31,7 +31,8 @@ def inp(request, p):
     context = {
         'current': p,
         'type': 'input',
-        'test': request.META.get('HTTP_HOST', '')
+        'test': request.META.get('HTTP_HOST', ''),
+        'conf': conf,
     }
     return render(request, p + '.html', context)
 

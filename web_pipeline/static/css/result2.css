@@ -179,7 +179,7 @@
   height: 40px;
 }
 
-#result_wrapper p .wholeheader {
+#result_wrapper p.wholeheader {
   width: 100%;
   margin-right: 0px;
 }
@@ -192,7 +192,7 @@
   padding-top: 15px;
 }
 
-#result_wrapper p .small {
+#result_wrapper p.small {
   font-size: 12px;
   color: #444;
 }

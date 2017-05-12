@@ -110,7 +110,7 @@
           <br>Job completed: {{ job.getDateFinished }}</i></p>
 
         {% if not isRunning %}
-        <p>{% ifequal data.0.job.muts.count 1 %}The mutation was{% else %}Mutations were{% endifequal %} evaluated using <a class="click-elaspic" target="_blank" href="{{ conf.ELASPIC_RELEASE_URL }}"><b>{{ conf.ELASPIC_NAME }} {{ conf.ELASPIC_VERSION }}</b></a>.
+        <p>{% ifequal data.0.job.muts.count 1 %}The mutation was{% else %}Mutations were{% endifequal %} evaluated using <a class="click-elaspic" target="_blank" href="{{ conf.ELASPIC_RELEASE_URL }}">{{ conf.ELASPIC_NAME }} {{ conf.ELASPIC_VERSION }}</a>.
           <br>Your results will be kept for {{ conf.JOB_EXPIRY_DAY }} days from last access.
         </p>
         {% endif %}
