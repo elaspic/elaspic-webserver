@@ -2,13 +2,8 @@ import io
 
 import pandas as pd
 import pytest
-# from hypothesis import given
-# from hypothesis.strategies import text
-from faker import Faker
 
 from web_pipeline import filemanager
-
-fake = Faker()
 
 
 @pytest.fixture(
