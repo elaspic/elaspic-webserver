@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 
 import aiomysql
 
-import config
+import conf
 # For sendEmail
 from web_pipeline import functions
 

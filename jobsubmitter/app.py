@@ -5,11 +5,11 @@ import os
 import os.path as op
 import shutil
 
-from aiohttp import web
-
-import config
-import jobsubmitter
 from django.conf import settings
+
+import conf
+import jobsubmitter
+from aiohttp import web
 
 logger = logging.getLogger(__name__)
 
@@ -69,21 +69,21 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.interactive:
-        config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['console']
+        conf.LOGGING_CONFIGS['loggers']['']['handlers'] = ['console']
     else:
-        config.LOGGING_CONFIGS['loggers']['']['handlers'] = ['debug_log']  # ['info_log']
-    logging.config.dictConfig(config.LOGGING_CONFIGS)
+        conf.LOGGING_CONFIGS['loggers']['']['handlers'] = ['debug_log']  # ['info_log']
+    logging.config.dictConfig(conf.LOGGING_CONFIGS)
 
     # Copy scripts
     local_script_dir = op.abspath(op.join(op.dirname(__file__), 'scripts'))
-    os.makedirs(config.SCRIPTS_DIR, exist_ok=True)
-    logger.info("Copying script files to remote ('{}')...".format(config.SCRIPTS_DIR))
+    os.makedirs(conf.SCRIPTS_DIR, exist_ok=True)
+    logger.info("Copying script files to remote ('{}')...".format(conf.SCRIPTS_DIR))
     for file in os.listdir(local_script_dir):
         logger.debug(file)
         try:
             shutil.copy(
                 op.join(local_script_dir, file),
-                op.join(config.SCRIPTS_DIR, file)
+                op.join(conf.SCRIPTS_DIR, file)
             )
         except PermissionError:
             logger.warning("Do not have permission to copy file %s.", file)
