@@ -1,23 +1,33 @@
 image: condaforge/linux-anvil:latest
 
-before_script:
-  - conda config --append channels kimlab
-  - conda config --append channels ostrokach
-  - conda create -n elaspic-webserver
-  - conda install -n elaspic-webserver -yq elaspic
-  - conda install -n elaspic-webserver -yq jobsubmitter
+stages:
+  - test
+  - deploy
+
+# === Variables ===
+
+variables:
+  PACKAGE_VERSION: 0.0.6
+
+# === Build ===
 
 test:
   stage: test
   tags:
     - local
+  before_script:
+    - conda config --add channels ostrokach-forge
+    - conda config --append channels kimlab
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
+    - pip install flake8 pytest pytest-asyncio pytest-logging
     - flake8
     - py.test
 
-deploy:
+# === Deploy ===
+
+deploy-prod:
   stage: deploy
   tags:
     - local
@@ -27,11 +37,9 @@ deploy:
   only:
     - master
   script:
-    - STAGING_DIR=/home/kimadmin/mum_test
-    - rm -rf ${STAGING_DIR}
-    - cp -a . ${STAGING_DIR}
-    - cd ${STAGING_DIR}
     - ./devtools/gitlab-ci/sentry_release.sh
-    - conda env create -f environment.yml -n elaspic_webserver_test -q --force
-    - source activate elaspic_webserver_test
-    - py.test
+    - STAGING_URL="kimadmin@192.168.6.53"
+    - STAGING_DIR="/home/kimadmin/mum_test"
+    - rsync -av ./ ${STAGING_URL}:${STAGING_DIR}/
+    - ssh ${STAGING_URL}
+      "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic_webserver_test -q --force"
