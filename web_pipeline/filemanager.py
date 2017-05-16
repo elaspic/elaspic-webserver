@@ -5,13 +5,12 @@ import shutil
 import tempfile
 from zipfile import ZipFile
 
-import elaspic.tools.foldx
 from Bio import SeqIO
 from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
-from . import conf, functions, models
+from . import conf, elaspic_snippets, functions, models
 
 logger = logging.getLogger(__name__)
 
@@ -285,8 +284,8 @@ class FileManager:
                          rm.physchem_wt_ownchain.split(',') +
                          rm.physchem_mut_ownchain.split(',') if mutCompleted else r(23))
 
-            header += ([n[0] + '_wt' for n in elaspic.tools.foldx._names_stability] +
-                       [n[0] + '_mut' for n in elaspic.tools.foldx._names_stability] +
+            header += ([n[0] + '_wt' for n in elaspic_snippets._names_stability] +
+                       [n[0] + '_mut' for n in elaspic_snippets._names_stability] +
                        wtmut(['IntraclashesEnergy1',
                              'IntraclashesEnergy2']) +
                        ['Interface_hydrophobic_area',
