@@ -1,116 +1,105 @@
-name: elaspic_webserver
+name: elaspic-webserver
 channels: !!python/tuple
-- ostrokach
-- https://conda.anaconda.org/t/os-97e7c35e-4feb-4235-8efa-8bc449b8285c/ostrokach
-- omnia
+- ostrokach-forge
 - conda-forge
-- bioconda
 - defaults
+- bioconda
+- salilab
+- omnia
+- electrostatics
+- kimlab/label/dev
 - kimlab
 dependencies:
 - bioconda::blast=2.2.31=1
-- bioconda::cd-hit=4.6.4=1
-- bioconda::msms=2.6.1=1
-- bioconda::muscle=3.8.1551=1
-- bioconda::p7zip=15.09=3
-- bioconda::retrying=1.3.3=py_1
-- bioconda::stride=1.0=0
-- bioconda::t_coffee=11.0.8=py35_1
-- biopython=1.67=np111py35_0
-- cffi=1.6.0=py35_0
-- cloog=0.18.0=0
-- conda-forge::blas=1.1=openblas
-- conda-forge::ca-certificates=2016.8.2=3
-- conda-forge::certifi=2016.8.2=py35_0
-- conda-forge::curl=7.49.1=1
-- conda-forge::gmp=6.1.1=0
-- conda-forge::hdf5=1.8.17=2
-- conda-forge::icu=56.1=4
-- conda-forge::idna=2.1=py35_0
-- conda-forge::isl=0.17.1=0
-- conda-forge::libffi=3.2.1=2
-- conda-forge::libiconv=1.14=3
-- conda-forge::libpq=9.5.3=1
-- conda-forge::libxml2=2.9.4=0
-- conda-forge::lxml=3.6.4=py35_0
-- conda-forge::mpc=1.0.3=1
-- conda-forge::mpfr=3.1.4=1
-- conda-forge::ncurses=5.9=8
-- conda-forge::numexpr=2.6.1=np111py35_0
-- conda-forge::numpy=1.11.3=py35_blas_openblas_200
-- conda-forge::openblas=0.2.19=0
-- conda-forge::openssl=1.0.2h=2
-- conda-forge::pandas=0.18.1=np111py35_1
-- conda-forge::pandoc=1.18=0
-- conda-forge::pip=9.0.0=py35_0
-- conda-forge::psutil=4.3.0=py35_0
-- conda-forge::psycopg2=2.6.2=py35_1
-- conda-forge::pyasn1=0.1.9=py35_0
-- conda-forge::pycparser=2.14=py35_0
-- conda-forge::pypandoc=1.3.3=py35_0
-- conda-forge::pytables=3.2.3.1=np111py35_0
-- conda-forge::python=3.5.2=2
-- conda-forge::python-dateutil=2.5.3=py35_0
-- conda-forge::pytz=2016.6.1=py35_0
-- conda-forge::pyyaml=3.11=py35_0
+- bioconda::bwa=0.7.15=1
+- bioconda::clustalo=1.2.3=0
+- bioconda::clustalw=2.1=1
+- bioconda::emboss=6.5.7=2
+- bioconda::mafft=7.305=0
+- bioconda::muscle=3.8.1551=2
+- bioconda::paml=4.9=1
+- bioconda::samtools=1.4.1=0
+- conda-forge::aiohttp=2.0.7=py36_0
+- conda-forge::async-timeout=1.2.1=py36_0
+- conda-forge::boost=1.64.0=np112py36_1
+- conda-forge::boost-cpp=1.64.0=0
+- conda-forge::bzip2=1.0.6=1
+- conda-forge::ca-certificates=2017.1.23=1
+- conda-forge::certifi=2017.4.17=py36_0
+- conda-forge::cffi=1.10.0=py36_0
+- conda-forge::chardet=3.0.2=py36_1
+- conda-forge::curl=7.52.1=0
+- conda-forge::django=1.11=py36_0
+- conda-forge::freetype=2.7=1
+- conda-forge::hdf5=1.8.17=10
+- conda-forge::icu=58.1=1
+- conda-forge::idna=2.5=py36_0
+- conda-forge::jpeg=9b=0
+- conda-forge::libffi=3.2.1=3
+- conda-forge::libiconv=1.14=4
+- conda-forge::libpng=1.6.28=0
+- conda-forge::libtiff=4.0.6=7
+- conda-forge::libxml2=2.9.4=4
+- conda-forge::libxslt=1.1.29=3
+- conda-forge::lxml=3.7.3=py36_0
+- conda-forge::mmtf-python=1.0.5=py36_0
+- conda-forge::msgpack-python=0.4.8=py36_0
+- conda-forge::multidict=2.1.4=py36_0
+- conda-forge::ncurses=5.9=10
+- conda-forge::numexpr=2.6.2=np112py36_0
+- conda-forge::olefile=0.44=py36_0
+- conda-forge::openssl=1.0.2k=0
+- conda-forge::pandas=0.20.1=np112py36_0
+- conda-forge::paramiko=2.1.2=py36_0
+- conda-forge::pillow=4.1.1=py36_0
+- conda-forge::pip=9.0.1=py36_0
+- conda-forge::pyasn1=0.2.3=py36_0
+- conda-forge::pycparser=2.17=py36_0
+- conda-forge::pytables=3.4.2=np112py36_0
+- conda-forge::python=3.6.1=2
+- conda-forge::python-dateutil=2.6.0=py36_0
+- conda-forge::pytz=2017.2=py36_0
+- conda-forge::pyyaml=3.12=py36_1
 - conda-forge::readline=6.2=0
-- conda-forge::requests=2.11.0=py35_0
-- conda-forge::scikit-learn=0.18=np111py35_blas_openblas_203
-- conda-forge::scipy=0.18.1=np111py35_blas_openblas_201
-- conda-forge::setuptools=28.5.0=py35_0
-- conda-forge::six=1.10.0=py35_0
+- conda-forge::requests=2.13.0=py36_0
+- conda-forge::setuptools=33.1.1=py36_0
+- conda-forge::six=1.10.0=py36_1
+- conda-forge::sqlalchemy=1.1.5=py36_0
 - conda-forge::sqlite=3.13.0=1
-- conda-forge::tk=8.5.19=0
-- conda-forge::wheel=0.29.0=py35_0
+- conda-forge::tk=8.5.19=1
+- conda-forge::unixodbc=2.3.4=1
+- conda-forge::wheel=0.29.0=py36_0
 - conda-forge::xz=5.2.2=0
 - conda-forge::yaml=0.1.6=0
-- conda-forge::zlib=1.2.8=3
-- cryptography=1.4=py35_0
-- kimlab::kmtools=0.0.15=py35_0
+- conda-forge::yarl=0.10.0=py36_0
+- conda-forge::zlib=1.2.11=0
+- cryptography=1.7.1=py36_0
+- kimlab/label/dev::kmbio=1.69.2.dev0=py36_0
+- kimlab/label/dev::kmtools=0.0.17.dev0=py36_0
+- kimlab::cifparse-obj=7.105=2
 - libgcc=5.2.0=0
 - libgfortran=3.0.0=1
-- libxslt=1.1.28=0
-- llvmlite=0.14.0=py35_0
-- mkl=11.3.3=0
-- numba=0.29.0=np111py35_0
-- omnia::boost=1.59.0=py35_1
-- ostrokach::aio=0.3.106=2
-- ostrokach::bzip2=1.0.6=4
-- ostrokach::elaspic=0.1.38=py35_1
-- ostrokach::foldx=3.0.6=5
-- ostrokach::hdf5-1816=1.8.16=0
-- ostrokach::libfaketime=0.9.6=py35_5
-- ostrokach::modeller=9.17=py35_1
-- ostrokach::mysql=5.7.17=0
-- ostrokach::mysqlclient=1.3.9=py35_2
-- ostrokach::pops=1.6.4=1
-- ostrokach::provean=1.1.5=1
-- paramiko=2.0.2=py35_0
-- pycurl=7.43.0=py35_0
-- sqlalchemy=1.0.13=py35_0
-- unixodbc=2.3.4=0
+- llvmlite=0.18.0=py36_0
+- lzo=2.06=0
+- mkl=2017.0.1=0
+- numba=0.33.0=np112py36_0
+- numpy=1.12.1=py36_0
+- ostrokach-forge::aio=0.3.106=2
+- ostrokach-forge::mysql=5.7.18=0
+- ostrokach-forge::mysqlclient=1.3.10=py36_1
+- ostrokach-forge::retrying=1.3.3=py36_2
+- pycurl=7.43.0=py36_2
+- redis=3.2.0=0
+- redis-py=2.10.5=py36_0
+- reportlab=3.4.0=py36_0
+- scikit-learn=0.18.1=np112py36_1
+- scipy=0.19.0=np112py36_0
 - pip:
-  - aiohttp==0.22.5
-  - aiomysql==0.0.8
-  - chardet==2.3.0
-  - contextlib2==0.5.4
-  - coverage==4.3.1
-  - django==1.10
-  - fake-factory==0.7.2
-  - flake8==3.2.1
-  - hypothesis==3.6.0
-  - jobsubmitter==0.0.2
-  - mccabe==0.5.3
-  - multidict==1.2.2
-  - pdbx-mmcif==0.0.2
-  - py==1.4.31
-  - pycodestyle==2.2.0
-  - pyflakes==1.3.0
-  - pymysql==0.7.9
-  - pytest==3.0.3
-  - pytest-cov==2.4.0
-  - pytest-logging==2015.11.4
-  - raven==5.32.0
-  - tables==3.2.3.1
-  - urllib3==1.19.1
-prefix: /home/kimlab1/strokach/anaconda/envs/elaspic_webserver
+  - aiomysql==0.0.9
+  - aioredis==0.3.1
+  - contextlib2==0.5.5
+  - hiredis==0.2.0
+  - pymysql==0.7.11
+  - raven==6.0.0
+  - tables==3.4.2
+prefix: /home/kimlab1/strokach/anaconda3/envs/elaspic-webserver
