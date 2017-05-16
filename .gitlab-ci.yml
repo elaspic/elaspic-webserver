@@ -1,9 +1,14 @@
 image: condaforge/linux-anvil:latest
 
+before_script:
+  - conda config --append channels kimlab
+  - conda config --append channels ostrokach
+  - conda create -n elaspic-webserver
+  - conda install -n elaspic-webserver -yq elaspic
+  - conda install -n elaspic-webserver -yq jobsubmitter
+
 test:
   stage: test
-  tags:
-    - elaspic
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
@@ -12,13 +17,11 @@ test:
 
 deploy:
   stage: deploy
-  tags:
-    - elaspic_webserver
   environment:
     name: production
     url: http://elaspic.kimlab.org
-  # only:
-  #   - master
+  only:
+    - master
   script:
     - STAGING_DIR=/home/kimadmin/mum_test
     - rm -rf ${STAGING_DIR}
