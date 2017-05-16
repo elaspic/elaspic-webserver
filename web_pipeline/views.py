@@ -220,7 +220,7 @@ def runPipeline(request):
         n_tries = 0
         while (not status or status == 'error') and n_tries < 10:
             n_tries += 1
-            r = requests.post('http://elaspic.kimlab.org:8000/elaspic/api/1.0/', json=data_in)
+            r = requests.post('http://localhost:8001/elaspic/api/1.0/', json=data_in)
             if not r.ok:
                 logger.error("Bad response from jobsubmitter server: {}".format(r))
                 continue
