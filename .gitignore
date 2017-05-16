@@ -3,6 +3,7 @@ node_modules
 npm-debug.log
 
 # Folders
+*.egg-info
 /.coverage
 /static
 htmlcov
