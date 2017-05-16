@@ -9,6 +9,8 @@ before_script:
 
 test:
   stage: test
+  tags:
+    - local
   script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
@@ -17,6 +19,8 @@ test:
 
 deploy:
   stage: deploy
+  tags:
+    - local
   environment:
     name: production
     url: http://elaspic.kimlab.org
