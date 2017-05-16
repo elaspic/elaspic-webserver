@@ -440,6 +440,8 @@ class _CoreMutation(models.Model):
 
     ddG = models.FloatField(null=True, blank=True, db_column='ddg')
 
+    elaspic_version = models.CharField(max_length=255)
+
     def getdomain(self, chain=1):
         return self.model
 
@@ -764,6 +766,8 @@ class _InterfaceMutation(models.Model):
     provean_score = models.FloatField(null=True, blank=True)
 
     ddG = models.FloatField(null=True, blank=True, db_column='ddg')
+
+    elaspic_version = models.CharField(max_length=255)
 
     def getdomain(self, chain):
         return self.model.getdomain(chain)
