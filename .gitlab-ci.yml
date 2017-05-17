@@ -9,20 +9,6 @@ stages:
 variables:
   PACKAGE_VERSION: 0.0.7.dev0
 
-# === Configure SSH ===
-
-before_script:
-  # Install ssh-agent if not already installed, it is required by Docker.
-  # (change apt-get to yum if you use a CentOS-based image)
-
-  # Run ssh-agent (inside the build environment)
-
-  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-
-  # In order to properly check the server's host key, assuming you created the
-  # SSH_SERVER_HOSTKEYS variable previously, uncomment the following two lines
-  # instead.
-
 # === Build ===
 
 test:
@@ -71,7 +57,7 @@ deploy-prod:
   script:
     - ./devtools/gitlab-ci/sentry_release.sh
     - STAGING_URL="kimadmin@192.168.6.53"
-    - STAGING_DIR="/home/kimadmin/mum_test"
+    - STAGING_DIR="/home/kimadmin/elaspic-webserver"
     - rsync -av ./ ${STAGING_URL}:${STAGING_DIR}/
     - ssh ${STAGING_URL}
-      "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic_webserver_test -q --force"
+      "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic-webserver -q --force"
