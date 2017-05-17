@@ -179,7 +179,7 @@
   height: 40px;
 }
 
-#result_wrapper p.wholeheader {
+#result_wrapper p .wholeheader {
   width: 100%;
   margin-right: 0px;
 }

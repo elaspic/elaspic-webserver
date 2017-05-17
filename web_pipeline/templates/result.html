@@ -110,7 +110,7 @@
           <br>Job completed: {{ job.getDateFinished }}</i></p>
 
         {% if not isRunning %}
-        <p>{% ifequal data.0.job.muts.count 1 %}The mutation was{% else %}Mutations were{% endifequal %} evaluated using <a class="click-elaspic" target="_blank" href="{{ conf.ELASPIC_RELEASE_URL }}">{{ conf.ELASPIC_NAME }} {{ conf.ELASPIC_VERSION }}</a>.
+        <p>{% ifequal data.0.job.muts.count 1 %}The mutation was{% else %}Mutations were{% endifequal %} evaluated using <span class="small"><a class="click-elaspic" target="_blank" id="elaspic" href="https://gitlab.com/kimlab/elaspic/tags/v{{ data.0.realMut.0.elaspic_version }}">ELASPIC v{{ data.0.realMut.0.elaspic_version }}</a></span>.
           <br>Your results will be kept for {{ conf.JOB_EXPIRY_DAY }} days from last access.
         </p>
         {% endif %}

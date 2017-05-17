@@ -449,8 +449,8 @@ def _get_domain_info(d, pid_to_name, interactions):
 
 
 def _get_known_muts(p, ds, all_domain_range, all_interface_models):
+    logger.debug("_get_known_muts(%s, %s, %s, %s)", p, ds, all_domain_range, all_interface_models)
     mdict = {}
-    logger.debug('querying mutations...')
     muts = (
         [(mut, None, None)
          for model in ds
@@ -511,7 +511,8 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
                     'dm': m.dGmut(),
                     'si': m.model.getsequenceidentity(chain),
                     'sm': '%0.3f' % m.model.dope_score,
-                    'db': mut_dbs_html}
+                    'db': mut_dbs_html,
+                    'elaspic_version': m.elaspic_version}
         if m.mut in mdict and mdict[m.mut][0]['i']:
             mdict[m.mut].append(toAppend)
         else:
