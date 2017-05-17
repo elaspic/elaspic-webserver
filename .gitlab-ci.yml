@@ -56,13 +56,17 @@ deploy-prod:
   environment:
     name: production
     url: http://elaspic.kimlab.org
-  only:
-    - master
+  variables:
+    STAGING_URL: kimadmin@192.168.6.53
+    STAGING_DIR: /home/kimadmin/elaspic-webserver
   <<: [*configure_ssh]
   script:
-    - STAGING_URL="kimadmin@192.168.6.53"
-    - STAGING_DIR="/home/kimadmin/elaspic-webserver"
+    # Install some packages
+    - yum install -y -q rsync.x86_64
+    # Sync deployment server
     - rsync -av ./ ${STAGING_URL}:${STAGING_DIR}/
     - ssh ${STAGING_URL} "conda config --add channels ostrokach-forge"
     - ssh ${STAGING_URL} "conda config --append channels kimlab"
     - ssh ${STAGING_URL} "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic-webserver -q --force"
+  only:
+    - master
