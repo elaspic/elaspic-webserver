@@ -15,15 +15,21 @@ test:
   stage: test
   tags:
     - local
+  variables:
+    - DJANGO_SETTINGS_MODULE: mum.settings.pytest
   before_script:
     - conda config --add channels ostrokach-forge
     - conda config --append channels kimlab
-  script:
     - conda env create -f environment.yml -n elaspic_webserver -q --force
     - source activate elaspic_webserver
-    - pip install flake8 pytest pytest-asyncio pytest-logging
+  script:
+    - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov
     - flake8
+    - python elaspic_rest_api/app.py &
     - py.test
+    - codecov -t $CODECOV_TOKEN
+
+
 
 # === Deploy ===
 
