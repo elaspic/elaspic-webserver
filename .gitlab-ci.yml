@@ -16,7 +16,7 @@ test:
   tags:
     - local
   variables:
-    - DJANGO_SETTINGS_MODULE: mum.settings.pytest
+    DJANGO_SETTINGS_MODULE: mum.settings.pytest
   before_script:
     - conda config --add channels ostrokach-forge
     - conda config --append channels kimlab
@@ -28,8 +28,6 @@ test:
     - python elaspic_rest_api/app.py &
     - py.test
     - codecov -t $CODECOV_TOKEN
-
-
 
 # === Deploy ===
 
