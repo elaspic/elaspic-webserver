@@ -32,8 +32,12 @@ test:
   variables:
     DJANGO_SETTINGS_MODULE: mum.settings.pytest
   before_script:
+    # Install yum packages
+    - yum -y -q update
+    - yum -y -q install openssh-clients.x86_64
+    - yum -y -q install epel-release
+    - yum -y -q install sshfs
     # Configure ssh
-    - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
     - mkdir -p ~/.ssh
