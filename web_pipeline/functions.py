@@ -1,24 +1,22 @@
+import logging
 import os
 import os.path as op
-import re
 import random
+import re
 import time
-import logging
 from collections import MutableMapping
+
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.timezone import now
-from django.db.models import Q
 
-from web_pipeline.models import (
-    Job,
-    HGNCIdentifier, UniprotIdentifier,
-    Protein, ProteinLocal,
-    CoreMutation, CoreMutationLocal,
-    InterfaceMutation, InterfaceMutationLocal,
-)
+from . import conf
+from .models import (CoreMutation, CoreMutationLocal, HGNCIdentifier,
+                     InterfaceMutation, InterfaceMutationLocal, Job, Protein,
+                     ProteinLocal, UniprotIdentifier)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +57,7 @@ def get_random_id():
     """
     while True:
         random_id = "%06x" % random.randint(1, 16777215)
-        user_path = op.join(settings.DB_PATH, 'user_input', random_id)
+        user_path = op.join(conf.DB_PATH, 'user_input', random_id)
         is_valid = (
             Job.objects.filter(Q(jobID=random_id) | Q(localID=random_id)).count() == 0 and
             not op.exists(user_path)
@@ -74,7 +72,7 @@ def get_random_id():
 
 
 def get_user_path(random_id):
-    return op.join(settings.DB_PATH, 'user_input', random_id)
+    return op.join(conf.DB_PATH, 'user_input', random_id)
 
 
 def checkForCompletion(jobs):

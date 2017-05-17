@@ -2,7 +2,9 @@ function rainbow(numOfSteps, step) {
   // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distinguishable vibrant markers in Google Maps and other apps.
   // Adam Cole, 2011-Sept-14
   // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-  var r, g, b;
+  var r,
+    g,
+    b;
   var h = step / numOfSteps;
   var i = ~~(h * 6);
   var f = h * 6 - i;
@@ -39,13 +41,15 @@ function rainbow(numOfSteps, step) {
       b = q;
       break;
   }
-  var c = "#" + ("00" + (~~(r * 255)).toString(16)).slice(-2) + ("00" + (~~(g * 255)).toString(16)).slice(-2) + ("00" + (~~(b * 255)).toString(16)).slice(-2);
+  var c = "#" + ("00" + (~~ (r * 255)).toString(16)).slice(-2) + ("00" + (~~ (g * 255)).toString(16)).slice(-2) + ("00" + (~~ (b * 255)).toString(16)).slice(-2);
   return (c);
 }
 
 function blue_rainbow(numOfSteps, step) {
   var switches = 4;
-  var r, g, b;
+  var r,
+    g,
+    b;
   var h = step / numOfSteps;
   var i = ~~(h * switches);
   var f = h * switches - i;
@@ -72,7 +76,7 @@ function blue_rainbow(numOfSteps, step) {
       b = q * 0.8 + 0.2;
       break;
   }
-  var c = "#" + ("00" + (~~(r * 255)).toString(16)).slice(-2) + ("00" + (~~(g * 255)).toString(16)).slice(-2) + ("00" + (~~(b * 255)).toString(16)).slice(-2);
+  var c = "#" + ("00" + (~~ (r * 255)).toString(16)).slice(-2) + ("00" + (~~ (g * 255)).toString(16)).slice(-2) + ("00" + (~~ (b * 255)).toString(16)).slice(-2);
   return (c);
 }
 
@@ -95,7 +99,8 @@ function create2dBar(protein) {
   // Draw domains
   var domaindefs = [];
   var i;
-  var pxsize, pxstart;
+  var pxsize,
+    pxstart;
   for (i = 0; i < protein.doms.length; i++) {
 
     var domStart = parseInt(protein.defs[i].split(':')[0]);
@@ -105,7 +110,8 @@ function create2dBar(protein) {
     pxsize = (domEnd - domStart) / psize * barSize;
     pxstart = domStart / psize * barSize - border;
 
-    var dname, dpopup;
+    var dname,
+      dpopup;
 
     if (protein.doms[i].length * 7 < pxsize) {
       dname = protein.doms[i];
@@ -118,7 +124,9 @@ function create2dBar(protein) {
       dpopup = protein.doms[i];
     }
 
-    var divtitle = (thisPage == 'sIn') ? '' : 'title="Click to open Pfam description." ';
+    var divtitle = (thisPage == 'sIn')
+      ? ''
+      : 'title="Click to open Pfam description." ';
 
     var style = ' style="width: ' + pxsize + 'px; left: ' + pxstart + 'px;"';
     var data = ' data-start="' + domStart + '" data-end="' + domEnd + '" data-text="' + dpopup + '"';
@@ -128,7 +136,6 @@ function create2dBar(protein) {
 
     $('.protein2d').append(domain);
   }
-
 
   // Draw interactions.
   if (protein.inacs) {
@@ -187,7 +194,6 @@ function create2dBar(protein) {
   fixBarMut();
 }
 
-
 function setBarMut(num) {
   var oldMut = $('#select2sub').find("option:selected").text();
   $("#selectsub").val("sel" + num);
@@ -198,7 +204,6 @@ function setBarMut(num) {
   fixBarMut();
   saveMut();
 }
-
 
 function fixBarMut() {
   var aa = $("#selectsub").find("option:selected").text().substring(0, 1);
@@ -270,18 +275,27 @@ function fixBarMut() {
   }
 }
 
-
 function getY(i, svgdata) {
   var h = 100;
   var distanceisno = 20;
-  var noleft = (svgdata[i - 1] === undefined || svgdata[i - 1].x + distanceisno < svgdata[i].x) ? true : false;
-  var noright = (svgdata[i + 1] === undefined || svgdata[i + 1].x - distanceisno > svgdata[i].x) ? true : false;
+  var noleft = (svgdata[i - 1] === undefined || svgdata[i - 1].x + distanceisno < svgdata[i].x)
+    ? true
+    : false;
+  var noright = (svgdata[i + 1] === undefined || svgdata[i + 1].x - distanceisno > svgdata[i].x)
+    ? true
+    : false;
   if ((noright && noleft) || svgdata.length < 5) {
     return 1;
   } else if (svgdata.length < 10) {
-    return (i % 2) ? 20 : 1;
+    return (i % 2)
+      ? 20
+      : 1;
   } else if (svgdata.length < 30) {
-    return (i % 3) ? ((i % 2) ? 20 : 50) : 1;
+    return (i % 3)
+      ? ((i % 2)
+        ? 20
+        : 50)
+      : 1;
   } else {
     return (i % Math.floor(svgdata.length / 10)) * 40;
   }
@@ -300,7 +314,8 @@ function fixBarMuts(muts) {
     h = 100,
     svgHeight = 0,
     posLeft = -25,
-    labelBox, links;
+    labelBox,
+    links;
 
   var svgdata = [];
 
@@ -329,42 +344,35 @@ function fixBarMuts(muts) {
   });
 
   function draw() {
-    labelBox
-      .attr("transform", function(d) {
-        return "translate(" + Math.min(Math.max(20, d.labelPos.x), w - 20) + " " + Math.max(Math.min(d.labelPos.y - 5, svgHeight - 10), 5) + ")";
-      });
-    links
-      .attr("x1", function(d) {
-        return d.anchorPos.x;
-      })
-      .attr("y1", function(d) {
-        return d.anchorPos.y;
-      })
-      .attr("x2", function(d) {
-        return Math.min(Math.max(20, d.labelPos.x), w - 20);
-      })
-      .attr("y2", function(d) {
-        return Math.max(Math.min(d.labelPos.y - 5, svgHeight - 10), 5);
-      });
+    labelBox.attr("transform", function(d) {
+      return "translate(" + Math.min(Math.max(20, d.labelPos.x), w - 20) + " " + Math.max(Math.min(d.labelPos.y - 5, svgHeight - 10), 5) + ")";
+    });
+    links.attr("x1", function(d) {
+      return d.anchorPos.x;
+    }).attr("y1", function(d) {
+      return d.anchorPos.y;
+    }).attr("x2", function(d) {
+      return Math.min(Math.max(20, d.labelPos.x), w - 20);
+    }).attr("y2", function(d) {
+      return Math.max(Math.min(d.labelPos.y - 5, svgHeight - 10), 5);
+    });
   }
   var pgravity = 0.05;
-  var labelForce = d3.force_labels()
-    .linkDistance(function(d, i) {
-      if (svgdata.length < 5) {
-        svgHeight = Math.max(svgHeight, h * 4 / 10);
-        pgravity = 0.02;
-      } else if (svgdata.length < 10) {
-        svgHeight = Math.max(svgHeight, h * 7 / 10);
-        pgravity = 0.02;
-      } else if (svgdata.length < 30) {
-        pgravity = 0.03;
-        svgHeight = Math.max(svgHeight, h * 10 / 10);
-      } else {
-        svgHeight = Math.max(svgHeight, h * (svgdata.length / 20));
-      }
-      return getY(i, svgdata);
-    })
-    .size([w, 1000]).gravity(0.05).nodes([]).links([]).charge(-70);
+  var labelForce = d3.force_labels().linkDistance(function(d, i) {
+    if (svgdata.length < 5) {
+      svgHeight = Math.max(svgHeight, h * 4 / 10);
+      pgravity = 0.02;
+    } else if (svgdata.length < 10) {
+      svgHeight = Math.max(svgHeight, h * 7 / 10);
+      pgravity = 0.02;
+    } else if (svgdata.length < 30) {
+      pgravity = 0.03;
+      svgHeight = Math.max(svgHeight, h * 10 / 10);
+    } else {
+      svgHeight = Math.max(svgHeight, h * (svgdata.length / 20));
+    }
+    return getY(i, svgdata);
+  }).size([w, 1000]).gravity(0.05).nodes([]).links([]).charge(-70);
   console.log('Drawn ' + svgdata.length + ' mutations.');
 
   var anchors = svg.selectAll(".anchor").data(svgdata);
@@ -399,7 +407,9 @@ function fixBarMuts(muts) {
     $('.muttooltip .tlabels div').unbind('click');
     $('.muttooltip .tlabels').html('');
     var mutData = d3.select(this).datum().data;
-    var manyMuts = (mutData.length >= 10) ? true : false;
+    var manyMuts = (mutData.length >= 10)
+      ? true
+      : false;
     if (mutData.length == 1) {
       $('.muttooltip .tlabels').append('<div class="l1"><span class="bg"></span></div>');
     } else if (mutData.length < 10) {
@@ -410,9 +420,15 @@ function fixBarMuts(muts) {
     // Print data to popup.
     $('.muttooltip .tlabels').attr('data-mut', mutData[0][0].m.substr(0, mutData[0][0].m.length - 1));
     for (i = 0; i < mutData.length; i++) {
-      var extraclass = (!i) ? 'active' : 'inactive';
-      var curmut = (!i) ? mutData[i][0].m : mutData[i][0].m.slice(-1);
-      var ele = (i < 10) ? $('.muttooltip .tlabels .l1') : $('.muttooltip .tlabels .l2');
+      var extraclass = (!i)
+        ? 'active'
+        : 'inactive';
+      var curmut = (!i)
+        ? mutData[i][0].m
+        : mutData[i][0].m.slice(-1);
+      var ele = (i < 10)
+        ? $('.muttooltip .tlabels .l1')
+        : $('.muttooltip .tlabels .l2');
       ele.append('<div class="' + extraclass + '">' + curmut + '</div>');
     }
     fixMutPopupData(mutData, 0);
@@ -422,7 +438,9 @@ function fixBarMuts(muts) {
         $('.muttooltip .tlabels div .active').text($('.muttooltip .tlabels div .active').text().slice(-1));
         $('.muttooltip .tlabels div div').removeClass();
         $(this).addClass('active').text($('.muttooltip .tlabels').attr('data-mut') + $(this).text());
-        var dataNum = ($(this).parent().hasClass('l1')) ? $(this).index() - 1 : $(this).index() + 10 - 1;
+        var dataNum = ($(this).parent().hasClass('l1'))
+          ? $(this).index() - 1
+          : $(this).index() + 10 - 1;
         fixMutPopupData(mutData, dataNum);
         fixMutPopupBorders(manyMuts);
       } else {
@@ -445,7 +463,8 @@ function fixBarMuts(muts) {
   anchors.call(labelForce.update);
 
   labelForce.start();
-  for (i = 10000; i > 0; --i) labelForce.tick();
+  for (i = 10000; i > 0; --i)
+    labelForce.tick();
   labelForce.stop();
 
   $('.protsvg').css('height', svgHeight + 'px');
@@ -456,16 +475,18 @@ function fixBarMuts(muts) {
 }
 
 function fixMutPopupData(data, num) {
-
   for (var i = 0; i < data[num].length; i++) {
     // Set variables.
-    var head = (data[num][i].i) ? 'Interaction with: <a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + data[num][i].id + '">' + (data[num][i].i) + '</a>' : 'Stability results';
+    var head = (data[num][i].i)
+      ? 'Interaction with: <a class="click2" target="_blank" href="http://www.uniprot.org/uniprot/' + data[num][i].id + '">' + (data[num][i].i) + '</a>'
+      : 'Stability results';
     var sbddg = data[num][0].d,
       sbmutdb = data[num][0].db,
       sbdgwt = data[num][0].dw,
       sbdgmut = data[num][0].dm,
       sbseq = data[num][0].si,
       sbdop = data[num][0].sm,
+      elaspic_version = data[num][0].elaspic_version,
       muttsid = 'Seq iden<span id="sbseq" class="mono">' + data[num][0].si + '</span>';
     if (sbseq.split(', ').length > 1) {
       sbseq = data[num][0].si.split(', ');
@@ -480,6 +501,7 @@ function fixMutPopupData(data, num) {
     $('.muttooltip .ttext #sbdgmut').html(sbdgmut);
     $('.muttooltip .ttext #sbddg').html(sbddg);
     $('.muttooltip .ttext #dbs').html(sbmutdb + '.');
+    $('.muttooltip .ttext a#elaspic').attr("href", "https://gitlab.com/kimlab/elaspic/tags/v" + elaspic_version).html("ELASPIC v" + elaspic_version);
   }
   // Fix paddings for interactions.
   var mwidth = 200;
@@ -520,8 +542,6 @@ function showHover(element) {
   var width = text.length * 7;
   var mid = parseInt((left + right) / 2 - width / 2) - 5;
 
-
-
   // Check if arrow should be placed.
   var arrow;
   if (width) {
@@ -547,9 +567,7 @@ function showHover(element) {
   } else {
     barid = '';
   }
-  $(barid + ".tooltip2d").html('<div class="ttmid" style="left: ' + mid + 'px; width: ' + width + 'px;"><div class="txt">' + text + '</div>' + arrow + '</div>' +
-    '<div class="ttstart" style="left: ' + left + 'px;">' + $(element).attr("data-start") + '</div>' +
-    '<div class="ttend" style="left: ' + right + 'px;">' + $(element).attr("data-end") + '</div>');
+  $(barid + ".tooltip2d").html('<div class="ttmid" style="left: ' + mid + 'px; width: ' + width + 'px;"><div class="txt">' + text + '</div>' + arrow + '</div>' + '<div class="ttstart" style="left: ' + left + 'px;">' + $(element).attr("data-start") + '</div>' + '<div class="ttend" style="left: ' + right + 'px;">' + $(element).attr("data-end") + '</div>');
   if (width) {
     $(barid + ".ttmid .txt").css("padding", "3px 5px");
   } else {

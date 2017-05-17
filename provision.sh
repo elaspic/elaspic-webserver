@@ -13,10 +13,12 @@ set -ev
 
 # Jobsubmitter
 
-rsync -rv --chown=9284:7300 ~/mum/jobsubmitter/scripts/ /home/kimlab1/database_data/elaspic_v2/scripts/
+rsync -rv --chown=9284:7300 ~/mum/jobsubmitter/scripts/ /home/kimlab1/database_data/elaspic/scripts/
 
-sudo rsync -av ./conf/jobsubmitter.conf /etc/supervisor/conf.d/jobsubmitter.conf 
+sudo rsync -av ./conf/jobsubmitter.conf /etc/supervisor/conf.d/jobsubmitter.conf
 
+sudo supervisorctl reload
+sudo supervisorctl reread
 sudo supervisorctl restart jobsubmitter
 
 
@@ -25,7 +27,7 @@ sudo supervisorctl restart jobsubmitter
 python ~/mum/manage.py collectstatic --noinput -i download -i jobs
 
 sudo ln -snf \
-    /home/kimlab1/database_data/elaspic_v2/webserver/jobs \
+    /home/kimlab1/database_data/elaspic/webserver/jobs \
     /var/www/elaspic.kimlab.org/static/jobs
 
 sudo ln -snf \
@@ -39,4 +41,3 @@ sudo rsync -av ./conf/elaspic_webserver.conf /etc/apache2/sites-available/elaspi
 sudo ln -sf '../sites-available/elaspic_webserver.conf' '/etc/apache2/sites-enabled/elaspic_webserver.conf'
 
 sudo service apache2 restart
-

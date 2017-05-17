@@ -2,31 +2,31 @@
 -- === uniprot_kb ===
 
 -- ClinVar
-CREATE OR REPLACE VIEW clinvar_mutation AS 
+CREATE OR REPLACE VIEW clinvar_mutation AS
 SELECT * FROM elaspic_mutation.clinvar_mutation;
 
 -- Uniprot
-CREATE OR REPLACE VIEW uniprot_mutation AS 
+CREATE OR REPLACE VIEW uniprot_mutation AS
 SELECT * FROM elaspic_mutation.uniprot_mutation;
 
 -- COSMIC
-CREATE OR REPLACE VIEW cosmic_mutation AS 
+CREATE OR REPLACE VIEW cosmic_mutation AS
 SELECT * FROM elaspic_mutation.cosmic_mutation;
 
 
 -- === elaspic_mutation ===
 
 -- hgnc_identifiers
-CREATE OR REPLACE VIEW hgnc_identifiers AS 
+CREATE OR REPLACE VIEW hgnc_identifiers AS
 SELECT * FROM uniprot_kb.hgnc_identifiers;
 
 -- uniprot_identifier
-CREATE OR REPLACE VIEW uniprot_identifier AS 
+CREATE OR REPLACE VIEW uniprot_identifier AS
 SELECT * FROM uniprot_kb.uniprot_identifier;
 
 -- uniprot_sequence
-CREATE OR REPLACE VIEW elaspic_sequence AS 
-SELECT 
+CREATE OR REPLACE VIEW elaspic_sequence AS
+SELECT
 uniprot_id protein_id,
 uniprot_name protein_name,
 protein_name description,
@@ -45,7 +45,7 @@ LEFT JOIN elaspic.provean USING (uniprot_id);
 -- === elaspic_core_model ===
 
 CREATE OR REPLACE VIEW elaspic_core_model AS
-SELECT 
+SELECT
 -- domain
 ud.uniprot_id protein_id,
 ud.uniprot_domain_id domain_id,
@@ -79,7 +79,7 @@ LEFT JOIN elaspic.uniprot_domain_model udm USING (uniprot_domain_id);
 -- === elaspic_core_mutation ===
 
 CREATE OR REPLACE VIEW elaspic_core_mutation AS
-SELECT 
+SELECT
 ud.uniprot_domain_id domain_id,
 ud.uniprot_id protein_id,
 ud.pdbfam_idx domain_idx,
@@ -104,7 +104,8 @@ udmut.solvent_accessibility_wt,
 udmut.solvent_accessibility_mut,
 udmut.matrix_score,
 udmut.provean_score,
-udmut.ddG
+udmut.ddG,
+udmut.elaspic_version
 
 FROM elaspic.uniprot_domain ud
 JOIN elaspic.uniprot_domain_mutation udmut USING (uniprot_id, uniprot_domain_id);
@@ -112,7 +113,7 @@ JOIN elaspic.uniprot_domain_mutation udmut USING (uniprot_id, uniprot_domain_id)
 
 -- === elaspic_interface_model ===
 
-CREATE OR REPLACE VIEW elaspic_interface_model AS 
+CREATE OR REPLACE VIEW elaspic_interface_model AS
 SELECT
 -- interface
 udp.uniprot_domain_pair_id interface_id,
@@ -158,7 +159,7 @@ LEFT JOIN elaspic.uniprot_domain_pair_model udpm USING (uniprot_domain_pair_id);
 
 -- === elaspic_interface_mutation ===
 
-CREATE OR REPLACE VIEW elaspic_interface_mutation AS 
+CREATE OR REPLACE VIEW elaspic_interface_mutation AS
 SELECT
 udp.uniprot_domain_pair_id interface_id,
 # udp.uniprot_id_1 protein_id_1,
@@ -192,7 +193,8 @@ udpmut.contact_distance_wt,
 udpmut.contact_distance_mut,
 udpmut.matrix_score,
 udpmut.provean_score,
-udpmut.ddg
+udpmut.ddg,
+udpmut.elaspic_version
 
 FROM elaspic.uniprot_domain_pair udp
 JOIN elaspic.uniprot_domain_pair_mutation udpmut USING (uniprot_domain_pair_id);
@@ -204,7 +206,7 @@ DROP PROCEDURE IF EXISTS `update_muts`;
 
 DELIMITER $$
 CREATE DEFINER=`elaspic-web`@`192.168.%.%` PROCEDURE `update_muts`(
-  protein_id varchar(255), 
+  protein_id varchar(255),
   mutation varchar(255))
 begin
 

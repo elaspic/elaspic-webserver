@@ -3,14 +3,17 @@ node_modules
 npm-debug.log
 
 # Folders
+*.egg-info
 /.coverage
 /static
+htmlcov
 __pycache__
 jobsubmitter/tests/data/nm9omiv6
 
 # Prefixes
 .*
 !.gitignore
+!.gitlab-ci.yml
 celerybeat-schedule*
 
 # Extensions
