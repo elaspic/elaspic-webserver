@@ -1,16 +1,9 @@
 import io
-import os.path as op
-import tempfile
 
 import pandas as pd
 import pytest
-# from hypothesis import given
-# from hypothesis.strategies import text
-from faker import Faker
 
-import filemanager
-
-fake = Faker()
+from web_pipeline import filemanager
 
 
 @pytest.fixture(

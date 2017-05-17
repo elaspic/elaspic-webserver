@@ -1,0 +1,77 @@
+image: condaforge/linux-anvil:latest
+
+stages:
+  - test
+  - deploy
+
+# === Variables ===
+
+variables:
+  PACKAGE_VERSION: 0.0.7.dev0
+
+# === Configure SSH ===
+
+before_script:
+  # Install ssh-agent if not already installed, it is required by Docker.
+  # (change apt-get to yum if you use a CentOS-based image)
+
+  # Run ssh-agent (inside the build environment)
+
+  # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+
+  # In order to properly check the server's host key, assuming you created the
+  # SSH_SERVER_HOSTKEYS variable previously, uncomment the following two lines
+  # instead.
+
+# === Build ===
+
+test:
+  stage: test
+  tags:
+    - local
+  variables:
+    DJANGO_SETTINGS_MODULE: mum.settings.pytest
+  before_script:
+    # Configure ssh
+    - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
+    # Add conda channels
+    - conda config --add channels ostrokach-forge
+    - conda config --append channels kimlab
+    # Install the elaspic-webserver environment
+    - conda env create -f environment.yml -n elaspic-webserver -q --force
+    - source activate elaspic-webserver
+  script:
+    # Install packages required for testing
+    - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov codecov
+    # Test
+    - flake8
+    - ls -al /home/kimlab1/database_data
+    - python elaspic_rest_api/app.py &
+    - sleep 30  # give some time for the jobsubmitter to configure itself
+    - py.test
+    - kill %1  # stop jobsubmitter
+    - codecov -t $CODECOV_TOKEN
+  coverage: /^TOTAL.*(\d+\%)/
+
+# === Deploy ===
+
+deploy-prod:
+  stage: deploy
+  tags:
+    - local
+  environment:
+    name: production
+    url: http://elaspic.kimlab.org
+  only:
+    - master
+  script:
+    - ./devtools/gitlab-ci/sentry_release.sh
+    - STAGING_URL="kimadmin@192.168.6.53"
+    - STAGING_DIR="/home/kimadmin/mum_test"
+    - rsync -av ./ ${STAGING_URL}:${STAGING_DIR}/
+    - ssh ${STAGING_URL}
+      "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic_webserver_test -q --force"

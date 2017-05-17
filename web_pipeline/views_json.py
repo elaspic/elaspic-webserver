@@ -1,32 +1,27 @@
-import os.path as op
-from re import sub
-from subprocess import Popen, PIPE
 import json
-import requests
-from collections import defaultdict, Counter
-import pickle
 import logging
+import os.path as op
+import pickle
+from collections import Counter, defaultdict
+from re import sub
+from subprocess import PIPE, Popen
 
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.utils import html
+import requests
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.http import Http404, HttpResponse
+from django.utils import html
 
-from web_pipeline.models import (
-    Job, JobToMut, findInDatabase,
-    # Protein, # ProteinLocal,
-    CoreModel,  # CoreModelLocal,
-    CoreMutation, CoreMutationLocal,
-    InterfaceModel,  # InterfaceModelLocal,
-    InterfaceMutation, InterfaceMutationLocal
-)
-from web_pipeline.functions import isInvalidMut, getPnM, fetchProtein
-import web_pipeline.functions as fn
-from web_pipeline.filemanager import FileManager
-from web_pipeline.cleanupmanager import CleanupManager
+from kmtools import structure_tools
 
-from elaspic import structure_tools
-
+from . import functions as fn
+from . import conf
+from .filemanager import FileManager
+from .functions import fetchProtein, getPnM, isInvalidMut
+from .models import InterfaceModel  # InterfaceModelLocal,
+from .models import (CoreModel, CoreMutation, CoreMutationLocal,
+                     InterfaceMutation, InterfaceMutationLocal, Job, JobToMut,
+                     findInDatabase)
 
 # Create logger to redirect output.
 logger = logging.getLogger(__name__)
@@ -63,7 +58,7 @@ def rerunMut(request):
                 'job_id': j.jobID,
                 'job_email': j.email,
                 'job_type': 'database',
-                'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+                'secret_key': conf.JOBSUBMITTER_SECRET_KEY,
                 'mutations': [{
                     'protein_id': mut.protein,
                     'mutations': mut.mut,
@@ -74,7 +69,7 @@ def rerunMut(request):
             n_tries = 0
             while (not status or status == 'error') and n_tries < 10:
                 n_tries += 1
-                r = requests.post('http://elaspic.kimlab.org:8000/elaspic/api/1.0/', json=data_in)
+                r = requests.post('http://localhost:8001/elaspic/api/1.0/', json=data_in)
                 status = r.json().get('status', None)
 
     return HttpResponse(json.dumps({'error': error}), content_type='application/json')
@@ -238,11 +233,11 @@ def uploadFile(request):
             with open(input_pdb, 'w') as ifh:
                 ifh.write(myfile.read().decode())
 
-            sp = structure_tools.StructureParser(input_pdb)
-            sp.extract()
+            structure = structure_tools.load_structure(input_pdb)
+            structure_tools.process_structure(structure)
             seq = [
-                (chain.id, sp.get_chain_sequence_and_numbering(chain.id)[0], )
-                for chain in sp.structure.child_list[0].child_list
+                (chain.id, structure_tools.get_chain_sequence(chain.id))
+                for chain in structure.get_chains()
             ]
             logger.debug("seq: '{}'".format(seq))
 
@@ -454,8 +449,8 @@ def _get_domain_info(d, pid_to_name, interactions):
 
 
 def _get_known_muts(p, ds, all_domain_range, all_interface_models):
+    logger.debug("_get_known_muts(%s, %s, %s, %s)", p, ds, all_domain_range, all_interface_models)
     mdict = {}
-    logger.debug('querying mutations...')
     muts = (
         [(mut, None, None)
          for model in ds
@@ -516,7 +511,8 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
                     'dm': m.dGmut(),
                     'si': m.model.getsequenceidentity(chain),
                     'sm': '%0.3f' % m.model.dope_score,
-                    'db': mut_dbs_html}
+                    'db': mut_dbs_html,
+                    'elaspic_version': m.elaspic_version}
         if m.mut in mdict and mdict[m.mut][0]['i']:
             mdict[m.mut].append(toAppend)
         else:
@@ -691,27 +687,3 @@ def contactmail(request):
         )
     return HttpResponse(
         json.dumps({'response': response, 'error': error}), content_type='application/json')
-
-
-def cleanupServer():
-
-    c = CleanupManager()
-
-    # Remove jobs last visited too long ago.
-    c.removeOldJobs()
-
-#    c.checkForStalledMuts()
-
-    # Restart stalled jobs, and delete orphan mutations still running/queued.
-#    m_runAgain = c.checkForStalledJobs()
-#    for m in m_runAgain:
-#        runPipelineWrapper.delay(m[0], m[1])
-
-    # Send crash logs to admins.
-    c.sendCrashLogs()
-
-
-def cleanup(request):
-    # TODO: Send this to a different thread
-    cleanupServer()
-    return HttpResponseRedirect('/')

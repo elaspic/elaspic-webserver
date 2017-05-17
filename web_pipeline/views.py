@@ -1,28 +1,21 @@
+import logging
 import os
-from tempfile import mkdtemp
-from shutil import copyfile
-import requests
 import pickle
+from shutil import copyfile
+from tempfile import mkdtemp
 
-from django.shortcuts import render
+import requests
 from django.http import Http404, HttpResponseRedirect
-from django.conf import settings
+from django.shortcuts import render
 from django.utils.timezone import now
 
-from web_pipeline.models import (
-    Job, JobToMut, Mut, findInDatabase,
-    Protein, ProteinLocal,
-    CoreModel,
-    _CoreMutation, CoreMutation,
-    _InterfaceMutation, InterfaceMutation
-)
-
-from web_pipeline.functions import (
-    getPnM, getResultData, isInvalidMut, fetchProtein, sendEmail
-)
-import web_pipeline.functions as fn
-
-import logging
+from . import functions as fn
+from . import conf
+from .functions import (fetchProtein, getPnM, getResultData, isInvalidMut,
+                        sendEmail)
+from .models import (CoreModel, CoreMutation, InterfaceMutation, Job, JobToMut,
+                     Mut, Protein, ProteinLocal, _CoreMutation,
+                     _InterfaceMutation, findInDatabase)
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +31,8 @@ def inp(request, p):
     context = {
         'current': p,
         'type': 'input',
-        'test': request.META.get('HTTP_HOST', '')
+        'test': request.META.get('HTTP_HOST', ''),
+        'conf': conf,
     }
     return render(request, p + '.html', context)
 
@@ -193,7 +187,7 @@ def runPipeline(request):
             'job_id': j.jobID,
             'job_email': j.email,
             'job_type': 'local',
-            'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+            'secret_key': conf.JOBSUBMITTER_SECRET_KEY,
             'mutations': [{
                 'protein_id': random_id,
                 'mutations': '{}_{}'.format(int(chain) + 1, mut),
@@ -207,7 +201,7 @@ def runPipeline(request):
             'job_id': j.jobID,
             'job_email': j.email,
             'job_type': 'database',
-            'secret_key': settings.JOBSUBMITTER_SECRET_KEY,
+            'secret_key': conf.JOBSUBMITTER_SECRET_KEY,
             'mutations': []
         }
         for m in newMuts:
@@ -226,7 +220,7 @@ def runPipeline(request):
         n_tries = 0
         while (not status or status == 'error') and n_tries < 10:
             n_tries += 1
-            r = requests.post('http://elaspic.kimlab.org:8000/elaspic/api/1.0/', json=data_in)
+            r = requests.post('http://localhost:8001/elaspic/api/1.0/', json=data_in)
             if not r.ok:
                 logger.error("Bad response from jobsubmitter server: {}".format(r))
                 continue
@@ -267,11 +261,6 @@ def displayResult(request):
     except Job.DoesNotExist:
         raise Http404
 
-#    # Check for crashed tasks.
-#    if not(job.isDone):
-#        c = CleanupManager(dosleep=False)
-#        c.checkForStalledMuts(requestID)
-    #
     # # Fetch data
     # local = True if job.localID else False
 
@@ -353,6 +342,7 @@ def displayResult(request):
         'isRunning': not(job.isDone),
         'job': job,  # {'jobID': 'asd'},
         'data': data,
+        'conf': conf,
     }
     logger.debug('job: {}'.format(job))
     logger.debug('context: {}'.format(context))
@@ -423,7 +413,7 @@ def displaySecondaryResult(request):
                                                     'dbError': True})
 
         # Create pdb folder if not accessed before.
-        pdbpath = os.path.join(settings.SAVE_PATH, job, currentIDs[3])
+        pdbpath = os.path.join(conf.SAVE_PATH, job, currentIDs[3])
         if not os.path.exists(pdbpath):
             original_umask = os.umask(0)
             try:
@@ -443,20 +433,20 @@ def displaySecondaryResult(request):
                     toRemove.append(i)
                     continue
                 # Transfer PDBs if not done before.
-                copyfrom = os.path.join(settings.DB_PATH, data.realMut[0].model.data_path)
+                copyfrom = os.path.join(conf.DB_PATH, data.realMut[0].model.data_path)
                 if not os.path.exists(os.path.join(pdbpath, 'wt.pdb')):
                     try:
                         copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_wt),
                                  os.path.join(pdbpath, 'wt.pdb'))
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
                 if not os.path.exists(os.path.join(pdbpath, 'mut.pdb')):
                     try:
                         copyfile(os.path.join(copyfrom, data.realMut[0].model_filename_mut),
                                  os.path.join(pdbpath, 'mut.pdb'))
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
 
             elif isinstance(mu, _InterfaceMutation):
@@ -481,21 +471,21 @@ def displaySecondaryResult(request):
                 intmuts.append({'mut': mu, 'domain': d})
 
                 # Transfer PDBs if not done before.
-                copyfrom = os.path.join(settings.DB_PATH, mu.model.data_path)
+                copyfrom = os.path.join(conf.DB_PATH, mu.model.data_path)
                 copyto = os.path.join(pdbpath, str(d.id))
                 if not os.path.exists(copyto + 'wt.pdb'):
                     try:
                         copyfile(os.path.join(copyfrom, mu.model_filename_wt),
                                  copyto + 'wt.pdb')
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
                 if not os.path.exists(copyto + 'mut.pdb'):
                     try:
                         copyfile(os.path.join(copyfrom, mu.model_filename_mut),
                                  copyto + 'mut.pdb')
                     except Exception as e:
-                        logger.erorr("Filerror: {}".format(e))
+                        logger.error("Filerror: {}".format(e))
                         fileError = e
 
         data.realMut = [data.realMut[i] for i in range(len(data.realMut)) if i not in toRemove]
@@ -761,7 +751,11 @@ def displaySecondaryResult(request):
         'job': j,
         'size': pSize,
         'domains': ds,
-        'curdomain': curdom,
+        'curdomain': (
+            [[xx if xx is not None else '' for xx in x] for x in curdom]
+            if curdom is not None
+            else [['']]),
+        'conf': conf,
         'curmut': curmut,
         # 'type': 'result',
         'barsize': barSize,

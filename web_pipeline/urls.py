@@ -1,8 +1,11 @@
+from django.conf import settings
 from django.conf.urls import url
-from . import views, views_json
-
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
+from . import views, views_json
+
 admin.autodiscover()
 
 urlpatterns = []
@@ -41,7 +44,7 @@ urlpatterns += [
 
     # Generic.
     url(r'^json/contactmail/$', views_json.contactmail),
-
-    # Cleanup.
-    url(r'^cleanup/$', views_json.cleanup),
 ]
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()

@@ -11,6 +11,21 @@ Install required libraries:
 sudo apt install apache2-dev postfix  # to send mail
 ```
 
+## Python requirements
+
+```bash
+conda create -n elaspic-webserver 'python>=3.6' django kmtools aiohttp requests mysqlclient redis redis-py sqlalchemy
+source activate elaspic-webserver
+pip install aiomysql aioredis raven
+```
+
+For testing:
+
+```bash
+pip install flake8 pytest pytest-logging pytest-cov pytest-asyncio
+```
+
+
 Create conda environment:
 
 ```
