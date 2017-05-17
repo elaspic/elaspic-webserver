@@ -9,6 +9,15 @@ stages:
 variables:
   PACKAGE_VERSION: 0.0.7
 
+.configure_ssh: &configure_ssh
+  before_script:
+    # Configure ssh
+    - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
+
 # === Build ===
 
 test:
@@ -17,20 +26,14 @@ test:
     - local
   variables:
     DJANGO_SETTINGS_MODULE: mum.settings.pytest
-  before_script:
-    # Configure ssh
-    - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
-    - eval $(ssh-agent -s)
-    - ssh-add <(echo "$SSH_PRIVATE_KEY")
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
+  <<: [*configure_ssh]
+  script:
     # Add conda channels
     - conda config --add channels ostrokach-forge
     - conda config --append channels kimlab
     # Install the elaspic-webserver environment
     - conda env create -f environment.yml -n elaspic-webserver -q --force
     - source activate elaspic-webserver
-  script:
     # Install packages required for testing
     - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov codecov
     # Test
@@ -41,6 +44,7 @@ test:
     - py.test
     - kill %1  # stop jobsubmitter
     - codecov -t $CODECOV_TOKEN
+    - if [[ $CI_COMMIT_REF_NAME == 'master' ]] ; then ./devtools/gitlab-ci/sentry_release.sh ; fi
   coverage: /^TOTAL.*(\d+\%)/
 
 # === Deploy ===
@@ -54,10 +58,11 @@ deploy-prod:
     url: http://elaspic.kimlab.org
   only:
     - master
+  <<: [*configure_ssh]
   script:
-    - ./devtools/gitlab-ci/sentry_release.sh
     - STAGING_URL="kimadmin@192.168.6.53"
     - STAGING_DIR="/home/kimadmin/elaspic-webserver"
     - rsync -av ./ ${STAGING_URL}:${STAGING_DIR}/
-    - ssh ${STAGING_URL}
-      "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic-webserver -q --force"
+    - ssh ${STAGING_URL} "conda config --add channels ostrokach-forge"
+    - ssh ${STAGING_URL} "conda config --append channels kimlab"
+    - ssh ${STAGING_URL} "conda env create -f ${STAGING_DIR}/environment.yml -n elaspic-webserver -q --force"
