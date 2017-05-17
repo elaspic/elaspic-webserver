@@ -28,6 +28,7 @@ test:
     - python elaspic_rest_api/app.py &
     - py.test
     - codecov -t $CODECOV_TOKEN
+  coverage: /^TOTAL.*(\d+\%)/
 
 # === Deploy ===
 
