@@ -30,9 +30,7 @@ setup(
     author='kimlab',
     author_email='alex.strokach@utoronto.ca',
     url="http://elaspic.kimlab.org",
-    description=(
-        "Ensemble Learning Approach for Stability Prediction of "
-        "Interface and Core mutations (ELASPIC)."),
+    description="Webserver for running ELASPIC",
     long_description=read_md("README.md"),
     classifiers=[
         "License :: OSI Approved :: MIT License",
@@ -40,10 +38,9 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
     license='MIT',
-    packages=['mum', 'elaspic_rest_api', 'web_pipeline'],
+    packages=['web_pipeline', 'elaspic_rest_api'],
     package_data={
-        'elaspic.database': ['sql/*.sql'],
-        'elaspic.predictor': ['data/*'],
-        'elaspic.tools': ['foldx/*'],
+        'web_pipeline': ['migrations', 'static', 'templates', 'tests'],
+        'elaspic_rest_api': ['tests'],
     },
 )
