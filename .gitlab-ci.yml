@@ -32,19 +32,12 @@ test:
   variables:
     DJANGO_SETTINGS_MODULE: mum.settings.pytest
   before_script:
-    # Install yum packages
-    - yum -y -q update
-    - yum -y -q install openssh-clients.x86_64
-    - yum -y -q install epel-release
-    - yum -y -q install sshfs
     # Configure ssh
+    - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
-    # Mount some folders
-    - mkdir -p /home/kimlab1/database_data
-    - sshfs -o uid=$(id -u),gid=$(id -g),idmap=user,allow_other kimadmin@192.168.6.201:/home/kimlab1/database_data /home/kimlab1/database_data
     # Add conda channels
     - conda config --add channels ostrokach-forge
     - conda config --append channels kimlab
@@ -56,6 +49,7 @@ test:
     - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov
     # Test
     - flake8
+    - ls -al /home/kimlab1/database_data
     - python elaspic_rest_api/app.py &
     - sleep 30  # give some time for the jobsubmitter to configure itself
     - py.test
