@@ -36,6 +36,7 @@ test:
     - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
     # Mount some folders
     - mkdir -p /home/kimlab1/database_data
