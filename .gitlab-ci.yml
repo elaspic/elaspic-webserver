@@ -46,7 +46,7 @@ test:
     - source activate elaspic-webserver
   script:
     # Install packages required for testing
-    - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov
+    - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov codecov
     # Test
     - flake8
     - ls -al /home/kimlab1/database_data
