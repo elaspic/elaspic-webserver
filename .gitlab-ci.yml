@@ -67,6 +67,6 @@ deploy-prod:
     - ssh ${STAGING_URL} "$STAGING_CONDA config --add channels ostrokach-forge"
     - ssh ${STAGING_URL} "$STAGING_CONDA config --append channels kimlab"
     - ssh ${STAGING_URL} "$STAGING_CONDA env create -f ${STAGING_DIR}/environment.yml -n elaspic-webserver -q --force"
-    - echo "You must run `./provision.sh' on the deployment server to finish installation"
+    - echo "You must run './provision.sh' on the deployment server to finish installation"
   only:
     - master
