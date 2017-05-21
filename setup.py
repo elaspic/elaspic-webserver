@@ -26,7 +26,7 @@ def read_md(file):
 
 setup(
     name='elaspic-webserver',
-    version='0.0.7',
+    version='0.0.8',
     author='kimlab',
     author_email='alex.strokach@utoronto.ca',
     url="http://elaspic.kimlab.org",
