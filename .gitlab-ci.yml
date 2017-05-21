@@ -7,7 +7,7 @@ stages:
 # === Variables ===
 
 variables:
-  PACKAGE_VERSION: 0.0.8.dev0
+  PACKAGE_VERSION: 0.0.8
 
 .configure_ssh: &configure_ssh
   before_script:
