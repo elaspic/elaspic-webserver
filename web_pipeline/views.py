@@ -264,14 +264,14 @@ def displayResult(request):
     # # Fetch data
     # local = True if job.localID else False
 
-#    if job.localID:
-#        m = getLocalData(job.jobtomut_set.first())
-#        if m.realMut:
-#            # Alignscore and seqid are already there.
-#            m.realMut[0].pdbtemp = m.inputIdentifier
-#            # Get interacting protein.
-#            # TODO: Add interactions if there.
-#        data = [m]
+    # if job.localID:
+    #    m = getLocalData(job.jobtomut_set.first())
+    #    if m.realMut:
+    #        # Alignscore and seqid are already there.
+    #        m.realMut[0].pdbtemp = m.inputIdentifier
+    #        # Get interacting protein.
+    #        # TODO: Add interactions if there.
+    #    data = [m]
 
     jtoms = job.jobtomut_set.all()
     j = jtoms[0].job
