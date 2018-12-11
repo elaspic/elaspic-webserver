@@ -72,7 +72,10 @@ def get_random_id():
 
 
 def get_user_path(random_id):
-    return op.join(conf.DB_PATH, 'user_input', random_id)
+    user_path = op.join(conf.DB_PATH, 'user_input', random_id)
+    os.makedirs(user_path, mode=0o777, exist_ok=True)
+    os.chmod(user_path, 0o777)
+    return user_path
 
 
 def checkForCompletion(jobs):
