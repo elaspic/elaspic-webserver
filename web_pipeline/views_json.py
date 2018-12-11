@@ -220,7 +220,8 @@ def uploadFile(request):
                     trimmedLines.append(newline)
             msg = "\n".join(trimmedLines)
 
-    except Exception:
+    except Exception as e:
+        logger.error("Caught exception '%s': %s", type(e), e)
         jsonDict = {'msg': "File could not be uploaded - try again", 'error': 1}
         return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
@@ -236,7 +237,7 @@ def uploadFile(request):
             structure = structure_tools.load_structure(input_pdb)
             structure_tools.process_structure(structure)
             seq = [
-                (chain.id, structure_tools.get_chain_sequence(chain.id))
+                (chain.id, structure_tools.get_chain_sequence(chain))
                 for chain in structure.get_chains()
             ]
             logger.debug("seq: '{}'".format(seq))
@@ -251,7 +252,7 @@ def uploadFile(request):
             msg = seq
 
         except Exception as e:
-            print(e)
+            logger.error("Caught exception '%s': %s", type(e), e)
             jsonDict = {'msg': "PDB could not be parsed. ", 'error': 1}
             return HttpResponse(json.dumps(jsonDict), content_type='application/json')
 
