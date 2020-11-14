@@ -25,7 +25,6 @@ For testing:
 pip install flake8 pytest pytest-logging pytest-cov pytest-asyncio
 ```
 
-
 Create conda environment:
 
 ```
