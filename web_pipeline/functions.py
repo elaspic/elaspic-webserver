@@ -14,9 +14,17 @@ from django.utils.html import strip_tags
 from django.utils.timezone import now
 
 from . import conf
-from .models import (CoreMutation, CoreMutationLocal, HGNCIdentifier,
-                     InterfaceMutation, InterfaceMutationLocal, Job, Protein,
-                     ProteinLocal, UniprotIdentifier)
+from .models import (
+    CoreMutation,
+    CoreMutationLocal,
+    HGNCIdentifier,
+    InterfaceMutation,
+    InterfaceMutationLocal,
+    Job,
+    Protein,
+    ProteinLocal,
+    UniprotIdentifier,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +65,10 @@ def get_random_id():
     """
     while True:
         random_id = "%06x" % random.randint(1, 16777215)
-        user_path = op.join(conf.DB_PATH, 'user_input', random_id)
-        is_valid = (
-            Job.objects.filter(Q(jobID=random_id) | Q(localID=random_id)).count() == 0 and
-            not op.exists(user_path)
-        )
+        user_path = op.join(conf.DB_PATH, "user_input", random_id)
+        is_valid = Job.objects.filter(
+            Q(jobID=random_id) | Q(localID=random_id)
+        ).count() == 0 and not op.exists(user_path)
         if is_valid:
             try:
                 os.makedirs(user_path)
@@ -72,7 +79,7 @@ def get_random_id():
 
 
 def get_user_path(random_id):
-    user_path = op.join(conf.DB_PATH, 'user_input', random_id)
+    user_path = op.join(conf.DB_PATH, "user_input", random_id)
     os.makedirs(user_path, mode=0o777, exist_ok=True)
     os.chmod(user_path, 0o777)
     return user_path
@@ -81,13 +88,15 @@ def get_user_path(random_id):
 def checkForCompletion(jobs):
     for j in jobs:
         jms = list(
-            j.muts.filter(Q(status='queued') | Q(status='running') | Q(rerun=1) | Q(rerun=2))
+            j.muts.filter(
+                Q(status="queued") | Q(status="running") | Q(rerun=1) | Q(rerun=2)
+            )
         )
-        if not(jms) and not(j.isDone):
+        if not (jms) and not (j.isDone):
             j.isDone = True
             j.dateFinished = now()
             j.save()
-            sendEmail(j, 'complete')
+            sendEmail(j, "complete")
 
 
 # def getLocalData(jtom):
@@ -111,8 +120,7 @@ def checkForCompletion(jobs):
 
 
 def getResultData(jtom):
-    """
-    """
+    """"""
     logger.debug("getResultData({})".format(jtom))
 
     # Update job last visited to now.
@@ -131,13 +139,13 @@ def getResultData(jtom):
     jtom.realMut = list(
         CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
     )
-    if aType == 'IN':
+    if aType == "IN":
         jtom.realMut += list(
             IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
         )
 
     # Return one by one
-    if aType == 'CO':
+    if aType == "CO":
         if len(jtom.realMut) > 1:
             # With overlapping domains, pick first highest sequence identity,
             # then lowest model score.
@@ -151,20 +159,20 @@ def getResultData(jtom):
             jtom.realMut = [min(highestSeqID, key=lambda m: m.model.dope_score)]
         return jtom
 
-    if aType == 'IN':
+    if aType == "IN":
         jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
         return jtom
 
     if jtom.realMut:
-        jtom.realMutErr = 'NOT'  # not in core or in interface.
+        jtom.realMutErr = "NOT"  # not in core or in interface.
         return jtom
 
     if not jtom.realMut:
-        jtom.realMutErr = 'DNE'  # does not exists.
+        jtom.realMutErr = "DNE"  # does not exists.
         jtom.realMut = [CM()]
         return jtom
 
-    jtom.realMutErr = 'OTH'  # other.
+    jtom.realMutErr = "OTH"  # other.
     return jtom
 
 
@@ -188,40 +196,51 @@ def sendEmail(j, sendType):
         job_id, job_email = j.jobID, j.email
 
     # Validate email address
-    if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$', job_email):
+    if not re.match(
+        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$", job_email
+    ):
         return 0
 
     # Set Subject and content.
-    if sendType == 'started':
-        subject, status = 'started', 'has been correctly STARTED'
-    elif sendType == 'complete':
-        subject, status = 'results', 'is COMPLETE'
+    if sendType == "started":
+        subject, status = "started", "has been correctly STARTED"
+    elif sendType == "complete":
+        subject, status = "results", "is COMPLETE"
 
     # Prepare template and email object.
-    sendSubject = '%s %s - Job ID: %s' % (settings.SITE_NAME, subject, job_id)
-    html_content = render_to_string('email.html', {'JID': job_id,
-                                                   'SITE_NAME': settings.SITE_NAME,
-                                                   'SITE_URL': settings.SITE_URL,
-                                                   'SUPPORT_EMAIL': settings.ADMINS[0][1],
-                                                   'status': status})
+    sendSubject = "%s %s - Job ID: %s" % (settings.SITE_NAME, subject, job_id)
+    html_content = render_to_string(
+        "email.html",
+        {
+            "JID": job_id,
+            "SITE_NAME": settings.SITE_NAME,
+            "SITE_URL": settings.SITE_URL,
+            "SUPPORT_EMAIL": settings.ADMINS[0][1],
+            "status": status,
+        },
+    )
     text_content = strip_tags(html_content)
-    msg = EmailMultiAlternatives(sendSubject, text_content, settings.EMAIL_HOST_USER, [job_email])
+    msg = EmailMultiAlternatives(
+        sendSubject, text_content, settings.EMAIL_HOST_USER, [job_email]
+    )
     msg.attach_alternative(html_content, "text/html")
 
     # Send email.
-    logger.debug('Sending email...')
+    logger.debug("Sending email...")
     try:
         msg.send()
-        logger.debug('Email sent successfully! :)')
+        logger.debug("Email sent successfully! :)")
         return 1
     except Exception as e:
-        logger.error('The following exception occured while trying to send mail: {}'.format(e))
+        logger.error(
+            "The following exception occured while trying to send mail: {}".format(e)
+        )
         return 0
 
 
 def getPnM(p):
     """Return protein and mutation from the format PROT.MUT."""
-    protnMut = re.match(r'(.+)\.([A-Za-z]{1}[0-9]+[A-Za-z]{1}_?[0-9]*)$', p)
+    protnMut = re.match(r"(.+)\.([A-Za-z]{1}[0-9]+[A-Za-z]{1}_?[0-9]*)$", p)
     if not protnMut:
         return None, None
     return protnMut.group(1).upper(), protnMut.group(2).upper()
@@ -241,12 +260,12 @@ def fetchProtein(pid, local=False):
     pid = pid.upper()
     try:
         # 1) Database protein
-        return Protein.objects.get(id=re.sub(r'[^\x00-\x7f]', r'_', pid))
+        return Protein.objects.get(id=re.sub(r"[^\x00-\x7f]", r"_", pid))
     except Protein.DoesNotExist as e:
         logger.debug(e)
         try:
             # Local protein
-            return ProteinLocal.objects.get(id=re.sub(r'[^\x00-\x7f]', r'_', pid))
+            return ProteinLocal.objects.get(id=re.sub(r"[^\x00-\x7f]", r"_", pid))
         except ProteinLocal.DoesNotExist as e:
             logger.debug(e)
             try:
@@ -261,23 +280,56 @@ def fetchProtein(pid, local=False):
                     if iden:
                         # If more than one identifier is found, return the most
                         # important one determined by the following dict:
-                        Ids = {'primaryIds': ['GeneWiki', 'UniProtKB-ID', 'EMBL',
-                                              'Ensembl_PRO', 'EMBL-CDS', 'Ensembl',
-                                              'GeneCards', 'GI'],
-                               'modelIds': ['WormBase_PRO', 'WormBase', 'WormBase_TRS',
-                                            'CYGD', 'SGD', 'PomBase', 'FlyBase', 'Xenbase',
-                                            'MGI', 'TAIR', 'PATRIC', 'dictyBase',
-                                            'EchoBASE', 'EcoGene', 'euHCVdb', 'GeneFarm',
-                                            'H-InvDB', 'VectorBase', 'TubercuList',
-                                            'LegioList', 'Leproma', 'mycoCLAP', 'PseudoCAP'],
-                               'secondaryIds': ['GeneID', 'EnsemblGenome']}
+                        Ids = {
+                            "primaryIds": [
+                                "GeneWiki",
+                                "UniProtKB-ID",
+                                "EMBL",
+                                "Ensembl_PRO",
+                                "EMBL-CDS",
+                                "Ensembl",
+                                "GeneCards",
+                                "GI",
+                            ],
+                            "modelIds": [
+                                "WormBase_PRO",
+                                "WormBase",
+                                "WormBase_TRS",
+                                "CYGD",
+                                "SGD",
+                                "PomBase",
+                                "FlyBase",
+                                "Xenbase",
+                                "MGI",
+                                "TAIR",
+                                "PATRIC",
+                                "dictyBase",
+                                "EchoBASE",
+                                "EcoGene",
+                                "euHCVdb",
+                                "GeneFarm",
+                                "H-InvDB",
+                                "VectorBase",
+                                "TubercuList",
+                                "LegioList",
+                                "Leproma",
+                                "mycoCLAP",
+                                "PseudoCAP",
+                            ],
+                            "secondaryIds": ["GeneID", "EnsemblGenome"],
+                        }
 
                         iden = sorted(
-                            iden, key=lambda i: ([i.identifierType not in Ids[key] for key in Ids])
+                            iden,
+                            key=lambda i: (
+                                [i.identifierType not in Ids[key] for key in Ids]
+                            ),
                         )
                         return Protein.objects.get(id=iden[0].uniprotID)
                     else:
-                        logger.debug("Error: '{}'".format(UniprotIdentifier.DoesNotExist))
+                        logger.debug(
+                            "Error: '{}'".format(UniprotIdentifier.DoesNotExist)
+                        )
                         raise UniprotIdentifier.DoesNotExist
 
                 except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist) as e:
@@ -285,6 +337,8 @@ def fetchProtein(pid, local=False):
                     return None
 
     return None
+
+
 # The entire uniprot ID list would be:
 # ['Allergome', 'ArachnoServer', 'BioCyc', 'BioGrid', 'CGD', 'ChEMBL', 'CleanEx',
 # 'ConoServer', 'CYGD', 'dictyBase', 'DIP', 'DisProt', 'DMDM', 'DNASU',
@@ -309,21 +363,24 @@ def isInvalidMut(mut, seq):
     Return <errorMessage> if invalid or None if valid.
     """
     # Test if input is valid syntax.
-    goodSyntax = re.match(r'[A-Z]{1}[1-9]{1}[0-9]*[A-Z]{1}$', mut)
+    goodSyntax = re.match(r"[A-Z]{1}[1-9]{1}[0-9]*[A-Z]{1}$", mut)
     if not goodSyntax:
-        return 'SNX'
+        return "SNX"
 
     # Test if mutation replaces with itself.
     if mut[0:1] == mut[-1:]:
-        return 'SLF'
+        return "SLF"
 
     # Test if mutation falls into the protein sequence.
     if int(mut[1:-1]) > len(seq):
-        return 'OOB'
+        return "OOB"
 
     # Test if mutation is the right amino acid.
-    if mut[0] != seq[int(mut[1:-1]) - 1] or mut[-1].upper() not in 'GASTCVLIMPFYWDENQHKR':
-        return 'OOB'
+    if (
+        mut[0] != seq[int(mut[1:-1]) - 1]
+        or mut[-1].upper() not in "GASTCVLIMPFYWDENQHKR"
+    ):
+        return "OOB"
 
     # Return None if mutation is valid.
     return None
