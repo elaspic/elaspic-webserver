@@ -282,7 +282,7 @@ class Migration(migrations.Migration):
                 ('matrix_score', models.FloatField(blank=True, null=True)),
                 ('provean_score', models.FloatField(blank=True, null=True)),
                 ('ddG', models.FloatField(blank=True, null=True, db_column='ddg')),
-                ('model', models.ForeignKey(related_name='muts', db_column='domain_id', to='web_pipeline.CoreModelLocal')),
+                ('model', models.ForeignKey(related_name='muts', db_column='domain_id', to='web_pipeline.CoreModelLocal', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -319,8 +319,8 @@ class Migration(migrations.Migration):
                 ('interface_area_hydrophobic', models.FloatField(blank=True, null=True)),
                 ('interface_area_hydrophilic', models.FloatField(blank=True, null=True)),
                 ('interface_area_total', models.FloatField(blank=True, null=True)),
-                ('domain1', models.ForeignKey(related_name='p1', db_column='domain_id_1', to='web_pipeline.CoreModelLocal')),
-                ('domain2', models.ForeignKey(related_name='p2', db_column='domain_id_2', to='web_pipeline.CoreModelLocal')),
+                ('domain1', models.ForeignKey(related_name='p1', db_column='domain_id_1', to='web_pipeline.CoreModelLocal', on_delete=models.CASCADE)),
+                ('domain2', models.ForeignKey(related_name='p2', db_column='domain_id_2', to='web_pipeline.CoreModelLocal', on_delete=models.CASCADE)),
             ],
             options={
                 'ordering': ['id'],
@@ -357,7 +357,7 @@ class Migration(migrations.Migration):
                 ('matrix_score', models.FloatField(blank=True, null=True)),
                 ('provean_score', models.FloatField(blank=True, null=True)),
                 ('ddG', models.FloatField(blank=True, null=True, db_column='ddg')),
-                ('model', models.ForeignKey(related_name='muts', db_column='interface_id', to='web_pipeline.InterfaceModelLocal')),
+                ('model', models.ForeignKey(related_name='muts', db_column='interface_id', to='web_pipeline.InterfaceModelLocal', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -387,7 +387,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
                 ('inputIdentifier', models.CharField(max_length=70)),
-                ('job', models.ForeignKey(to='web_pipeline.Job')),
+                ('job', models.ForeignKey(to='web_pipeline.Job', on_delete=models.CASCADE)),
             ],
             options={
                 'db_table': 'job_to_mut',
@@ -432,7 +432,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='jobtomut',
             name='mut',
-            field=models.ForeignKey(to='web_pipeline.Mut'),
+            field=models.ForeignKey(to='web_pipeline.Mut', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='job',
