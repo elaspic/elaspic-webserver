@@ -6,7 +6,6 @@ import tempfile
 from zipfile import ZipFile
 
 from Bio import SeqIO
-from Bio.Alphabet import generic_protein
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
@@ -334,7 +333,7 @@ class FileManager:
                 continue
             fname = m.inputIdentifier + '.fasta'
             if not (fname in self.files['sequences']):
-                seq = SeqRecord(Seq(p.seq, generic_protein),
+                seq = SeqRecord(Seq(p.seq),
                                 id="%s|%s|%s" % (m.inputIdentifier, p.id, p.name),
                                 description=p.description)
                 seqfile = tempfile.NamedTemporaryFile(dir=self.tempdir, delete=False)
