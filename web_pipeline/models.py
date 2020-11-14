@@ -71,8 +71,8 @@ class Job(models.Model):
 
 
 class JobToMut(models.Model):
-    mut = models.ForeignKey(Mut)  # intermediary model
-    job = models.ForeignKey(Job)  # intermediary model
+    mut = models.ForeignKey(Mut, on_delete=models.CASCADE)  # intermediary model
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)  # intermediary model
     inputIdentifier = models.CharField(max_length=70)
 
     realMut = None
@@ -473,7 +473,7 @@ class _CoreMutation(models.Model):
 
 class CoreMutation(_CoreMutation):
 
-    model = models.ForeignKey(CoreModel, db_column='domain_id', related_name='muts')
+    model = models.ForeignKey(CoreModel, db_column='domain_id', related_name='muts', on_delete=models.CASCADE)
 
     @property
     def protein(self):
@@ -492,7 +492,7 @@ class CoreMutation(_CoreMutation):
 
 class CoreMutationLocal(_CoreMutation):
 
-    model = models.ForeignKey(CoreModelLocal, db_column='domain_id', related_name='muts')
+    model = models.ForeignKey(CoreModelLocal, db_column='domain_id', related_name='muts', on_delete=models.CASCADE)
 
     @property
     def protein(self):
@@ -657,9 +657,9 @@ class InterfaceModel(_InterfaceModel):
 
     local = False
     domain1 = models.ForeignKey(
-        CoreModel, db_index=True, related_name='p1', db_column='domain_id_1')
+        CoreModel, db_index=True, related_name='p1', db_column='domain_id_1', on_delete=models.CASCADE)
     domain2 = models.ForeignKey(
-        CoreModel, db_index=True, related_name='p2', db_column='domain_id_2')
+        CoreModel, db_index=True, related_name='p2', db_column='domain_id_2', on_delete=models.CASCADE)
 
     def getprot(self, chain):
         if chain == 1:
@@ -694,9 +694,9 @@ class InterfaceModelLocal(_InterfaceModel):
 
     local = True
     domain1 = models.ForeignKey(
-        CoreModelLocal, db_index=True, related_name='p1', db_column='domain_id_1')
+        CoreModelLocal, db_index=True, related_name='p1', db_column='domain_id_1', on_delete=models.CASCADE)
     domain2 = models.ForeignKey(
-        CoreModelLocal, db_index=True, related_name='p2', db_column='domain_id_2')
+        CoreModelLocal, db_index=True, related_name='p2', db_column='domain_id_2', on_delete=models.CASCADE)
 
     def getprot(self, chain):
         if chain == 1:
@@ -819,7 +819,7 @@ class _InterfaceMutation(models.Model):
 
 class InterfaceMutation(_InterfaceMutation):
 
-    model = models.ForeignKey(InterfaceModel, db_column='interface_id', related_name='muts')
+    model = models.ForeignKey(InterfaceModel, db_column='interface_id', related_name='muts', on_delete=models.CASCADE)
 
     @property
     def protein(self):
@@ -838,7 +838,7 @@ class InterfaceMutation(_InterfaceMutation):
 
 class InterfaceMutationLocal(_InterfaceMutation):
 
-    model = models.ForeignKey(InterfaceModelLocal, db_column='interface_id', related_name='muts')
+    model = models.ForeignKey(InterfaceModelLocal, db_column='interface_id', related_name='muts', on_delete=models.CASCADE)
 
     @property
     def protein(self):
