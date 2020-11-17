@@ -442,6 +442,11 @@ class _CoreMutation(models.Model):
 
     elaspic_version = models.CharField(max_length=255)
 
+    protbert_score = models.FloatField(null=True, blank=True)
+    proteinsolver_score = models.FloatField(null=True, blank=True)
+    el2_score = models.FloatField(null=True, blank=True)
+    el2_version = models.CharField(max_length=255, null=True, blank=True)
+
     def getdomain(self, chain=1):
         return self.model
 
@@ -765,7 +770,11 @@ class _InterfaceMutation(models.Model):
     matrix_score = models.FloatField(null=True, blank=True)
     provean_score = models.FloatField(null=True, blank=True)
 
-    ddG = models.FloatField(null=True, blank=True, db_column='ddg')
+
+    protbert_score = models.FloatField(null=True, blank=True)
+    proteinsolver_score = models.FloatField(null=True, blank=True)
+    el2_score = models.FloatField(null=True, blank=True)
+    el2_version = models.CharField(max_length=255, null=True, blank=True)
 
     elaspic_version = models.CharField(max_length=255)
 
