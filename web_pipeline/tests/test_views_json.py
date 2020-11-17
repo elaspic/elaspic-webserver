@@ -11,4 +11,4 @@ from web_pipeline import functions
 
 logger = logging.getLogger()
 
-logger.debug('xx')
+logger.debug("xx")

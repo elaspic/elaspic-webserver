@@ -10,19 +10,21 @@ logger = logging.getLogger(__name__)
 
 class Mut(models.Model):
     TYPE_CHOICES = (
-        ('NO', 'None'),
-        ('CO', 'Core'),
-        ('IN', 'Interaction'),
+        ("NO", "None"),
+        ("CO", "Core"),
+        ("IN", "Interaction"),
     )
 
     protein = models.CharField(max_length=50, db_index=True)
     mut = models.CharField(max_length=8)
-    chain = models.SmallIntegerField(null=True, blank=True)  # chain_idx; 0 -> first chain in PDB
+    chain = models.SmallIntegerField(
+        null=True, blank=True
+    )  # chain_idx; 0 -> first chain in PDB
 
     affectedType = models.CharField(max_length=2, choices=TYPE_CHOICES, blank=True)
     dateAdded = models.DateTimeField(auto_now_add=True)
     dateFinished = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=12, default='queued')
+    status = models.CharField(max_length=12, default="queued")
 
     rerun = models.SmallIntegerField(default=0)
     taskId = models.CharField(max_length=50, blank=True)
@@ -30,11 +32,11 @@ class Mut(models.Model):
     error = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return '%s.%s' % (self.protein, self.mut)
+        return "%s.%s" % (self.protein, self.mut)
 
     class Meta:
         # app_label = 'Mut'
-        db_table = 'muts'
+        db_table = "muts"
         index_together = [
             ("protein", "mut"),
         ]
@@ -51,7 +53,7 @@ class Job(models.Model):
 
     localID = models.CharField(max_length=50, null=True, blank=True)
 
-    muts = models.ManyToManyField(Mut, through='JobToMut', related_name="jobs")
+    muts = models.ManyToManyField(Mut, through="JobToMut", related_name="jobs")
 
     browser = models.TextField(blank=True)
 
@@ -59,15 +61,15 @@ class Job(models.Model):
         return localtime(self.dateRun)
 
     def getDateFinished(self):
-        return localtime(self.dateFinished) if self.dateFinished else '-'
+        return localtime(self.dateFinished) if self.dateFinished else "-"
 
     def __str__(self):
         return self.jobID
 
     class Meta:
-        db_table = 'jobs'
-        get_latest_by = 'dateRun'
-        ordering = ['jobID']
+        db_table = "jobs"
+        get_latest_by = "dateRun"
+        ordering = ["jobID"]
 
 
 class JobToMut(models.Model):
@@ -79,10 +81,10 @@ class JobToMut(models.Model):
     realMutErr = None
 
     def __str__(self):
-        return '#%s to mut%d' % (self.job_id, self.mut_id)
+        return "#%s to mut%d" % (self.job_id, self.mut_id)
 
     class Meta:
-        db_table = 'job_to_mut'
+        db_table = "job_to_mut"
 
 
 # %% Database: 'uniprot_kb'
@@ -98,40 +100,48 @@ class JobToMut(models.Model):
 #
 # add_introspection_rules([], ["^MYAPP\.fields\.BigAutoField"])
 
+
 class UniprotIdentifier(models.Model):
     id = models.AutoField(primary_key=True, db_index=True)
 
-    identifierID = models.CharField(max_length=255, db_index=True, db_column='identifier_id')
-    identifierType = models.CharField(max_length=20, db_index=True, db_column='identifier_type')
-    uniprotID = models.CharField(max_length=10, db_index=True, db_column='uniprot_id')
+    identifierID = models.CharField(
+        max_length=255, db_index=True, db_column="identifier_id"
+    )
+    identifierType = models.CharField(
+        max_length=20, db_index=True, db_column="identifier_type"
+    )
+    uniprotID = models.CharField(max_length=10, db_index=True, db_column="uniprot_id")
 
     def __str__(self):
         return "%s: %s (%s)" % (self.identifierType, self.identifierID, self.uniprotID)
 
     class Meta:
-        db_table = 'uniprot_identifier'
+        db_table = "uniprot_identifier"
         managed = False
 
 
 class HGNCIdentifier(models.Model):
 
     identifierID = models.CharField(
-        max_length=255, primary_key=True, db_index=True, db_column='identifier_id')
-    identifierType = models.CharField(max_length=20, db_index=True, db_column='identifier_type')
-    uniprotID = models.CharField(max_length=10, db_index=True, db_column='uniprot_id')
+        max_length=255, primary_key=True, db_index=True, db_column="identifier_id"
+    )
+    identifierType = models.CharField(
+        max_length=20, db_index=True, db_column="identifier_type"
+    )
+    uniprotID = models.CharField(max_length=10, db_index=True, db_column="uniprot_id")
 
     def __str__(self):
         return self.identifierID
 
     class Meta:
-        db_table = 'hgnc_identifiers'
+        db_table = "hgnc_identifiers"
         managed = False
 
 
 # %% Sequences
 class _Protein(models.Model):
-    id = models.CharField(max_length=50, primary_key=True, db_column='protein_id')
-    name = models.CharField(max_length=50, db_column='protein_name')
+    id = models.CharField(max_length=50, primary_key=True, db_column="protein_id")
+    name = models.CharField(max_length=50, db_column="protein_name")
 
     description = models.CharField(max_length=255, blank=True)
     organism_name = models.CharField(max_length=255, blank=True)
@@ -141,34 +151,33 @@ class _Protein(models.Model):
     # sequence_version = models.IntegerField(null=True, blank=True)
     # db = models.CharField(max_length=12)
 
-    seq = models.TextField(db_column='sequence')
+    seq = models.TextField(db_column="sequence")
     provean_supset_file = models.TextField()
     provean_supset_length = models.IntegerField()
 
     def __str__(self):
-        return '%s (%s)' % (self.id, self.name)
+        return "%s (%s)" % (self.id, self.name)
 
     def desc(self):
         return self.description
 
     class Meta:
         abstract = True
-        ordering = ['id']
+        ordering = ["id"]
 
 
 class Protein(_Protein):
-
     def getname(self):
         return get_protein_name(self.id, local=False)
 
     class Meta(_Protein.Meta):
-        db_table = 'elaspic_sequence'
+        db_table = "elaspic_sequence"
         managed = False
 
 
 class ProteinLocal(_Protein):
-    """
-    """
+    """"""
+
     # id = models.IntegerField(primary_key=True, db_column='s_id')
     #
     # unique_id = models.CharField(max_length=255)
@@ -180,7 +189,7 @@ class ProteinLocal(_Protein):
         return get_protein_name(self.id, local=True)
 
     class Meta(_Protein.Meta):
-        db_table = 'elaspic_sequence_local'
+        db_table = "elaspic_sequence_local"
 
 
 @functools.lru_cache(maxsize=256, typed=False)
@@ -212,40 +221,39 @@ def _get_protein_name_local(protein_id):
 
 def _get_protein_name(protein_id):
     try:
-        name = (
-            HGNCIdentifier.objects
-            .get(identifierType='HGNC_genename', uniprotID=protein_id)
-            .identifierID
-        )
+        name = HGNCIdentifier.objects.get(
+            identifierType="HGNC_genename", uniprotID=protein_id
+        ).identifierID
     except HGNCIdentifier.DoesNotExist:
         try:
-            name = (
-                UniprotIdentifier.objects
-                .get(identifierType='GeneWiki', uniprotID=protein_id)
-                .identifierID
-            )
-        except (UniprotIdentifier.DoesNotExist, UniprotIdentifier.MultipleObjectsReturned):
+            name = UniprotIdentifier.objects.get(
+                identifierType="GeneWiki", uniprotID=protein_id
+            ).identifierID
+        except (
+            UniprotIdentifier.DoesNotExist,
+            UniprotIdentifier.MultipleObjectsReturned,
+        ):
             try:
                 protein_name = Protein.objects.get(id=protein_id).name
             except Protein.DoesNotExist:
                 logger.error("Could not find protein: '{}'".format(protein_id))
                 name = None
             else:
-                name = protein_name.split('_')[0]
+                name = protein_name.split("_")[0]
     except HGNCIdentifier.MultipleObjectsReturned:
         name = list(
-            HGNCIdentifier.objects
-            .filter(identifierType='HGNC_genename', uniprotID=protein_id)
+            HGNCIdentifier.objects.filter(
+                identifierType="HGNC_genename", uniprotID=protein_id
+            )
         )[0].identifierID
-    if '-' not in protein_id:
+    if "-" not in protein_id:
         return name
     else:
-        return name + ' isoform ' + protein_id.split('-')[-1]
+        return name + " isoform " + protein_id.split("-")[-1]
 
 
 # %% Core
 class _CoreModel(models.Model):
-
     @property
     def local(self):
         raise NotImplementedError
@@ -255,22 +263,22 @@ class _CoreModel(models.Model):
         return self.getprot()
 
     # Key
-    id = models.AutoField(primary_key=True, db_index=True, db_column='domain_id')
+    id = models.AutoField(primary_key=True, db_index=True, db_column="domain_id")
     protein_id = models.CharField(max_length=15)
     domain_idx = models.IntegerField(db_index=True)
 
     # Domain
-    clan = models.CharField(max_length=255, db_column='pfam_clan')
-    name = models.CharField(max_length=255, db_index=True, db_column='pdbfam_name')
-    alignment_def = models.CharField(max_length=255, db_column='alignment_def')
+    clan = models.CharField(max_length=255, db_column="pfam_clan")
+    name = models.CharField(max_length=255, db_index=True, db_column="pdbfam_name")
+    alignment_def = models.CharField(max_length=255, db_column="alignment_def")
 
-    data_path = models.TextField(blank=True, db_column='path_to_data')
+    data_path = models.TextField(blank=True, db_column="path_to_data")
 
     def get_protein_name(self, chain=1):
         return get_protein_name(self.protein_id, local=self.local)
 
     def getclan(self, chain=1):
-        return self.clan if self.clan else '-'
+        return self.clan if self.clan else "-"
 
     def getname(self, chain=1):
         return self.name
@@ -287,12 +295,18 @@ class _CoreModel(models.Model):
 
     # Template
     # align_file = models.CharField(max_length=255, blank=True, db_column='alignment_filename')
-    align_score = models.IntegerField(null=True, blank=True, db_column='alignment_score')
-    align_coverage = models.FloatField(null=True, blank=True, db_column='alignment_coverage')
-    template_errors = models.TextField(blank=True, null=True, db_column='template_errors')
+    align_score = models.IntegerField(
+        null=True, blank=True, db_column="alignment_score"
+    )
+    align_coverage = models.FloatField(
+        null=True, blank=True, db_column="alignment_coverage"
+    )
+    template_errors = models.TextField(
+        blank=True, null=True, db_column="template_errors"
+    )
     domain_def = models.CharField(max_length=255, blank=True)
-    cath = models.CharField(max_length=255, blank=True, db_column='cath_id')
-    seq_id = models.FloatField(null=True, blank=True, db_column='alignment_identity')
+    cath = models.CharField(max_length=255, blank=True, db_column="cath_id")
+    seq_id = models.FloatField(null=True, blank=True, db_column="alignment_identity")
 
     def getcath(self, chain=1):
         return self.cath[:-2]
@@ -304,13 +318,13 @@ class _CoreModel(models.Model):
         if chain == 1:
             return self.align_score
         elif chain == 2:
-            return '-'
+            return "-"
 
     def getsequenceidentity(self, chain=1):
-        return '%0.3f' % self.seq_id
+        return "%0.3f" % self.seq_id
 
     def getalignscore(self, chain=1):
-        return '%0.3f' % self.align_score
+        return "%0.3f" % self.align_score
 
     @property
     def error(self):
@@ -324,8 +338,8 @@ class _CoreModel(models.Model):
     #     return '%d' % self.domain_id
 
     # Model
-    model_errors = models.TextField(blank=True, null=True, db_column='model_errors')
-    dope_score = models.FloatField(null=True, blank=True, db_column='norm_dope')
+    model_errors = models.TextField(blank=True, null=True, db_column="model_errors")
+    dope_score = models.FloatField(null=True, blank=True, db_column="norm_dope")
     model_filename = models.CharField(max_length=255, blank=True)
     alignment_filename = models.CharField(max_length=255, blank=True)
     chain = models.CharField(max_length=1, null=True)
@@ -335,21 +349,22 @@ class _CoreModel(models.Model):
         return self.chain
 
     def __str__(self):
-        return '{}.{}.{}'.format(self.id, self.protein_id, self.domain_idx)
+        return "{}.{}.{}".format(self.id, self.protein_id, self.domain_idx)
 
     class Meta:
         abstract = True
         unique_together = [
             ("protein_id", "domain_idx"),
         ]
-        ordering = ['id']
+        ordering = ["id"]
 
 
 class CoreModel(_CoreModel):
 
     local = False
     interactions = models.ManyToManyField(
-        'self', symmetrical=False, through='InterfaceModel', blank=True)
+        "self", symmetrical=False, through="InterfaceModel", blank=True
+    )
 
     # protein = models.ForeignKey(Protein, db_index=True, db_column='protein_id')
 
@@ -357,7 +372,7 @@ class CoreModel(_CoreModel):
         return Protein.objects.get(id=self.protein_id)
 
     def getpdbtemplate(self, chain=1, link=True):
-        pdb = self.cath[:-3] + '_' + self.cath[-3]
+        pdb = self.cath[:-3] + "_" + self.cath[-3]
         if link:
             return (
                 '<a class="click2" target="_blank" href="http://www.cathdb.info/pdb/%s">%s</a>'
@@ -370,7 +385,7 @@ class CoreModel(_CoreModel):
         # self.protein = Protein.objects.get(id=self.protein_id)
 
     class Meta(_CoreModel.Meta):
-        db_table = 'elaspic_core_model'
+        db_table = "elaspic_core_model"
         managed = False
 
 
@@ -378,7 +393,8 @@ class CoreModelLocal(_CoreModel):
 
     local = True
     interactions = models.ManyToManyField(
-        'self', symmetrical=False, through='InterfaceModelLocal', blank=True)
+        "self", symmetrical=False, through="InterfaceModelLocal", blank=True
+    )
 
     # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
@@ -393,13 +409,13 @@ class CoreModelLocal(_CoreModel):
         # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_CoreModel.Meta):
-        db_table = 'elaspic_core_model_local'
+        db_table = "elaspic_core_model_local"
 
 
 # %% Core Mutation
 class _CoreMutation(models.Model):
 
-    mutation_type = 'core'
+    mutation_type = "core"
 
     @property
     def protein(self):
@@ -409,7 +425,7 @@ class _CoreMutation(models.Model):
     protein_id = models.CharField(max_length=15, primary_key=True)
     # domain_id = models.AutoField(primary_key=True, db_column='domain_id', db_index=True)
     domain_idx = models.IntegerField(db_index=True)
-    mut = models.CharField(max_length=8, db_column='mutation')
+    mut = models.CharField(max_length=8, db_column="mutation")
 
     # Data
     mut_date_modified = models.DateField()
@@ -417,10 +433,10 @@ class _CoreMutation(models.Model):
     model_filename_wt = models.CharField(max_length=255)
     model_filename_mut = models.CharField(max_length=255)
 
-    mut_errors = models.TextField(null=True, blank=True, db_column='mutation_errors')
+    mut_errors = models.TextField(null=True, blank=True, db_column="mutation_errors")
 
-    pdb_chain = models.CharField(max_length=1, null=True, db_column='chain_modeller')
-    pdb_mut = models.CharField(max_length=8, null=True, db_column='mutation_modeller')
+    pdb_chain = models.CharField(max_length=1, null=True, db_column="chain_modeller")
+    pdb_mut = models.CharField(max_length=8, null=True, db_column="mutation_modeller")
 
     stability_energy_wt = models.TextField(null=True)
     stability_energy_mut = models.TextField(null=True)
@@ -438,7 +454,7 @@ class _CoreMutation(models.Model):
     matrix_score = models.FloatField(null=True, blank=True)
     provean_score = models.FloatField(null=True, blank=True)
 
-    ddG = models.FloatField(null=True, blank=True, db_column='ddg')
+    ddG = models.FloatField(null=True, blank=True, db_column="ddg")
 
     elaspic_version = models.CharField(max_length=255)
 
@@ -451,19 +467,25 @@ class _CoreMutation(models.Model):
         return self.model
 
     def dGwt(self):
-        return self.stability_energy_wt.split(',')[0] if self.stability_energy_wt else None
+        return (
+            self.stability_energy_wt.split(",")[0] if self.stability_energy_wt else None
+        )
 
     def dGmut(self):
-        return self.stability_energy_mut.split(',')[0] if self.stability_energy_mut else None
+        return (
+            self.stability_energy_mut.split(",")[0]
+            if self.stability_energy_mut
+            else None
+        )
 
     def getddG(self):
-        return self.ddG if self.ddG else '-'
+        return self.ddG if self.ddG else "-"
 
     def findChain(self):
         return 1
 
     def __str__(self):
-        return '{}.{}'.format(self.protein_id, self.mut)
+        return "{}.{}".format(self.protein_id, self.mut)
 
     class Meta:
         abstract = True
@@ -478,7 +500,9 @@ class _CoreMutation(models.Model):
 
 class CoreMutation(_CoreMutation):
 
-    model = models.ForeignKey(CoreModel, db_column='domain_id', related_name='muts', on_delete=models.CASCADE)
+    model = models.ForeignKey(
+        CoreModel, db_column="domain_id", related_name="muts", on_delete=models.CASCADE
+    )
 
     @property
     def protein(self):
@@ -491,13 +515,18 @@ class CoreMutation(_CoreMutation):
         # self.protein = Protein.objects.get(id=self.protein_id)
 
     class Meta(_CoreMutation.Meta):
-        db_table = 'elaspic_core_mutation'
+        db_table = "elaspic_core_mutation"
         managed = False
 
 
 class CoreMutationLocal(_CoreMutation):
 
-    model = models.ForeignKey(CoreModelLocal, db_column='domain_id', related_name='muts', on_delete=models.CASCADE)
+    model = models.ForeignKey(
+        CoreModelLocal,
+        db_column="domain_id",
+        related_name="muts",
+        on_delete=models.CASCADE,
+    )
 
     @property
     def protein(self):
@@ -510,18 +539,17 @@ class CoreMutationLocal(_CoreMutation):
         # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_CoreMutation.Meta):
-        db_table = 'elaspic_core_mutation_local'
+        db_table = "elaspic_core_mutation_local"
 
 
 # %% Interface
 class _InterfaceModel(models.Model):
-
     @property
     def local(self):
         raise NotImplementedError
 
     # Key
-    id = models.AutoField(primary_key=True, db_index=True, db_column='interface_id')
+    id = models.AutoField(primary_key=True, db_index=True, db_column="interface_id")
     protein_id_1 = models.CharField(max_length=15)
     # domain_id_1 = models.IntegerField(db_index=True)
     # domain_idx_1 = models.IntegerField(db_index=True)
@@ -530,7 +558,7 @@ class _InterfaceModel(models.Model):
     # domain_idx_2 = models.IntegerField(db_index=True)
 
     # domain pair
-    data_path = models.TextField(blank=True, db_column='path_to_data')
+    data_path = models.TextField(blank=True, db_column="path_to_data")
 
     def get_protein_name(self, chain=1):
         if chain == 1:
@@ -577,19 +605,27 @@ class _InterfaceModel(models.Model):
     #     return '%s-%s' % (self.domain1_id, self.domain2_id)
 
     # domain pair template
-    align_score1 = models.IntegerField(null=True, blank=True, db_column='alignment_score_1')
-    align_score2 = models.IntegerField(null=True, blank=True, db_column='alignment_score_2')
+    align_score1 = models.IntegerField(
+        null=True, blank=True, db_column="alignment_score_1"
+    )
+    align_score2 = models.IntegerField(
+        null=True, blank=True, db_column="alignment_score_2"
+    )
 
-    align_coverage_1 = models.IntegerField(null=True, blank=True, db_column='alignment_coverage_1')
-    align_coverage_2 = models.IntegerField(null=True, blank=True, db_column='alignment_coverage_2')
+    align_coverage_1 = models.IntegerField(
+        null=True, blank=True, db_column="alignment_coverage_1"
+    )
+    align_coverage_2 = models.IntegerField(
+        null=True, blank=True, db_column="alignment_coverage_2"
+    )
 
-    cath1 = models.CharField(max_length=255, blank=True, db_column='cath_id_1')
-    cath2 = models.CharField(max_length=255, blank=True, db_column='cath_id_2')
+    cath1 = models.CharField(max_length=255, blank=True, db_column="cath_id_1")
+    cath2 = models.CharField(max_length=255, blank=True, db_column="cath_id_2")
 
-    seq_id1 = models.FloatField(null=True, blank=True, db_column='alignment_identity_1')
-    seq_id2 = models.FloatField(null=True, blank=True, db_column='alignment_identity_2')
+    seq_id1 = models.FloatField(null=True, blank=True, db_column="alignment_identity_1")
+    seq_id2 = models.FloatField(null=True, blank=True, db_column="alignment_identity_2")
 
-    errors = models.TextField(null=True, blank=True, db_column='template_errors')
+    errors = models.TextField(null=True, blank=True, db_column="template_errors")
 
     def getcath(self, chain):
         if chain == 1:
@@ -611,15 +647,15 @@ class _InterfaceModel(models.Model):
 
     def getsequenceidentity(self, chain):
         if chain == 1:
-            return '%0.3f, %0.3f' % (self.seq_id1, self.seq_id2)
+            return "%0.3f, %0.3f" % (self.seq_id1, self.seq_id2)
         elif chain == 2:
-            return '%0.3f, %0.3f' % (self.seq_id2, self.seq_id1)
+            return "%0.3f, %0.3f" % (self.seq_id2, self.seq_id1)
 
     def getalignscore(self, chain):
         if chain == 1:
-            return '%0.3f, %0.3f' % (self.align_score1, self.align_score2)
+            return "%0.3f, %0.3f" % (self.align_score1, self.align_score2)
         elif chain == 2:
-            return '%0.3f, %0.3f' % (self.align_score2, self.align_score1)
+            return "%0.3f, %0.3f" % (self.align_score2, self.align_score1)
 
     # def __str__(self):
     #     return '%d' % self.domain_id
@@ -628,14 +664,14 @@ class _InterfaceModel(models.Model):
     model_domain_def_1 = models.CharField(max_length=255)
     model_domain_def_2 = models.CharField(max_length=255)
     model_errors = models.TextField(null=True, blank=True)
-    dope_score = models.FloatField(null=True, blank=True, db_column='norm_dope')
+    dope_score = models.FloatField(null=True, blank=True, db_column="norm_dope")
     model_filename = models.CharField(max_length=255, blank=True)
 
     alignment_filename_1 = models.CharField(max_length=255, blank=True)
     alignment_filename_2 = models.CharField(max_length=255, blank=True)
 
-    aa1 = models.TextField(blank=True, db_column='interacting_aa_1')
-    aa2 = models.TextField(blank=True, db_column='interacting_aa_2')
+    aa1 = models.TextField(blank=True, db_column="interacting_aa_1")
+    aa2 = models.TextField(blank=True, db_column="interacting_aa_2")
 
     chain_1 = models.CharField(max_length=1, null=True)
     chain_2 = models.CharField(max_length=1, null=True)
@@ -651,20 +687,30 @@ class _InterfaceModel(models.Model):
             return self.chain_2
 
     def __str__(self):
-        return '{}-{}-{}'.format(self.id, self.protein_id_1, self.protein_id_2)
+        return "{}-{}-{}".format(self.id, self.protein_id_1, self.protein_id_2)
 
     class Meta:
         abstract = True
-        ordering = ['id']
+        ordering = ["id"]
 
 
 class InterfaceModel(_InterfaceModel):
 
     local = False
     domain1 = models.ForeignKey(
-        CoreModel, db_index=True, related_name='p1', db_column='domain_id_1', on_delete=models.CASCADE)
+        CoreModel,
+        db_index=True,
+        related_name="p1",
+        db_column="domain_id_1",
+        on_delete=models.CASCADE,
+    )
     domain2 = models.ForeignKey(
-        CoreModel, db_index=True, related_name='p2', db_column='domain_id_2', on_delete=models.CASCADE)
+        CoreModel,
+        db_index=True,
+        related_name="p2",
+        db_column="domain_id_2",
+        on_delete=models.CASCADE,
+    )
 
     def getprot(self, chain):
         if chain == 1:
@@ -683,15 +729,15 @@ class InterfaceModel(_InterfaceModel):
                 % (self.cath2[:-3], self.cath2[:-3], self.cath2[-3])
             )
         else:
-            a1 = self.cath1[:-3] + '_' + self.cath1[-3]
-            a2 = self.cath2[:-3] + '_' + self.cath2[-3]
+            a1 = self.cath1[:-3] + "_" + self.cath1[-3]
+            a2 = self.cath2[:-3] + "_" + self.cath2[-3]
         if chain == 1:
-            return '%s, %s' % (a1, a2)
+            return "%s, %s" % (a1, a2)
         elif chain == 2:
-            return '%s, %s' % (a2, a1)
+            return "%s, %s" % (a2, a1)
 
     class Meta(_InterfaceModel.Meta):
-        db_table = 'elaspic_interface_model'
+        db_table = "elaspic_interface_model"
         managed = False
 
 
@@ -699,9 +745,19 @@ class InterfaceModelLocal(_InterfaceModel):
 
     local = True
     domain1 = models.ForeignKey(
-        CoreModelLocal, db_index=True, related_name='p1', db_column='domain_id_1', on_delete=models.CASCADE)
+        CoreModelLocal,
+        db_index=True,
+        related_name="p1",
+        db_column="domain_id_1",
+        on_delete=models.CASCADE,
+    )
     domain2 = models.ForeignKey(
-        CoreModelLocal, db_index=True, related_name='p2', db_column='domain_id_2', on_delete=models.CASCADE)
+        CoreModelLocal,
+        db_index=True,
+        related_name="p2",
+        db_column="domain_id_2",
+        on_delete=models.CASCADE,
+    )
 
     def getprot(self, chain):
         if chain == 1:
@@ -711,18 +767,18 @@ class InterfaceModelLocal(_InterfaceModel):
 
     def getpdbtemplate(self, chain, link=True):
         if chain == 1:
-            return '{}, {}'.format(self.cath1, self.cath2)
+            return "{}, {}".format(self.cath1, self.cath2)
         elif chain == 2:
-            return '{}, {}'.format(self.cath2, self.cath1)
+            return "{}, {}".format(self.cath2, self.cath1)
 
     class Meta(_InterfaceModel.Meta):
-        db_table = 'elaspic_interface_model_local'
+        db_table = "elaspic_interface_model_local"
 
 
 # %% Interface Mutation
 class _InterfaceMutation(models.Model):
 
-    mutation_type = 'interface'  # interface
+    mutation_type = "interface"  # interface
 
     @property
     def protein(self):
@@ -735,7 +791,7 @@ class _InterfaceMutation(models.Model):
     # protein_id_2 = models.CharField(max_length=15)
     # domain_id_2 = models.IntegerField(db_index=True)
     protein_id = models.CharField(max_length=15, primary_key=True)
-    mut = models.CharField(max_length=8, db_column='mutation')
+    mut = models.CharField(max_length=8, db_column="mutation")
     chain_idx = models.IntegerField()
 
     # Data
@@ -744,10 +800,10 @@ class _InterfaceMutation(models.Model):
     model_filename_wt = models.CharField(max_length=255)
     model_filename_mut = models.CharField(max_length=255)
 
-    mut_errors = models.TextField(null=True, blank=True, db_column='mutation_errors')
+    mut_errors = models.TextField(null=True, blank=True, db_column="mutation_errors")
 
-    pdb_chain = models.CharField(max_length=1, null=True, db_column='chain_modeller')
-    pdb_mut = models.CharField(max_length=8, null=True, db_column='mutation_modeller')
+    pdb_chain = models.CharField(max_length=1, null=True, db_column="chain_modeller")
+    pdb_mut = models.CharField(max_length=8, null=True, db_column="mutation_modeller")
 
     stability_energy_wt = models.TextField(null=True)
     stability_energy_mut = models.TextField(null=True)
@@ -770,6 +826,7 @@ class _InterfaceMutation(models.Model):
     matrix_score = models.FloatField(null=True, blank=True)
     provean_score = models.FloatField(null=True, blank=True)
 
+    ddG = models.FloatField(null=True, blank=True, db_column="ddg")
 
     protbert_score = models.FloatField(null=True, blank=True)
     proteinsolver_score = models.FloatField(null=True, blank=True)
@@ -783,20 +840,20 @@ class _InterfaceMutation(models.Model):
 
     def dGwt(self):
         try:
-            dGwt = self.analyse_complex_energy_wt.split(',')[2]
+            dGwt = self.analyse_complex_energy_wt.split(",")[2]
         except AttributeError:
             dGwt = None
         return dGwt
 
     def dGmut(self):
         try:
-            dGmut = self.analyse_complex_energy_mut.split(',')[2]
+            dGmut = self.analyse_complex_energy_mut.split(",")[2]
         except AttributeError:
             dGmut = None
         return dGmut
 
     def getddG(self):
-        return self.ddG if self.ddG else '-'
+        return self.ddG if self.ddG else "-"
 
     def findChain(self):
         if self.chain_idx == 0:
@@ -809,8 +866,10 @@ class _InterfaceMutation(models.Model):
             return 2
         else:
             raise ValueError(
-                'self.chain_idx: {}, self.protein_id: {}'
-                .format(self.chain_idx, self.protein_id))
+                "self.chain_idx: {}, self.protein_id: {}".format(
+                    self.chain_idx, self.protein_id
+                )
+            )
 
     def getinacprot(self, chain=None):
         c = chain or self.findChain()
@@ -820,7 +879,7 @@ class _InterfaceMutation(models.Model):
             return self.model.getprot(1)
 
     def __str__(self):
-        return '%s.%s' % (self.protein_id, self.mut)
+        return "%s.%s" % (self.protein_id, self.mut)
 
     class Meta:
         abstract = True
@@ -828,7 +887,12 @@ class _InterfaceMutation(models.Model):
 
 class InterfaceMutation(_InterfaceMutation):
 
-    model = models.ForeignKey(InterfaceModel, db_column='interface_id', related_name='muts', on_delete=models.CASCADE)
+    model = models.ForeignKey(
+        InterfaceModel,
+        db_column="interface_id",
+        related_name="muts",
+        on_delete=models.CASCADE,
+    )
 
     @property
     def protein(self):
@@ -841,13 +905,18 @@ class InterfaceMutation(_InterfaceMutation):
         # self.protein = Protein.objects.get(id=self.protein_id)
 
     class Meta(_InterfaceMutation.Meta):
-        db_table = 'elaspic_interface_mutation'
+        db_table = "elaspic_interface_mutation"
         managed = False
 
 
 class InterfaceMutationLocal(_InterfaceMutation):
 
-    model = models.ForeignKey(InterfaceModelLocal, db_column='interface_id', related_name='muts', on_delete=models.CASCADE)
+    model = models.ForeignKey(
+        InterfaceModelLocal,
+        db_column="interface_id",
+        related_name="muts",
+        on_delete=models.CASCADE,
+    )
 
     @property
     def protein(self):
@@ -860,55 +929,59 @@ class InterfaceMutationLocal(_InterfaceMutation):
         # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_InterfaceMutation.Meta):
-        db_table = 'elaspic_interface_mutation_local'
+        db_table = "elaspic_interface_mutation_local"
 
 
 # %% Database: 'elaspic_mutation'
 class DatabaseClinVar(models.Model):
 
-    id = models.PositiveIntegerField(primary_key=True, db_column='id')
-    protein_id = models.CharField(max_length=50, db_column='uniprot_id')
-    mut = models.CharField(max_length=8, db_column='mutation')
+    id = models.PositiveIntegerField(primary_key=True, db_column="id")
+    protein_id = models.CharField(max_length=50, db_column="uniprot_id")
+    mut = models.CharField(max_length=8, db_column="mutation")
 
-    variation = models.CharField(max_length=50, db_column='variation_name')
+    variation = models.CharField(max_length=50, db_column="variation_name")
 
     def makeLink(self):
-        return 'http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + self.variation
+        return (
+            "http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=" + self.variation
+        )
 
     class Meta:
-        db_table = 'clinvar_mutation'
+        db_table = "clinvar_mutation"
         managed = False
 
 
 class DatabaseUniProt(models.Model):
 
-    id = models.PositiveIntegerField(primary_key=True, db_column='id')
-    protein_id = models.CharField(max_length=50, db_column='uniprot_id')
-    mut = models.CharField(max_length=8, db_column='mutation')
+    id = models.PositiveIntegerField(primary_key=True, db_column="id")
+    protein_id = models.CharField(max_length=50, db_column="uniprot_id")
+    mut = models.CharField(max_length=8, db_column="mutation")
 
-    variation = models.CharField(max_length=50, db_column='variation_name')
+    variation = models.CharField(max_length=50, db_column="variation_name")
 
     def makeLink(self):
-        return 'http://web.expasy.org/variant_pages/' + self.variation + '.html'
+        return "http://web.expasy.org/variant_pages/" + self.variation + ".html"
 
     class Meta:
-        db_table = 'uniprot_mutation'
+        db_table = "uniprot_mutation"
         managed = False
 
 
 class DatabaseCOSMIC(models.Model):
 
-    id = models.PositiveIntegerField(primary_key=True, db_column='id')
-    protein_id = models.CharField(max_length=50, db_column='uniprot_id')
-    mut = models.CharField(max_length=8, db_column='mutation')
+    id = models.PositiveIntegerField(primary_key=True, db_column="id")
+    protein_id = models.CharField(max_length=50, db_column="uniprot_id")
+    mut = models.CharField(max_length=8, db_column="mutation")
 
-    variation = models.CharField(max_length=50, db_column='variation_name')
+    variation = models.CharField(max_length=50, db_column="variation_name")
 
     def makeLink(self):
-        return 'http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=' + self.variation
+        return (
+            "http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=" + self.variation
+        )
 
     class Meta:
-        db_table = 'cosmic_mutation'
+        db_table = "cosmic_mutation"
         managed = False
 
 
@@ -917,10 +990,13 @@ def findInDatabase(mutations, protein_id):
     dbs = defaultdict(list)
 
     for db in (DatabaseClinVar, DatabaseUniProt, DatabaseCOSMIC):
-        for mut_db in (
-                db.objects.filter(mut__in=mutations, protein_id=protein_id)):
-            dbs[mut_db.mut].append({'name': mut_db.__class__.__name__[8:],
-                                    'url': mut_db.makeLink(),
-                                    'variation': mut_db.variation})
+        for mut_db in db.objects.filter(mut__in=mutations, protein_id=protein_id):
+            dbs[mut_db.mut].append(
+                {
+                    "name": mut_db.__class__.__name__[8:],
+                    "url": mut_db.makeLink(),
+                    "variation": mut_db.variation,
+                }
+            )
     logger.debug("dbs: '{}'".format(dbs))
     return dbs

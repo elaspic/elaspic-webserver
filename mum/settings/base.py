@@ -227,8 +227,7 @@ LOGGING = {
     },
     "loggers": {
         "": {
-            "handlers": ["info_log", "debug_log"]
-            + (["console"] if DEBUG else []),
+            "handlers": ["info_log", "debug_log"] + (["console"] if DEBUG else []),
             "level": "DEBUG",
             "propagate": False,
         },

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web_pipeline', '0002_auto_20160905_2052'),
+        ("web_pipeline", "0002_auto_20160905_2052"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='coremutationlocal',
-            name='elaspic_version',
+            model_name="coremutationlocal",
+            name="elaspic_version",
             field=models.CharField(max_length=255, null=True),
         ),
     ]

@@ -8,16 +8,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('web_pipeline', '0001_initial'),
+        ("web_pipeline", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterIndexTogether(
-            name='coremutationlocal',
-            index_together=set([('protein_id', 'mut')]),
+            name="coremutationlocal",
+            index_together=set([("protein_id", "mut")]),
         ),
         migrations.AlterIndexTogether(
-            name='mut',
-            index_together=set([('protein', 'mut')]),
+            name="mut",
+            index_together=set([("protein", "mut")]),
         ),
     ]

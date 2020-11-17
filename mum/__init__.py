@@ -6,7 +6,7 @@ _ __ ___  _   _ _ __ ___
 
 """
 __title__ = "MUM"
-__version__ = '0.0.6'
+__version__ = "0.0.6"
 
 # Version synonym
 VERSION = __version__
