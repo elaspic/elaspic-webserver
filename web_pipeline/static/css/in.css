@@ -23,9 +23,9 @@
 .tab {
   display: inline-block;
   padding: 3px 20px;
-  border-color: #EBEBEB;
+  border-color: #ebebeb;
   border-style: solid;
-  background-color: #EBEBEB;
+  background-color: #ebebeb;
   border-top-right-radius: 5px;
   border-top-left-radius: 5px;
   margin-left: 5px;
@@ -37,14 +37,17 @@
 .tab.active {
   top: 1px;
   box-shadow: none;
-  background-color: #F4F4F4;
+  background-color: #f4f4f4;
 }
 
-#onetab {}
+#onetab {
+}
 
-#manytab {}
+#manytab {
+}
 
-#nothumanwarning, #notdomainwarning {
+#nothumanwarning,
+#notdomainwarning {
   font-size: 12px;
   font-weight: 600;
 }

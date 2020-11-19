@@ -1,4 +1,5 @@
-.field, #protein .boxhead {
+.field,
+#protein .boxhead {
   background: white !important;
   border-color: #333 !important;
 }

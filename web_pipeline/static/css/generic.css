@@ -7,7 +7,6 @@
   position: relative;
 }
 
-
 /* Help */
 
 #pipelinediagram {
@@ -25,7 +24,7 @@
   margin: 20px 30px;
   padding: 30px 60px;
   background-color: white;
-  border: 1px solid #EBEBEB;
+  border: 1px solid #ebebeb;
   width: 700px;
 }
 
@@ -49,7 +48,8 @@ h3 {
   padding-top: 30px;
 }
 
-h4, .pul {
+h4,
+.pul {
   margin-bottom: 2px;
 }
 
@@ -60,7 +60,8 @@ h4, .pul {
 ul {
   padding-left: 20px;
   margin-top: 2px;
-  list-style: square inside url('data:image/gif;base64,R0lGODlhBQAKAIABAAAAAP///yH5BAEAAAEALAAAAAAFAAoAAAIIjI+ZwKwPUQEAOw==');
+  list-style: square inside
+    url("data:image/gif;base64,R0lGODlhBQAKAIABAAAAAP///yH5BAEAAAEALAAAAAAFAAoAAAIIjI+ZwKwPUQEAOw==");
 }
 
 ul li {
@@ -74,7 +75,6 @@ li span {
 i.click2 {
   font-style: italic;
 }
-
 
 /* Reference */
 
@@ -93,7 +93,6 @@ i.click2 {
   border-bottom-color: transparent;
 }
 
-
 /* Contact */
 
 .cont {
@@ -107,14 +106,16 @@ i.click2 {
   left: 360px;
 }
 
-.cont input, .cont textarea {
+.cont input,
+.cont textarea {
   display: block;
-  border: 1px solid #EBEBEB;
+  border: 1px solid #ebebeb;
   padding: 8px;
   width: 100%;
 }
 
-.cont input {}
+.cont input {
+}
 
 .cont textarea {
   width: 500px;
@@ -125,7 +126,8 @@ i.click2 {
   margin: 5px 0px 10px 750px;
 }
 
-#cont .form-response, #cont .error {
+#cont .form-response,
+#cont .error {
   position: absolute;
   bottom: 20px;
   right: 150px;
@@ -133,7 +135,8 @@ i.click2 {
   display: none;
 }
 
-#cont .form-response {}
+#cont .form-response {
+}
 
 #cont .error {
   background-image: none;

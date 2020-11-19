@@ -6,10 +6,12 @@
   width: 880px;
 }
 
-#barmutation, #barmutdesc, #nothumanwarning, #notdomainwarning {
+#barmutation,
+#barmutdesc,
+#nothumanwarning,
+#notdomainwarning {
   display: none;
 }
-
 
 /* 2D bar */
 
@@ -49,14 +51,14 @@
   font-size: 12px;
 }
 
-.protein2d .dombar, .protein2d .domclick {
+.protein2d .dombar,
+.protein2d .domclick {
   cursor: pointer;
 }
 
 .labelbox {
   cursor: pointer;
 }
-
 
 /* Positioning corrections */
 
@@ -71,7 +73,8 @@
   position: relative;
 }
 
-#protein .contentbox, #protein .boxheadbehind {
+#protein .contentbox,
+#protein .boxheadbehind {
   position: absolute;
 }
 
@@ -151,7 +154,6 @@
   left: 0px;
 }
 
-
 /* Mutation tooltip */
 
 .muttooltip {
@@ -196,6 +198,11 @@
   padding: 5px;
 }
 
+.ddg,
+.el2score {
+  display: inline-block;
+}
+
 .muttooltip .tlabels {
   font-weight: 600;
   position: absolute;
@@ -205,7 +212,8 @@
   overflow: hidden;
 }
 
-.muttooltip .tlabels .l1, .muttooltip .tlabels .l2 {
+.muttooltip .tlabels .l1,
+.muttooltip .tlabels .l2 {
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -213,7 +221,8 @@
   /* line(14) + padding(6) + border(2) */
 }
 
-.muttooltip .tlabels .l1 {}
+.muttooltip .tlabels .l1 {
+}
 
 .muttooltip .tlabels .l2 {
   top: -1px;
@@ -271,7 +280,8 @@
   padding: 0;
 }
 
-.muttooltip div, .muttooltip span {
+.muttooltip div,
+.muttooltip span {
   font-size: 13px;
 }
 
@@ -288,10 +298,10 @@
   height: 14px;
 }
 
-.muttooltip .tlabels, .muttooltip .ttext {
+.muttooltip .tlabels,
+.muttooltip .ttext {
   float: left;
 }
-
 
 /* Interaction box */
 
@@ -310,7 +320,8 @@
   padding: 0;
 }
 
-#inacbox .h4div, #inacbox .inacsummary {
+#inacbox .h4div,
+#inacbox .inacsummary {
   position: absolute;
   top: 0;
   left: 0;
@@ -332,7 +343,7 @@
   padding-top: 30px;
 }
 
-#inacbox .inacsummary>div {
+#inacbox .inacsummary > div {
   height: 20px;
   width: 140px;
   float: left;
@@ -347,7 +358,6 @@
   height: 8px;
   margin-right: 2px;
 }
-
 
 /* Mutation selection */
 
@@ -374,7 +384,7 @@
 }
 
 .selection label:after {
-  content: '<>';
+  content: "<>";
   position: absolute;
   right: 2px;
   top: 10px;
@@ -392,7 +402,7 @@
 }
 
 .selection label:before {
-  content: '';
+  content: "";
   position: absolute;
   right: 0px;
   top: 0px;

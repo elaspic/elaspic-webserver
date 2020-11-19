@@ -73,13 +73,13 @@
   margin-left: 10px;
 }
 
-.protein2d .barmutation, .protein2d .barmutations .line {
+.protein2d .barmutation,
+.protein2d .barmutations .line {
   top: 30px;
   height: 50px;
   width: 2px;
   z-index: 1;
 }
-
 
 /*.protein2d .barmutations .rline, .protein2d .barmutations .lline {
 	z-index: 1;
@@ -141,11 +141,15 @@
   z-index: 10;
 }
 
-.protein2d .startdesc, .enddesc, .ttstart, .ttend {
+.protein2d .startdesc,
+.enddesc,
+.ttstart,
+.ttend {
   font-size: 12px;
 }
 
-.protein2d .startdesc, .protein2d .enddesc {
+.protein2d .startdesc,
+.protein2d .enddesc {
   top: 73px;
   text-align: center;
   z-index: 9;
@@ -171,7 +175,8 @@
   word-break: keep-all;
 }
 
-.ttstart, .ttend {
+.ttstart,
+.ttend {
   width: 30px;
   top: 23px;
   text-align: center;
@@ -182,7 +187,7 @@
 }
 
 .ttmid .txt {
-  color: #E1F0F9;
+  color: #e1f0f9;
   background-color: #333;
   border-radius: 2px;
 }
