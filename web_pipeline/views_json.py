@@ -534,7 +534,7 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
             )
             for i, db in enumerate(mut_dbs[m.mut]):
                 if i:
-                    mut_dbs_html += " ,"
+                    mut_dbs_html += ", "
                 mut_dbs_html += (
                     '<a target="_blank" href="' + db["url"] + '">' + db["name"] + "</a>"
                 )
