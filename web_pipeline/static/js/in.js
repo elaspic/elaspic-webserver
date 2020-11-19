@@ -1,8 +1,8 @@
 // AnyChange plugin.
-(function($) {
-  $.fn.anyChange = function(cb) {
-    return this.each(function() {
-      if (typeof cb == 'function') {
+(function ($) {
+  $.fn.anyChange = function (cb) {
+    return this.each(function () {
+      if (typeof cb == "function") {
         new AnyChange(this, cb);
       }
     });
@@ -91,22 +91,26 @@ function validateForm() {
     } else if ($("#me").val() == "mIn") {
       $("#submiterr").text("Please input at least one protein with a valid mutation");
     }
-  } else if ($('#notdomainwarning').is(":visible")) {
+  } else if ($("#notdomainwarning").is(":visible")) {
     // Selected mutation outside domain
     noError = false;
     $("#submiterr").text("Mutation must fall inside a domain");
   }
   if (noError) {
     if ($("#emailtext").val()) {
-      if (!$("#emailtext").val().match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$/)) {
+      if (
+        !$("#emailtext")
+          .val()
+          .match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$/)
+      ) {
         noError = false;
         $("#submiterr").text("Please input a valid or no email address");
       }
     }
   }
   if (noError === false) {
-    $("#submiterr").fadeIn("slow", function() {
-      setTimeout(function() {
+    $("#submiterr").fadeIn("slow", function () {
+      setTimeout(function () {
         $("#submiterr").fadeOut("slow");
       }, 2000);
     });

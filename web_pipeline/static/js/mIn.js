@@ -1,28 +1,35 @@
 // AutoGrow plugin.
-jQuery.fn.autoGrow = function() {
-  return this.each(function() {
-    var createMirror = function(textarea) {
+jQuery.fn.autoGrow = function () {
+  return this.each(function () {
+    var createMirror = function (textarea) {
       jQuery(textarea).after('<div class="autogrow-textarea-mirror"></div>');
-      return jQuery(textarea).next('.autogrow-textarea-mirror')[0];
+      return jQuery(textarea).next(".autogrow-textarea-mirror")[0];
     };
-    var sendContentToMirror = function(textarea) {
-      mirror.innerHTML = String(textarea.value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br />') + '.<br/>.';
+    var sendContentToMirror = function (textarea) {
+      mirror.innerHTML =
+        String(textarea.value)
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\n/g, "<br />") + ".<br/>.";
       if (jQuery(textarea).height() != jQuery(mirror).height())
         jQuery(textarea).height(jQuery(mirror).height());
     };
-    var growTextarea = function() {
-        sendContentToMirror(this);
-      };
-      // Create a mirror
+    var growTextarea = function () {
+      sendContentToMirror(this);
+    };
+    // Create a mirror
     var mirror = createMirror(this);
-    mirror.style.display = 'none';
-    mirror.style.wordWrap = 'break-word';
-    mirror.style.whiteSpace = 'normal';
-    mirror.style.padding = jQuery(this).css('padding');
-    mirror.style.width = jQuery(this).css('width');
-    mirror.style.fontFamily = jQuery(this).css('font-family');
-    mirror.style.fontSize = jQuery(this).css('font-size');
-    mirror.style.lineHeight = jQuery(this).css('line-height');
+    mirror.style.display = "none";
+    mirror.style.wordWrap = "break-word";
+    mirror.style.whiteSpace = "normal";
+    mirror.style.padding = jQuery(this).css("padding");
+    mirror.style.width = jQuery(this).css("width");
+    mirror.style.fontFamily = jQuery(this).css("font-family");
+    mirror.style.fontSize = jQuery(this).css("font-size");
+    mirror.style.lineHeight = jQuery(this).css("line-height");
     // Style the textarea
     this.style.overflow = "hidden";
     if (this.rows < 5) {
@@ -37,9 +44,7 @@ jQuery.fn.autoGrow = function() {
   });
 };
 
-
 function handleResults(result, ajaxRequests) {
-
   $("#validation div").remove();
   var validationArray = [];
   var validated = 0;
@@ -92,32 +97,40 @@ function handleResults(result, ajaxRequests) {
     }
 
     if (validated || result.e) {
-
       if (validated) {
         var s, ve;
         if (validated == 1) {
-          s = '';
-          ve = 's';
+          s = "";
+          ve = "s";
         } else {
-          s = 's';
-          ve = 've';
+          s = "s";
+          ve = "ve";
         }
-        var validateHtml = "<div><h4>" + validated + " mutation" + s + " ha" + ve + " been correctly input.</h4>" +
+        var validateHtml =
+          "<div><h4>" +
+          validated +
+          " mutation" +
+          s +
+          " ha" +
+          ve +
+          " been correctly input.</h4>" +
           "<p><b></b><i>To continue, input your email address (optional) and click Submit.</i></p></div>";
         $("#input_resp").html(validateHtml);
         $("#input_resp").show();
-        $("#input_err").css('margin-top', '27px');
+        $("#input_err").css("margin-top", "27px");
       } else {
         $("#input_resp").hide();
-        $("#input_err").css('margin-top', '0px');
+        $("#input_err").css("margin-top", "0px");
       }
 
       if (result.e.title) {
         var validateErr = "<div><h4>" + result.e.title + "</h4>";
         for (i = 0; i < result.e.errors.length; i++) {
           if (result.e.header[i]) {
-            validateErr += '<p><span class="ico ' + result.e.eclass[i] + '"></span>' + result.e.header[i];
-            validateErr += '<span class="resp">' + result.e.errors[i].join(',&nbsp; ') + "</span></p>";
+            validateErr +=
+              '<p><span class="ico ' + result.e.eclass[i] + '"></span>' + result.e.header[i];
+            validateErr +=
+              '<span class="resp">' + result.e.errors[i].join(",&nbsp; ") + "</span></p>";
           }
         }
         validateErr += "</div>";
@@ -126,13 +139,12 @@ function handleResults(result, ajaxRequests) {
       } else {
         $("#input_err").hide();
       }
-
     } else {
       $("#validation").html('<div class="empty"></div>');
       $("#input_resp").hide();
     }
 
-    $("#fakearea").val(result.e.good.join(' '));
+    $("#fakearea").val(result.e.good.join(" "));
   }
 
   $("#validation").append(validationArray);
@@ -144,24 +156,28 @@ function handleResults(result, ajaxRequests) {
 
   if (ajaxRequests) {
     if (nothumancount) {
-      $("#nothumanwarning").animate({
-        height: 50
-      }, {
-        duration: 500
-      });
+      $("#nothumanwarning").animate(
+        {
+          height: 50,
+        },
+        {
+          duration: 500,
+        }
+      );
     } else {
-      $("#nothumanwarning").animate({
-        height: 0
-      }, {
-        duration: 300
-      });
+      $("#nothumanwarning").animate(
+        {
+          height: 0,
+        },
+        {
+          duration: 300,
+        }
+      );
     }
   }
 }
 
-
 function getProteins(ajaxRequests) {
-
   var proteins = $("#proteinsinput").val().split("\n");
   if (ajaxRequests[ajaxRequests.length - 1]) {
     ajaxRequests[ajaxRequests.length - 1].abort();
@@ -182,14 +198,11 @@ function getProteins(ajaxRequests) {
       type: "GET",
       dataType: "json",
       cache: false,
-      success: function(data) {
-
+      success: function (data) {
         handleResults(data, ajaxRequests);
-
-      }
+      },
     });
   }
-
 }
 
 function setSelectionRange(input, selectionStart, selectionEnd) {
@@ -199,15 +212,13 @@ function setSelectionRange(input, selectionStart, selectionEnd) {
   } else if (input.createTextRange) {
     var range = input.createTextRange();
     range.collapse(true);
-    range.moveEnd('character', selectionEnd);
-    range.moveStart('character', selectionStart);
+    range.moveEnd("character", selectionEnd);
+    range.moveStart("character", selectionStart);
     range.select();
   }
 }
 
-
-$(document).ready(function() {
-
+$(document).ready(function () {
   var ajaxRequests = [];
 
   if ($("#proteinsinput").val()) {
@@ -220,12 +231,12 @@ $(document).ready(function() {
   $("#proteinsinput").autoGrow();
 
   $("#pfile").ajaxfileupload({
-    "action": "../json/uploadfile/",
-    "params": {
-      'filetype': 'prot'
+    action: "../json/uploadfile/",
+    params: {
+      filetype: "prot",
     },
-    "onComplete": function(response) {
-      if (typeof response === 'string' || response instanceof String) {
+    onComplete: function (response) {
+      if (typeof response === "string" || response instanceof String) {
         // Converts text to JSON if needed (Chrome).
         response = $.parseJSON($(response).text());
       }
@@ -242,24 +253,21 @@ $(document).ready(function() {
         // Trigger input validation.
         getProteins(ajaxRequests);
       }
-    }
+    },
   });
 
-  $("#pfilelabel").click(function() {
+  $("#pfilelabel").click(function () {
     $("#uploaderr").hide();
     $("#pfile").click();
   });
 
-
   // Get protein on change.
-  $("#proteinsinput").anyChange(function() {
-
+  $("#proteinsinput").anyChange(function () {
     $("#uploaderr").hide();
 
     // Remove spaces.
-    var allinput = $.map($("#proteinsinput").val().split("\n"), function(str, i) {
-      if (i < 10000)
-        return str.replace(/\s+/g, "").substring(0, 65);
+    var allinput = $.map($("#proteinsinput").val().split("\n"), function (str, i) {
+      if (i < 10000) return str.replace(/\s+/g, "").substring(0, 65);
     });
 
     var currentPosition;
@@ -275,21 +283,28 @@ $(document).ready(function() {
     }
 
     getProteins(ajaxRequests);
-
   });
 
   // Example proteins.
-  $(".example").click(function() {
+  $(".example").click(function () {
     $("#uploaderr").hide();
-    var example = ['CCM1.E567Q', 'O00522.E567A', 'KRIT1_HUMAN.E567F',
-      'HLA-DRB1.V209R', 'KRas2.I36M', 'ENSG00000133703.V8R',
-      'P68871.V35D', 'KIAA0145.S66T', '3PPJ.R575F',
-      'Q9Y2L6.G109S', 'EIF4E3.V130A',
-      'ROCK2.S264Y', 'Cx46.R133T'
+    var example = [
+      "CCM1.E567Q",
+      "O00522.E567A",
+      "KRIT1_HUMAN.E567F",
+      "HLA-DRB1.V209R",
+      "KRas2.I36M",
+      "ENSG00000133703.V8R",
+      "P68871.V35D",
+      "KIAA0145.S66T",
+      "3PPJ.R575F",
+      "Q9Y2L6.G109S",
+      "EIF4E3.V130A",
+      "ROCK2.S264Y",
+      "Cx46.R133T",
     ];
     $("#proteinsinput").val(example.join("\n"));
     $("#proteinsinput").trigger("keyup");
     getProteins(ajaxRequests);
   });
-
 });

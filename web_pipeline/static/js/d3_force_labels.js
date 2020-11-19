@@ -1,11 +1,11 @@
-(function() {
+(function () {
   d3.force_labels = function force_labels() {
     var labels = d3.layout.force();
 
     // Update the position of the anchor based on the center of bounding box
     function updateAnchor() {
       if (!labels.selection) return;
-      labels.selection.each(function(d) {
+      labels.selection.each(function (d) {
         var bbox = this.getBBox(),
           x = bbox.x + bbox.width / 2,
           y = bbox.y + bbox.height / 2;
@@ -25,20 +25,22 @@
     labels.on("tick.labels", updateAnchor);
 
     // This updates all nodes/links - retaining any previous labelPos on updated nodes
-    labels.update = function(selection) {
+    labels.update = function (selection) {
       labels.selection = selection;
       var nodes = [],
         links = [];
-      selection[0].forEach(function(d) {
+      selection[0].forEach(function (d) {
         if (d && d.__data__) {
           var data = d.__data__;
 
-          if (!d.labelPos) d.labelPos = {
-            fixed: false
-          };
-          if (!d.anchorPos) d.anchorPos = {
-            fixed: true
-          };
+          if (!d.labelPos)
+            d.labelPos = {
+              fixed: false,
+            };
+          if (!d.anchorPos)
+            d.anchorPos = {
+              fixed: true,
+            };
 
           // Place position objects in __data__ to make them available through
           // d.labelPos/d.anchorPos for different elements
@@ -47,16 +49,13 @@
 
           links.push({
             target: d.anchorPos,
-            source: d.labelPos
+            source: d.labelPos,
           });
           nodes.push(d.anchorPos);
           nodes.push(d.labelPos);
         }
       });
-      labels
-        .stop()
-        .nodes(nodes)
-        .links(links);
+      labels.stop().nodes(nodes).links(links);
       updateAnchor();
       labels.start();
     };
