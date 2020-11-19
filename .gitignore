@@ -21,3 +21,4 @@ celerybeat-schedule*
 
 # Settings
 *.env
+tmp
