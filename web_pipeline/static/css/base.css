@@ -254,11 +254,11 @@ input.text {
   background-image: url('../images/load.gif');
 }
 
-.tds.running, .img.running {
+.td-status.running, .img.running {
   background-image: url('../images/load-small.gif');
 }
 
-.tds.queued, .img.queued {
+.td-status.queued, .img.queued {
   background-image: url('../images/empty.png');
 }
 
@@ -533,7 +533,7 @@ body, div, span, p, .paper a {
   color: #001948;
 }
 
-.tds.doneNO {
+.td-status.doneNO {
   color: #001948 !important;
 }
 
@@ -545,7 +545,7 @@ h2, h2 span, .tab a, .popbox, .img.doneNo, .darkblue, .darkblue .mono {
   color: #999;
 }
 
-input.text, .select-text input, insert, .tds.running, .tds.queued, .img.running, .img.queued, .tooltip #rerun {
+input.text, .select-text input, insert, .td-status.running, .td-status.queued, .img.running, .img.queued, .tooltip #rerun {
   color: #444;
 }
 
@@ -669,11 +669,11 @@ input.text, select, .styled-select, .selection label:before, .text-area, #applet
   background-image: url('../images/error2.png');
 }
 
-.good, .tds.done, .img.done, #result_wrapper .done {
+.good, .td-status.done, .img.done, #result_wrapper .done {
   background-image: url('../images/good.png');
 }
 
-.warning, .tds.doneNO, .img.doneNO, #result_wrapper .doneNO {
+.warning, .td-status.doneNO, .img.doneNO, #result_wrapper .doneNO {
   background-image: url('../images/warning.png');
 }
 

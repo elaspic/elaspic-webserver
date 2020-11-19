@@ -29,80 +29,76 @@ function setRowColors() {
 }
 
 function filterResultTable() {
-
-  var inProt = $('#inprot').val();
+  var inProt = $("#inprot").val();
   // (condition) ? true-value : false-value;
-  var inSeqBot = $.isNumeric($('#inseqbot').val()) ? parseFloat($('#inseqbot').val()) : -Infinity;
-  var inSeqTop = $.isNumeric($('#inseqtop').val()) ? parseFloat($('#inseqtop').val()) : Infinity;
-  var inAliBot = $.isNumeric($('#inalibot').val()) ? parseFloat($('#inalibot').val()) : -Infinity;
-  var inAliTop = $.isNumeric($('#inalitop').val()) ? parseFloat($('#inalitop').val()) : Infinity;
-  var inDOPBot = $.isNumeric($('#indopbot').val()) ? parseFloat($('#indopbot').val()) : -Infinity;
-  var inDOPTop = $.isNumeric($('#indoptop').val()) ? parseFloat($('#indoptop').val()) : Infinity;
-  var indGwBot = $.isNumeric($('#indgwbot').val()) ? parseFloat($('#indgwbot').val()) : -Infinity;
-  var indGwTop = $.isNumeric($('#indgwtop').val()) ? parseFloat($('#indgwtop').val()) : Infinity;
-  var indGmBot = $.isNumeric($('#indgmbot').val()) ? parseFloat($('#indgmbot').val()) : -Infinity;
-  var indGmTop = $.isNumeric($('#indgmtop').val()) ? parseFloat($('#indgmtop').val()) : Infinity;
-  var inddGBot = $.isNumeric($('#inddgbot').val()) ? parseFloat($('#inddgbot').val()) : -Infinity;
-  var inddGTop = $.isNumeric($('#inddgtop').val()) ? parseFloat($('#inddgtop').val()) : Infinity;
+  var inSeqBot = $.isNumeric($("#inseqbot").val()) ? parseFloat($("#inseqbot").val()) : -Infinity;
+  var inSeqTop = $.isNumeric($("#inseqtop").val()) ? parseFloat($("#inseqtop").val()) : Infinity;
+  var inAliBot = $.isNumeric($("#inalibot").val()) ? parseFloat($("#inalibot").val()) : -Infinity;
+  var inAliTop = $.isNumeric($("#inalitop").val()) ? parseFloat($("#inalitop").val()) : Infinity;
+  var inDOPBot = $.isNumeric($("#indopbot").val()) ? parseFloat($("#indopbot").val()) : -Infinity;
+  var inDOPTop = $.isNumeric($("#indoptop").val()) ? parseFloat($("#indoptop").val()) : Infinity;
+  var inProBot = $.isNumeric($("#inprobot").val()) ? parseFloat($("#inprobot").val()) : -Infinity;
+  var inProTop = $.isNumeric($("#inprotop").val()) ? parseFloat($("#inprotop").val()) : Infinity;
+  var inddGBot = $.isNumeric($("#inddgbot").val()) ? parseFloat($("#inddgbot").val()) : -Infinity;
+  var inddGTop = $.isNumeric($("#inddgtop").val()) ? parseFloat($("#inddgtop").val()) : Infinity;
+  var inEL2Bot = $.isNumeric($("#inel2bot").val()) ? parseFloat($("#inel2bot").val()) : -Infinity;
+  var inEL2Top = $.isNumeric($("#inel2top").val()) ? parseFloat($("#inel2top").val()) : Infinity;
 
   // Recusively filter the jquery object to get results.
   var jo = $("#resulttable tbody").find("tr");
-  joFiltered = jo.filter(function() {
+  joFiltered = jo.filter(function () {
     var toKeep = true;
     var $row = $(this);
 
-    // Filter by each column.
-    var test = $row.find('td').each(function() {
+    // Filter by each column
+    var test = $row.find("td").each(function () {
       $cell = $(this);
 
-      // Protein.
-      if ($cell.hasClass('tdp')) {
+      // Protein
+      if ($cell.hasClass("td-protein")) {
         if ($cell.text().toLowerCase().indexOf(inProt.toLowerCase()) == -1) return (toKeep = false);
-        // Status.
-      } else if ($cell.hasClass('tds')) {
-        if (!$('#instacom').prop('checked')) {
-          if ($cell.hasClass('done') || $cell.hasClass('doneNO')) return (toKeep = false);
+        // Status
+      } else if ($cell.hasClass("td-status")) {
+        if (!$("#instacom").prop("checked")) {
+          if ($cell.hasClass("done") || $cell.hasClass("doneNO")) return (toKeep = false);
         }
-        if (!$('#instarun').prop('checked')) {
-          if ($cell.hasClass('running') || $cell.hasClass('queued')) return (toKeep = false);
+        if (!$("#instarun").prop("checked")) {
+          if ($cell.hasClass("running") || $cell.hasClass("queued")) return (toKeep = false);
         }
-        if (!$('#instaerr').prop('checked')) {
-          if ($cell.hasClass('error')) return (toKeep = false);
+        if (!$("#instaerr").prop("checked")) {
+          if ($cell.hasClass("error")) return (toKeep = false);
         }
-        // Type.
-      } else if ($cell.hasClass('tdt')) {
-        if (!$('#intypcor').prop('checked') && $cell.text().trim() == 'Core') return (toKeep = false);
-        if (!$('#intypint').prop('checked') && $cell.text().trim().split(' ')[0] == 'Interface') return (toKeep = false);
-        if (!$('#intypunk').prop('checked') && $cell.text().trim() == 'None') return (toKeep = false);
-        // Sequence identity score.
-      } else if ($cell.hasClass('tdi')) {
+        // Etc...
+      } else if ($cell.hasClass("td-type")) {
+        if (!$("#intypcor").prop("checked") && $cell.text().trim() == "Core")
+          return (toKeep = false);
+        if (!$("#intypint").prop("checked") && $cell.text().trim().split(" ")[0] == "Interface")
+          return (toKeep = false);
+        if (!$("#intypunk").prop("checked") && $cell.text().trim() == "None")
+          return (toKeep = false);
+      } else if ($cell.hasClass("td-identity")) {
         if (inSeqBot > parseFloat($cell.text()) || inSeqTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
+          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
         }
-        // Alignment score.
-      } else if ($cell.hasClass('tda')) {
+      } else if ($cell.hasClass("td-alignment")) {
         if (inAliBot > parseFloat($cell.text()) || inAliTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
+          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
         }
-        // DOPE score.
-      } else if ($cell.hasClass('tdd')) {
+      } else if ($cell.hasClass("td-model")) {
         if (inDOPBot > parseFloat($cell.text()) || inDOPTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
+          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
         }
-        // dG_wt.
-      } else if ($cell.hasClass('tdwd')) {
-        if (indGwBot > parseFloat($cell.text()) || indGwTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
+      } else if ($cell.hasClass("td-provean")) {
+        if (inProBot > parseFloat($cell.text()) || inProTop < parseFloat($cell.text())) {
+          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
         }
-        // dG_mut.
-      } else if ($cell.hasClass('tdmd')) {
-        if (indGmBot > parseFloat($cell.text()) || indGmTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
-        }
-        // ddG.
-      } else if ($cell.hasClass('tdg')) {
+      } else if ($cell.hasClass("td-ddg")) {
         if (inddGBot > parseFloat($cell.text()) || inddGTop < parseFloat($cell.text())) {
-          if ((parseFloat($cell.text()) != 1000000)) return (toKeep = false);
+          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
+        }
+      } else if ($cell.hasClass("td-el2")) {
+        if (inEL2Bot > parseFloat($cell.text()) || inEL2Top < parseFloat($cell.text())) {
+          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
         }
       }
     });
