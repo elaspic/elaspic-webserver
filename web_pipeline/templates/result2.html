@@ -184,9 +184,9 @@
         {% else %}
         <p class="whole">
           Type: <span class="mono">
-                      {% ifequal data.mut.affectedType 'CO' %}Core (stability){% endifequal %}
-                        {% ifequal data.mut.affectedType 'IN' %}Interface (affinity){% endifequal %}
-                      </span>
+            {% ifequal data.mut.affectedType 'CO' %}Core (stability){% endifequal %}
+            {% ifequal data.mut.affectedType 'IN' %}Interface (affinity){% endifequal %}
+          </span>
         </p>
         {% endif %}
 
@@ -198,12 +198,11 @@
           <span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.getsequenceidentity }}{% endif %}</span></span>
           <span class="half hright">Model score: <span id="sbdop" class="mono">{{ curmut.model.dope_score|floatformat:3 }}</span></span>
         </p>
-        <p class="whole">
-          <span class="half">&#916;G<sub>wt</sub> <span class="small">(FoldX)</span>: <span id="sbdgwt" class="mono">{{ curmut.dGwt }}</span></span>
-          <span class="half hright">&#916;G<sub>mut</sub> <span class="small">(FoldX)</span>: <span id="sbdgmut" class="mono">{{ curmut.dGmut }}</span></span>
+        <p class="ddg">
+          <code>ELASPIC</code> ΔΔG (<span class="small"><a class="click-elaspic" target="_blank" id="elaspic" href="https://gitlab.com/kimlab/elaspic/tags/v{{ curmut.elaspic_version }}">v{{ curmut.elaspic_version }}</a></span>): <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
         </p>
         <p class="ddg">
-          Final ΔΔG (<span class="small"><a class="click-elaspic" target="_blank" id="elaspic" href="https://gitlab.com/kimlab/elaspic/tags/v{{ curmut.elaspic_version }}">ELASPIC v{{ curmut.elaspic_version }}</a></span>): <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
+          <code>ELASPIC2</code> score (<span class="small"><a class="click-elaspic" target="_blank" id="elaspic" href="https://gitlab.com/kimlab/elaspic/tags/v{{ curmut.elaspic_version }}">v{{ curmut.elaspic_version }}</a></span>): <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
         </p>
 
         <!-- Database information -->
