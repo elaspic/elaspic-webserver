@@ -151,14 +151,7 @@ function updateDlTable(data, length) {
     updateDlCell(data.mutmodels, "pdbmut");
     updateDlCell(data.alignments, "aligns");
     updateDlCell(data.sequences, "seqs");
-    var totalFiles =
-      data.simpleresults[0] +
-      data.allresults[0] +
-      data.wtmodelsori[0] +
-      data.wtmodelsopt[0] +
-      data.mutmodels[0] +
-      data.alignments[0] +
-      data.sequences[0];
+    var totalFiles = data.simpleresults[0] + data.allresults[0] + data.wtmodelsori[0] + data.wtmodelsopt[0] + data.mutmodels[0] + data.alignments[0] + data.sequences[0];
     $("#filecount").text(totalFiles);
     if (totalFiles) {
       $("#dlall").show();
@@ -338,14 +331,7 @@ $(document).ready(function () {
     // bind to pager events
     // *********************
     .bind("pagerChange pagerComplete pagerInitialized pageMoved", function (e, c) {
-      var msg =
-        '"</span> event triggered, ' +
-        (e.type === "pagerChange" ? "going to" : "now on") +
-        ' page <span class="typ">' +
-        (c.page + 1) +
-        "/" +
-        c.totalPages +
-        "</span>";
+      var msg = '"</span> event triggered, ' + (e.type === "pagerChange" ? "going to" : "now on") + ' page <span class="typ">' + (c.page + 1) + "/" + c.totalPages + "</span>";
       $("#display")
         .append('<li><span class="str">"' + e.type + msg + "</li>")
         .find("li:first")
@@ -363,9 +349,7 @@ $(document).ready(function () {
   var r,
     $row,
     num = 50,
-    row =
-      '<tr><td>Student{i}</td><td>{m}</td><td>{g}</td><td>{r}</td><td>{r}</td><td>{r}</td><td>{r}</td><td><button type="button" class="remove" title="Remove this row">X</button></td></tr>' +
-      '<tr><td>Student{j}</td><td>{m}</td><td>{g}</td><td>{r}</td><td>{r}</td><td>{r}</td><td>{r}</td><td><button type="button" class="remove" title="Remove this row">X</button></td></tr>';
+    row = '<tr><td>Student{i}</td><td>{m}</td><td>{g}</td><td>{r}</td><td>{r}</td><td>{r}</td><td>{r}</td><td><button type="button" class="remove" title="Remove this row">X</button></td></tr>' + '<tr><td>Student{j}</td><td>{m}</td><td>{g}</td><td>{r}</td><td>{r}</td><td>{r}</td><td>{r}</td><td><button type="button" class="remove" title="Remove this row">X</button></td></tr>';
   $("button:contains(Add)").click(function () {
     // add two rows of random data!
     r = row.replace(/\{[gijmr]\}/g, function (m) {
@@ -492,7 +476,7 @@ $(document).ready(function () {
 
     // Ensure show if same tooltip.
     if (lastHelp == this) {
-      $(".tooltip#" + tooltip).toggle();
+      $(".tooltip#" + tooltip).toggle(0);
     } else {
       $(".tooltip#" + tooltip).show(0);
     }
