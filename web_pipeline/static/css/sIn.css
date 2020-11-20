@@ -482,3 +482,10 @@
 #dbs {
   font-style: italic;
 }
+
+#protein-id-error {
+  position: absolute;
+  margin-left: 234px;
+  margin-top: -18px;
+  font-weight: 500;
+}

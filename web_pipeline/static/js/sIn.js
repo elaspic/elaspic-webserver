@@ -252,6 +252,7 @@ function stopFetch(ajaxRequests) {
   $("#pwheel").text("");
   $("#pwheel").removeClass("wheelerr");
   $("#pwheel").removeClass("wheelon");
+  $("#protein-id-error").html("");
   $("#selectchain option").remove();
   $("#inacbox").hide();
   if (ajaxRequests[ajaxRequests.length - 1]) {
@@ -281,6 +282,7 @@ function getProtein(protein, ajaxRequests) {
           $("#pwheel").text("Symbol not recognized.");
           $("#pwheel").removeClass("wheelon");
           $("#pwheel").addClass("wheelerr");
+          $("#protein-id-error").html("We supports protein identifiers from the UniProtKB (e.g. <code>Q9BUL8</code>), Ensembl (e.g. <code>ENSP00000376506</code>), HGNC (e.g. <code>PDCD10</code>), and PDB (e.g. <code>3AJM</code>) databases.");
         } else {
           proteinReceived(data.r[0]);
         }
