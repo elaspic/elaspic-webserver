@@ -406,6 +406,10 @@ $(document).ready(function () {
   $(".tooltip, .muttooltip").click(function (e) {
     e.stopPropagation();
   });
+  $(".tooltip, .muttooltip").mousedown(function (e) {
+    e.stopPropagation();
+  });
+
   var lastHelp;
   $(".help").click(function (e) {
     e.stopPropagation();
