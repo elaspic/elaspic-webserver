@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.http import Http404, HttpResponse
 from django.utils import html
-
+from kmbio import PDB
 from kmtools import structure_tools
 
 from . import functions as fn
@@ -248,16 +248,25 @@ def uploadFile(request):
         try:
             random_id = fn.get_random_id()
             user_path = fn.get_user_path(random_id)
-            input_pdb = op.join(user_path, "input.pdb")
+            suffix = myfile.name.split(".")[-1]
+            if suffix in ["cif", "mmcif"]:
+                input_pdb = op.join(user_path, "input.cif")
+            else:
+                input_pdb = op.join(user_path, "input.pdb")
 
             with open(input_pdb, "w") as ifh:
                 ifh.write(myfile.read().decode())
 
-            structure = structure_tools.load_structure(input_pdb)
+            structure = PDB.load(input_pdb)
             structure_tools.process_structure(structure)
             seq = [
-                (chain.id, structure_tools.get_chain_sequence(chain))
-                for chain in structure.get_chains()
+                (
+                    chain.id,
+                    structure_tools.get_chain_sequence(
+                        chain, if_unknown="replace", unknown_residue_marker="X"
+                    ),
+                )
+                for chain in structure.chains
             ]
             logger.debug("seq: '{}'".format(seq))
 
