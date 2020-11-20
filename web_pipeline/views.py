@@ -11,7 +11,7 @@ from django.utils.timezone import now
 
 from . import functions as fn
 from . import conf
-from .functions import fetchProtein, getPnM, getResultData, isInvalidMut, sendEmail
+from . import utils
 from .models import (
     CoreModel,
     CoreMutation,
@@ -797,17 +797,7 @@ def displaySecondaryResult(request):
 
     # Find if mutation is in database.
     mut_dbs = findInDatabase([data.mut.mut], data.mut.protein)
-    mut_dbs_html = ""
-    if mut_dbs[m.mut]:
-        mut_dbs_html = "Mutation in database" + ("s" if len(mut_dbs[m.mut]) > 1 else "") + ": "
-        for i, db in enumerate(mut_dbs[m.mut]):
-            if i:
-                mut_dbs_html += " ,"
-            mut_dbs_html += (
-                '<a target="_blank" href="' + db["url"] + '">' + db["name"] + "</a>"
-            )
-    else:
-        mut_dbs_html = "Mutation run by user"
+    mut_dbs_html = utils.construct_mut_dbs_html(mut_dbs[m.mut])
 
     context = {
         "url": returnUrl,
