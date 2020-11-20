@@ -255,11 +255,13 @@ input.text {
 }
 
 .wheel,
+.input-error,
 #uploaderr {
   display: inline-block;
 }
 
 .wheel,
+.input-error,
 #uploaderr,
 #submiterr,
 .wheeltext {
@@ -552,6 +554,7 @@ textarea,
 }
 
 .wheel,
+.input-error,
 #mutvalerr,
 #uploaderr,
 #appletloading {
@@ -664,6 +667,7 @@ insert,
 
 #error,
 .error,
+.input-error,
 .wheel,
 #uploaderr,
 #submiterr,
