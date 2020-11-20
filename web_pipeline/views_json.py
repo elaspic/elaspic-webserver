@@ -283,7 +283,7 @@ def uploadFile(request):
 
         except Exception as e:
             logger.error("Caught exception '%s': %s", type(e), e)
-            jsonDict = {"msg": "PDB could not be parsed. ", "error": 1}
+            jsonDict = {"msg": f"PDB could not be parsed: {e}.", "error": 1}
             return HttpResponse(json.dumps(jsonDict), content_type="application/json")
 
     jsonDict = {
