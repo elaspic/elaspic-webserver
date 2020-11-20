@@ -37,8 +37,8 @@ class FileManager:
     ]
 
     def __init__(self, jobID, muts):
-        logger.debug("jobID: {}".format(jobID))
-        logger.debug("muts: {}".format(muts))
+        logger.debug("jobID: %s", jobID)
+        logger.debug("muts: %s", muts)
         self.muts = []
         self.files = None
         self.file_name = None
@@ -468,7 +468,7 @@ class FileManager:
                     self.files["alignments"][fname] = op.join(
                         conf.DB_PATH, rm.model.data_path, rm.model.alignment_filename
                     )
-                logger.debug("fname: {}".format(fname))
+                logger.debug("fname: %s", fname)
             else:
                 # Interface.
                 chain_other = 2 if chain == 1 else 1
@@ -486,8 +486,8 @@ class FileManager:
                     m.inputIdentifier,
                     defs,
                 )
-                logger.debug("fname: {}".format(fname))
-                logger.debug("fname2: {}".format(fname2))
+                logger.debug("fname: %s", fname)
+                logger.debug("fname2: %s", fname2)
 
                 if chain == 1:
                     alignment_filename_1, alignment_filename_2 = (
@@ -499,8 +499,8 @@ class FileManager:
                         rm.model.alignment_filename_1,
                         rm.model.alignment_filename_2,
                     )
-                logger.debug("alignment_filename_1: {}".format(alignment_filename_1))
-                logger.debug("alignment_filename_2: {}".format(alignment_filename_2))
+                logger.debug("alignment_filename_1: %s", alignment_filename_1)
+                logger.debug("alignment_filename_2: %s", alignment_filename_2)
 
                 if not (fname in self.files["alignments"]):
                     self.files["alignments"][fname] = op.join(
@@ -514,9 +514,9 @@ class FileManager:
     def _get_txt_buffer(self):
         ofh = io.BytesIO()  # output file handle
         for filename, file in self.files[self.file_name].items():
-            logger.debug("self.file_name: {}".format(self.file_name))
-            logger.debug("filename: {}".format(filename))
-            logger.debug("file: {}".format(file))
+            logger.debug("self.file_name: %s", self.file_name)
+            logger.debug("filename: %s", filename)
+            logger.debug("file: %s", file)
             with open(file, "rb") as ifh:
                 ofh.write(ifh.read())
         return ofh
@@ -526,7 +526,7 @@ class FileManager:
         ofh = io.BytesIO()  # output file handle
         z = ZipFile(ofh, "w")
         for fold in self.files:
-            logger.debug("fold: {}".format(fold))
+            logger.debug("fold: %s", fold)
             # Set subfolder if everything is requested.
             if fold == "simpleresults":
                 continue

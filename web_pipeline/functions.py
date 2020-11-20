@@ -1,4 +1,7 @@
+import functools
+import itertools
 import logging
+import operator
 import os
 import os.path as op
 import random
@@ -217,28 +220,24 @@ def cleanup_jtom(jtom):
 
 def getResultData(jtom):
     """"""
-    logger.debug("getResultData({})".format(jtom))
+    logger.debug("getResultData(%s)", jtom)
 
     # Update job last visited to now.
     j = jtom.job
     j.dateVisited = now()
     # j.save()
 
+    aType = jtom.mut.affectedType
     local = True if j.localID else False
+
     CM = CoreMutationLocal if local else CoreMutation
     IM = InterfaceMutationLocal if local else InterfaceMutation
-    aType = jtom.mut.affectedType
-    logger.debug("aType: {}".format(aType))
 
     jtom.realMutErr = None
 
-    jtom.realMut = list(
-        CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
-    )
+    jtom.realMut = list(CM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
     if aType == "IN":
-        jtom.realMut += list(
-            IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut)
-        )
+        jtom.realMut += list(IM.objects.filter(protein_id=jtom.mut.protein, mut=jtom.mut.mut))
 
     # Return one by one
     if aType == "CO":
@@ -346,7 +345,7 @@ def fetchProtein(pid, local=False):
         3) Uniprot identifiers.
 
     """
-    logger.debug("fetchProtein({}, {})".format(pid, local))
+    logger.debug("fetchProtein(%s, %s)", pid, local)
     pid = pid.upper()
     try:
         # 1) Database protein
@@ -415,7 +414,7 @@ def fetchProtein(pid, local=False):
                         )
                         return Protein.objects.get(id=iden[0].uniprotID)
                     else:
-                        logger.debug("Error: '{}'".format(UniprotIdentifier.DoesNotExist))
+                        logger.debug("Error: '%s'", UniprotIdentifier.DoesNotExist)
                         raise UniprotIdentifier.DoesNotExist
 
                 except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist) as e:

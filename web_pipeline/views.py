@@ -5,13 +5,23 @@ from shutil import copyfile
 from tempfile import mkdtemp
 
 import requests
+from django.core.cache import cache
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.timezone import now
 
-from . import functions as fn
 from . import conf
+from . import functions as fn
 from . import utils
+from .functions import (
+    assign_mutation_results,
+    fetchProtein,
+    get_mutation_results,
+    getPnM,
+    getResultData,
+    isInvalidMut,
+    sendEmail,
+)
 from .models import (
     CoreModel,
     CoreMutation,
@@ -47,7 +57,7 @@ def inp(request, p):
 
 
 def runPipeline(request):
-    logger.debug("request: {}".format(request.GET))
+    logger.debug("request: %s", request.GET)
 
     # Check for valid request.
     if not request.GET:
@@ -92,7 +102,7 @@ def runPipeline(request):
         local = False
         # Generate list of valid proteins and mutations.
         pnms = request.GET["proteins"].split(" ")[:10000]
-        logger.debug("pnms: {}".format(pnms))
+        logger.debug("pnms: %s", pnms)
         validPnms = []
         for pnm in pnms:
             iden, mut = getPnM(pnm)
@@ -112,7 +122,7 @@ def runPipeline(request):
             validPnms.append([p.id, mut, iden])
         if not validPnms:
             return HttpResponseRedirect("/")  # No valid proteins.
-        logger.debug("validPnms: {}".format(validPnms))
+        logger.debug("validPnms: %s", validPnms)
 
         random_id = fn.get_random_id()
         j = Job.objects.create(
@@ -250,7 +260,7 @@ def runPipeline(request):
                 logger.error("Bad response from jobsubmitter server: {}".format(r))
                 continue
             status = r.json().get("status", None)
-            logger.debug("status: {}".format(status))
+            logger.debug("status: %s", status)
     else:
         logger.debug(
             "No data! All mutations are done? newMuts: {}, doneMuts: {}".format(newMuts, doneMuts)
@@ -280,11 +290,10 @@ def runPipeline(request):
             sendEmail(j, "started")
 
     # Redirect to result page.
-    return HttpResponseRedirect(
-        "http://%s/result/%s/" % (request.get_host(), random_id)
-    )
+    return HttpResponseRedirect("http://%s/result/%s/" % (request.get_host(), random_id))
 
 
+@profile
 def displayResult(request):
     logger.debug("displayResult(%s)", request)
 
@@ -411,7 +420,7 @@ def displayResult(request):
 
 
 def displaySecondaryResult(request):
-    logger.debug("displaySecondaryResult({})".format(request))
+    logger.debug("displaySecondaryResult(%s)", request)
 
     # Check URL for session change.
     if request.GET:
@@ -432,8 +441,8 @@ def displaySecondaryResult(request):
     if "p" in request.GET:
         initialProtein = int(request.GET["p"][1:])
         initialHomodimer = True if request.GET["p"][0] == "h" else False
-    logger.debug("initialProtein: {}".format(initialProtein))
-    logger.debug("initialHomodimer: {}".format(initialHomodimer))
+    logger.debug("initialProtein: %s", initialProtein)
+    logger.debug("initialHomodimer: %s", initialHomodimer)
 
     curmut, curdom = None, None
 
@@ -463,7 +472,7 @@ def displaySecondaryResult(request):
     # inCore = True if m.affectedType == 'CO' or m.affectedType == 'NO' else False
     inCore = not initialProtein
     data = getResultData(jtom[0])
-    logger.debug("data: '{}'".format(data))
+    logger.debug("data: '%s'", data)
 
     if loadEverything:
         if data.realMutErr == "DNE":
@@ -582,7 +591,7 @@ def displaySecondaryResult(request):
             )
 
         p = data.realMut[0].protein
-        logger.debug("p: {}".format(p))
+        logger.debug("p: %s", p)
 
     # Load domains if mutation failed.
     elif not loadEverything:
@@ -602,8 +611,8 @@ def displaySecondaryResult(request):
         # [p] + ([mu['domain'].protein for mu in intmuts] if intmuts else [])
     )
 
-    logger.debug("intmuts: {}".format(intmuts))
-    logger.debug("prots: '{}'".format(prots))
+    logger.debug("intmuts: %s", intmuts)
+    logger.debug("prots: '%s'", prots)
     for idx, prot in enumerate(prots):
 
         if local:
@@ -615,11 +624,11 @@ def displaySecondaryResult(request):
             # pds = [m.getdomain(chain_pos) for m in data.realMut]
             pds = list(CoreModel.objects.filter(protein_id=prot.id))
 
-        logger.debug("pds: '{}'".format(pds))
+        logger.debug("pds: '%s'", pds)
 
         # Check if homodimer with self.
         homodimer = True if prot == p else False
-        logger.debug("homodimer: '{}'".format(homodimer))
+        logger.debug("homodimer: '%s'", homodimer)
 
         try:
             logger.debug(
@@ -720,7 +729,7 @@ def displaySecondaryResult(request):
             # if prot.name.split('_')[0] == 'UBC':
             # o += prot.name.split('_')[0] + ', '
             # AS
-            logger.debug("pd.id: {}, idx: {}, didx: {}".format(pd.id, idx, didx))
+            logger.debug("pd.id: %s, idx: %s, didx: %s", pd.id, idx, didx)
             if idx:
                 _domain_id = intmuts[idx - 1]["mut"].model.getdomain(1 if chain == 2 else 2).id
                 if pd.id == initialProtein and _domain_id == initialProtein:
@@ -732,10 +741,10 @@ def displaySecondaryResult(request):
     if pxMutnum < 0:
         pxMutnum = 0
 
-    logger.debug("curdom: {}".format(curdom))
-    logger.debug("curmut: {}".format(curmut))
-    logger.debug("data.realMut: {}".format(data.realMut))
-    logger.debug("ds: {}".format(ds))
+    logger.debug("curdom: %s", curdom)
+    logger.debug("curmut: %s", curmut)
+    logger.debug("data.realMut: %s", data.realMut)
+    logger.debug("ds: %s", ds)
 
     if not curmut:
         curmut = data.realMut[0] if inCore else data.realMut[-1]  # AS: indexerror?
@@ -770,12 +779,12 @@ def displaySecondaryResult(request):
         # is outside all core domains.
         d1 = ds[0][0]
 
-    logger.debug("curdom: {}".format(curdom))
-    logger.debug("d2: {}".format(d2))
+    logger.debug("curdom: %s", curdom)
+    logger.debug("d2: %s", d2)
 
     # Get domain interaction values for 2dbar.
     if d2:
-        logger.debug("d1: {}".format(d1))
+        logger.debug("d1: %s", d1)
         # Set start and end for each domain.
         d1s, d1e = d1[3], d1[3] + d1[4]
         d2s, d2e = d2[3], d2[3] + d2[4]
@@ -874,7 +883,7 @@ def displaySecondaryResult(request):
             "self_width": d1[4] if not inCore else 0,
         },
     }
-    logger.debug("context:\n{}".format(context))
+    logger.debug("context: %s", context)
 
     # <i>, name, popup, pxstart, pxsize, start, end, status, psize
 

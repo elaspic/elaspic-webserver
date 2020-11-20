@@ -39,7 +39,7 @@ MAX_NUM_MUTATIONS = 100
 
 
 def rerunMut(request):
-    logger.debug("rerunMut({})".format(request))
+    logger.debug("rerunMut(%s)", request)
     if not request.GET:
         raise Http404
     if not ("m" in request.GET) or not ("j" in request.GET):
@@ -139,15 +139,14 @@ def getdownloads(request):
     for f in files:
         data = fm.makeFile(fileToMake=f)
         file_size = len(data)
-        logger.debug("fm.file_count: {}".format(fm.file_count))
+        logger.debug("fm.file_count: %s", fm.file_count)
         jsonDict[f.split(".")[0].replace("-", "")] = [fm.file_count, file_size]
-    logger.debug("jsonDict: {}".format(jsonDict))
-    logger.debug("fm.files: {}".format(fm.files._FixedDict__data))
+    logger.debug("jsonDict: %s", jsonDict)
+    logger.debug("fm.files: %s", fm.files._FixedDict__data)
     return HttpResponse(json.dumps(jsonDict), content_type="application/json")
 
 
 def checkIfJobIsReady(request):
-
     if not request.POST:
         raise Http404
     if not ("j" in request.POST):
@@ -196,7 +195,6 @@ def _correct_methylated_lysines(res):
 
 
 def uploadFile(request):
-
     if not request.FILES:
         raise Http404
     if not ("fileToUpload" in request.FILES):
@@ -266,7 +264,7 @@ def uploadFile(request):
                 )
                 for chain in structure.chains
             ]
-            logger.debug("seq: '{}'".format(seq))
+            logger.debug("seq: '%s'", seq)
 
             if len(seq) < 1:
                 jsonDict = {"msg": "PDB does not have any valid chains. ", "error": 1}
@@ -294,7 +292,7 @@ def uploadFile(request):
 
 def getProtein(request):
     """"""
-    logger.debug("getProtein({})".format(request))
+    logger.debug("getProtein(%s)", request)
 
     # return HttpResponse(
     #    json.dumps({'r': [{'seq': 'AAAAAAAAAAAAAAAAAAAAAAAA'}], 'e': False}),
@@ -327,8 +325,8 @@ def getProtein(request):
     err = _get_errors(output) if reqs["err"] else None
 
     # Return
-    logger.debug("output: {}".format(output))
-    logger.debug("err: {}".format(err))
+    logger.debug("output: %s", output)
+    logger.debug("err: %s", err)
     return HttpResponse(json.dumps({"r": output, "e": err}), content_type="application/json")
 
 
@@ -418,12 +416,11 @@ def _get_mutation_info_info(p, mut, reqs):
             key=lambda x: x["prot"],
         )
     logger.debug("Done going over all domains and interactions!")
-    logger.debug("mutation_info: {}".format(mutation_info))
+    logger.debug("mutation_info: %s", mutation_info)
 
     if reqs["mut"]:
-        logger.debug("all_domain_range: {}".format(all_domain_range))
-        # logger.debug("all_interface_models: {}".format(all_interface_models))
-        logger.debug("mut: {}".format(mut))
+        logger.debug("all_domain_range: %s", all_domain_range)
+        logger.debug("mut: %s", mut)
         if int(mut[1:-1]) not in all_domain_range:
             mutation_info["error"] = True
             mutation_info["emsg"] = "OOD"
@@ -489,7 +486,7 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
         for mut in model.muts.filter(protein_id=p.id).exclude(ddG=None)
         if int(mut.mut[1:-1]) in all_domain_range
     ]
-    logger.debug("muts: '{}'".format(muts))
+    logger.debug("muts: '%s'", muts)
     logger.debug("done querying mutations...")
 
     mut_dbs = findInDatabase([m[0].mut for m in muts], p.id)

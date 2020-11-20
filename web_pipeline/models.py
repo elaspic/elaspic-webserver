@@ -986,7 +986,7 @@ class DatabaseCOSMIC(models.Model):
 
 
 def findInDatabase(mutations, protein_id):
-    logger.debug("findInDatabase({}, {})".format(mutations, protein_id))
+    logger.debug("findInDatabase(%s, %s)", mutations, protein_id)
     dbs = defaultdict(list)
 
     for db in (DatabaseClinVar, DatabaseUniProt, DatabaseCOSMIC):
@@ -998,5 +998,5 @@ def findInDatabase(mutations, protein_id):
                     "variation": mut_db.variation,
                 }
             )
-    logger.debug("dbs: '{}'".format(dbs))
+    logger.debug("dbs: '%s'", dbs)
     return dbs
