@@ -331,6 +331,7 @@ $(document).ready(function () {
 
       widgetOptions: {
         zebra: ["odd", "even"],
+        filter_columnFilters: false,
       },
     })
 
