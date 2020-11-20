@@ -88,9 +88,7 @@ def get_user_path(random_id):
 def checkForCompletion(jobs):
     for j in jobs:
         jms = list(
-            j.muts.filter(
-                Q(status="queued") | Q(status="running") | Q(rerun=1) | Q(rerun=2)
-            )
+            j.muts.filter(Q(status="queued") | Q(status="running") | Q(rerun=1) | Q(rerun=2))
         )
         if not (jms) and not (j.isDone):
             j.isDone = True
@@ -196,9 +194,7 @@ def sendEmail(j, sendType):
         job_id, job_email = j.jobID, j.email
 
     # Validate email address
-    if not re.match(
-        r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$", job_email
-    ):
+    if not re.match(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(?:[a-zA-Z]{2,4}|museum)$", job_email):
         return 0
 
     # Set Subject and content.
@@ -220,9 +216,7 @@ def sendEmail(j, sendType):
         },
     )
     text_content = strip_tags(html_content)
-    msg = EmailMultiAlternatives(
-        sendSubject, text_content, settings.EMAIL_HOST_USER, [job_email]
-    )
+    msg = EmailMultiAlternatives(sendSubject, text_content, settings.EMAIL_HOST_USER, [job_email])
     msg.attach_alternative(html_content, "text/html")
 
     # Send email.
@@ -232,9 +226,7 @@ def sendEmail(j, sendType):
         logger.debug("Email sent successfully! :)")
         return 1
     except Exception as e:
-        logger.error(
-            "The following exception occured while trying to send mail: {}".format(e)
-        )
+        logger.error("The following exception occured while trying to send mail: {}".format(e))
         return 0
 
 
@@ -321,15 +313,11 @@ def fetchProtein(pid, local=False):
 
                         iden = sorted(
                             iden,
-                            key=lambda i: (
-                                [i.identifierType not in Ids[key] for key in Ids]
-                            ),
+                            key=lambda i: ([i.identifierType not in Ids[key] for key in Ids]),
                         )
                         return Protein.objects.get(id=iden[0].uniprotID)
                     else:
-                        logger.debug(
-                            "Error: '{}'".format(UniprotIdentifier.DoesNotExist)
-                        )
+                        logger.debug("Error: '{}'".format(UniprotIdentifier.DoesNotExist))
                         raise UniprotIdentifier.DoesNotExist
 
                 except (UniprotIdentifier.DoesNotExist, Protein.DoesNotExist) as e:
@@ -376,10 +364,7 @@ def isInvalidMut(mut, seq):
         return "OOB"
 
     # Test if mutation is the right amino acid.
-    if (
-        mut[0] != seq[int(mut[1:-1]) - 1]
-        or mut[-1].upper() not in "GASTCVLIMPFYWDENQHKR"
-    ):
+    if mut[0] != seq[int(mut[1:-1]) - 1] or mut[-1].upper() not in "GASTCVLIMPFYWDENQHKR":
         return "OOB"
 
     # Return None if mutation is valid.

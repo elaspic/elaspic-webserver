@@ -74,9 +74,7 @@ def runPipeline(request):
             f.write(">input.pdb\n")
             f.write(seq)
         if isInvalidMut(mut, seq):
-            logger.error(
-                "Mutation '{}' if not valid for sequence '{}'".format(mut, seq)
-            )
+            logger.error("Mutation '{}' if not valid for sequence '{}'".format(mut, seq))
             return HttpResponseRedirect("/")
 
         j = Job.objects.create(
@@ -86,9 +84,7 @@ def runPipeline(request):
             localID=random_id,
         )
 
-        m = Mut.objects.create(
-            protein=random_id, mut=mut, chain=chain, status="running"
-        )
+        m = Mut.objects.create(protein=random_id, mut=mut, chain=chain, status="running")
 
         JobToMut.objects.create(job=j, mut=m, inputIdentifier=filename)
 
@@ -110,9 +106,7 @@ def runPipeline(request):
                 continue
             if isInvalidMut(mut, p.seq):
                 logger.error(
-                    "Invalid mutation for pnm: '{}', iden: '{}', mut: '{}'".format(
-                        pnm, iden, mut
-                    )
+                    "Invalid mutation for pnm: '{}', iden: '{}', mut: '{}'".format(pnm, iden, mut)
                 )
                 continue
             validPnms.append([p.id, mut, iden])
@@ -151,9 +145,7 @@ def runPipeline(request):
 
             # Get potential results.
             muts = list(CoreMutation.objects.filter(protein_id=pnm[0], mut=pnm[1]))
-            imuts = list(
-                InterfaceMutation.objects.filter(protein_id=pnm[0], mut=pnm[1])
-            )
+            imuts = list(InterfaceMutation.objects.filter(protein_id=pnm[0], mut=pnm[1]))
 
             if m:
                 mut = m[0]
@@ -199,9 +191,7 @@ def runPipeline(request):
                         ]
                     )
                 else:
-                    newMuts.append(
-                        [Mut.objects.create(protein=pnm[0], mut=pnm[1]), pnm[2]]
-                    )
+                    newMuts.append([Mut.objects.create(protein=pnm[0], mut=pnm[1]), pnm[2]])
 
         # Link all mutations to job.
         JobToMut.objects.bulk_create(
@@ -263,9 +253,7 @@ def runPipeline(request):
             logger.debug("status: {}".format(status))
     else:
         logger.debug(
-            "No data! All mutations are done? newMuts: {}, doneMuts: {}".format(
-                newMuts, doneMuts
-            )
+            "No data! All mutations are done? newMuts: {}, doneMuts: {}".format(newMuts, doneMuts)
         )
 
     if local:
@@ -276,8 +264,7 @@ def runPipeline(request):
             [
                 (
                     True
-                    if (m[0].status == "done" or m[0].status == "error")
-                    and not (m[0].rerun)
+                    if (m[0].status == "done" or m[0].status == "error") and not (m[0].rerun)
                     else False
                 )
                 for m in newMuts + doneMuts
@@ -550,9 +537,7 @@ def displaySecondaryResult(request):
                         logger.error("Filerror: {}".format(e))
                         fileError = e
 
-        data.realMut = [
-            data.realMut[i] for i in range(len(data.realMut)) if i not in toRemove
-        ]
+        data.realMut = [data.realMut[i] for i in range(len(data.realMut)) if i not in toRemove]
 
         # Show error page if database fetching failed.
         if fileError:
@@ -575,11 +560,7 @@ def displaySecondaryResult(request):
 
     # Load domains if mutation failed.
     elif not loadEverything:
-        p = (
-            ProteinLocal.objects.get(id=m.protein)
-            if local
-            else Protein.objects.get(id=m.protein)
-        )
+        p = ProteinLocal.objects.get(id=m.protein) if local else Protein.objects.get(id=m.protein)
 
     pSize = len(p.seq) + 0.0
 
@@ -646,18 +627,14 @@ def displaySecondaryResult(request):
                 # Check if protein is already in list.
                 if not didx:
                     notUnique = (
-                        proteinToDomainID[prot.id]
-                        if prot.id in proteinToDomainID
-                        else False
+                        proteinToDomainID[prot.id] if prot.id in proteinToDomainID else False
                     )
                     if not notUnique:
                         proteinToDomainID[prot.id] = intmuts[idx - 1]["domain"].id
                     # Get chains for coloring.
                     chain = 1 if intmuts[idx - 1]["mut"].findChain() == 1 else 2
                     chainself = intmuts[idx - 1]["mut"].model.getchain(chain)
-                    chaininac = intmuts[idx - 1]["mut"].model.getchain(
-                        1 if chain == 2 else 2
-                    )
+                    chaininac = intmuts[idx - 1]["mut"].model.getchain(1 if chain == 2 else 2)
                     # Get mutation info.
                     seqid = intmuts[idx - 1]["mut"].model.getsequenceidentity(chain)
                     pdbtemp = intmuts[idx - 1]["mut"].model.getpdbtemplate(chain)
@@ -719,9 +696,7 @@ def displaySecondaryResult(request):
             # AS
             logger.debug("pd.id: {}, idx: {}, didx: {}".format(pd.id, idx, didx))
             if idx:
-                _domain_id = (
-                    intmuts[idx - 1]["mut"].model.getdomain(1 if chain == 2 else 2).id
-                )
+                _domain_id = intmuts[idx - 1]["mut"].model.getdomain(1 if chain == 2 else 2).id
                 if pd.id == initialProtein and _domain_id == initialProtein:
                     curdom = ds[idx]
                     curmut = intmuts[idx - 1]["mut"]
@@ -814,14 +789,10 @@ def displaySecondaryResult(request):
             leftheight = (fullheight * first_d[4] / (midwidth + first_d[4])) / 2
             rightheight = (fullheight * last_d[4] / (midwidth + last_d[4])) / 2
             midtopheight = (
-                fullheight / 2 - rightheight
-                if leftside == "down"
-                else fullheight / 2 - leftheight
+                fullheight / 2 - rightheight if leftside == "down" else fullheight / 2 - leftheight
             )
             midbotheight = (
-                fullheight / 2 - leftheight
-                if leftside == "down"
-                else fullheight / 2 - rightheight
+                fullheight / 2 - leftheight if leftside == "down" else fullheight / 2 - rightheight
             )
 
     # Find if mutation is in database.

@@ -3,6 +3,7 @@ import logging
 import os.path as op
 import pickle
 from collections import Counter, defaultdict
+from pathlib import Path
 from re import sub
 from subprocess import PIPE, Popen
 
@@ -14,8 +15,9 @@ from django.utils import html
 from kmbio import PDB
 from kmtools import structure_tools
 
-from . import functions as fn
 from . import conf
+from . import functions as fn
+from . import utils
 from .filemanager import FileManager
 from .functions import fetchProtein, getPnM, isInvalidMut
 from .models import InterfaceModel  # InterfaceModelLocal,
@@ -47,9 +49,7 @@ def rerunMut(request):
     error = 0
 
     try:
-        jtom = JobToMut.objects.get(
-            job_id=request.GET["j"], inputIdentifier=protein, mut__mut=mut
-        )
+        jtom = JobToMut.objects.get(job_id=request.GET["j"], inputIdentifier=protein, mut__mut=mut)
     except JobToMut.DoesNotExist:
         error = 1
     else:
@@ -80,9 +80,7 @@ def rerunMut(request):
             n_tries = 0
             while (not status or status == "error") and n_tries < 10:
                 n_tries += 1
-                r = requests.post(
-                    "http://localhost:8001/elaspic/api/1.0/", json=data_in
-                )
+                r = requests.post("http://localhost:8001/elaspic/api/1.0/", json=data_in)
                 status = r.json().get("status", None)
 
     return HttpResponse(json.dumps({"error": error}), content_type="application/json")
@@ -213,9 +211,7 @@ def uploadFile(request):
         return HttpResponse(json.dumps(jsonDict), content_type="application/json")
 
     try:
-        process = Popen(
-            ["/usr/bin/file", "-i", myfile.temporary_file_path()], stdout=PIPE
-        )
+        process = Popen(["/usr/bin/file", "-i", myfile.temporary_file_path()], stdout=PIPE)
         stdout, stderr = process.communicate()
 
         if stdout.decode().split(" ")[1].split("/")[0] not in ("text", "chemical"):
@@ -254,8 +250,8 @@ def uploadFile(request):
             else:
                 input_pdb = op.join(user_path, "input.pdb")
 
-            with open(input_pdb, "w") as ifh:
-                ifh.write(myfile.read().decode())
+            with open(input_pdb, "w") as ofh:
+                ofh.write(myfile.read().decode())
 
             structure = PDB.load(input_pdb)
             # Save cleaned up version of file
@@ -274,9 +270,7 @@ def uploadFile(request):
 
             if len(seq) < 1:
                 jsonDict = {"msg": "PDB does not have any valid chains. ", "error": 1}
-                return HttpResponse(
-                    json.dumps(jsonDict), content_type="application/json"
-                )
+                return HttpResponse(json.dumps(jsonDict), content_type="application/json")
 
             with open(op.join(user_path, "pdb_parsed.pickle"), "bw") as f:
                 f.write(pickle.dumps(seq))
@@ -335,9 +329,7 @@ def getProtein(request):
     # Return
     logger.debug("output: {}".format(output))
     logger.debug("err: {}".format(err))
-    return HttpResponse(
-        json.dumps({"r": output, "e": err}), content_type="application/json"
-    )
+    return HttpResponse(json.dumps({"r": output, "e": err}), content_type="application/json")
 
 
 def _get_mutation_info(inp, reqs, done):
@@ -409,9 +401,7 @@ def _get_mutation_info_info(p, mut, reqs):
         all_interface_models = set()
         logger.debug("Going over all domains and interactions...")
         for d in ds:
-            doms, defs, domain_range, interface_models = _get_domain_info(
-                d, pid_to_name, inacs
-            )
+            doms, defs, domain_range, interface_models = _get_domain_info(d, pid_to_name, inacs)
             mutation_info.setdefault("doms", []).append(doms)
             mutation_info.setdefault("defs", []).append(defs)
             all_domain_range.update(domain_range)
@@ -424,10 +414,7 @@ def _get_mutation_info_info(p, mut, reqs):
         mutation_info["inacsum"] = inacsum
 
         mutation_info["inacs"] = sorted(
-            [
-                {"pid": k, "prot": pid_to_name[k], "aa": list(map(int, v))}
-                for k, v in inacs.items()
-            ],
+            [{"pid": k, "prot": pid_to_name[k], "aa": list(map(int, v))} for k, v in inacs.items()],
             key=lambda x: x["prot"],
         )
     logger.debug("Done going over all domains and interactions!")
@@ -489,9 +476,7 @@ def _get_domain_info(d, pid_to_name, interactions):
 
 
 def _get_known_muts(p, ds, all_domain_range, all_interface_models):
-    logger.debug(
-        "_get_known_muts(%s, %s, %s, %s)", p, ds, all_domain_range, all_interface_models
-    )
+    logger.debug("_get_known_muts(%s, %s, %s, %s)", p, ds, all_domain_range, all_interface_models)
     mdict = {}
     muts = [
         (mut, None, None)
@@ -517,10 +502,7 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
         for m in muts
         if (
             (isinstance(m[0], (CoreMutationLocal, InterfaceMutationLocal)))
-            or (
-                isinstance(m[0], (CoreMutation, InterfaceMutation))
-                and len(mut_dbs[m[0].mut])
-            )
+            or (isinstance(m[0], (CoreMutation, InterfaceMutation)) and len(mut_dbs[m[0].mut]))
         )
     ]
     # If still > 100 mutations, keep residues with the largest number of mutants
@@ -538,19 +520,7 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
         isInt = partner_protein_name
         iId = partner_protein_id
 
-        mut_dbs_html = ""
-        if mut_dbs[m.mut]:
-            mut_dbs_html = (
-                "Mutation in database" + ("s" if len(mut_dbs[m.mut]) > 1 else "") + ": "
-            )
-            for i, db in enumerate(mut_dbs[m.mut]):
-                if i:
-                    mut_dbs_html += ", "
-                mut_dbs_html += (
-                    '<a target="_blank" href="' + db["url"] + '">' + db["name"] + "</a>"
-                )
-        else:
-            mut_dbs_html = "Mutation run by user"
+        mut_dbs_html = utils.construct_mut_dbs_html(mut_dbs[m.mut])
 
         toAppend = {
             "i": isInt,
@@ -632,9 +602,7 @@ def _get_errors(output):
             if errDict[eidx][prot] == 1:
                 err["errors"][errIdx[eidx]].append("<b>%s</b>" % prot)
             else:
-                err["errors"][errIdx[eidx]].append(
-                    "<b>%s</b> (x%d)" % (prot, errDict[eidx][prot])
-                )
+                err["errors"][errIdx[eidx]].append("<b>%s</b> (x%d)" % (prot, errDict[eidx][prot]))
 
     # Assign headeres to error lists.
     errLists = 0
@@ -720,9 +688,7 @@ def contactmail(request):
 
     message = "<i>From: " + html.strip_tags(request.POST["name"]) + "<br />"
     message += "Email: " + html.strip_tags(from_email) + "</i><br /><br />"
-    message += (
-        "Topic: <b>" + html.strip_tags(request.POST["topic"]) + "</b><br /><br />"
-    )
+    message += "Topic: <b>" + html.strip_tags(request.POST["topic"]) + "</b><br /><br />"
     message += "Message: <br /><b>"
     message += html.strip_tags(request.POST["msg"]).replace("\n", "<br/>")
     message += "</b>"
