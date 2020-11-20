@@ -293,7 +293,6 @@ def runPipeline(request):
     return HttpResponseRedirect("http://%s/result/%s/" % (request.get_host(), random_id))
 
 
-@profile
 def displayResult(request):
     logger.debug("displayResult(%s)", request)
 
