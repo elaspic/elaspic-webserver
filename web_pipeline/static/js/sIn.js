@@ -141,9 +141,7 @@ function proteinReceived(result) {
     $(".first-switch").removeClass("first");
     for (var i = 0; i < result.msg.length; i++) {
       var chain = result.msg[i][0];
-      $("#selectchain").append(
-        '<option value="' + i + '" id="' + chain + '">chain ' + chain + "</option>"
-      );
+      $("#selectchain").append('<option value="' + i + '" id="' + chain + '">chain ' + chain + "</option>");
     }
   } else {
     protName = $.trim($("#proteininput").val()).toUpperCase();
@@ -327,11 +325,9 @@ $(document).ready(function () {
       filetype: "pdb",
     },
     onStart: function () {
-      console.log("Ba");
       stopFetch(ajaxRequests);
     },
     onComplete: function (response) {
-      console.log("Bb");
       if (typeof response === "string" || response instanceof String) {
         // Converts text to JSON if needed (Chrome).
         response = $.parseJSON($(response).text());
