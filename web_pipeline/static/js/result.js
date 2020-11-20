@@ -29,87 +29,64 @@ function setRowColors() {
 }
 
 function filterResultTable() {
-  var inProt = $("#inprot").val();
-  // (condition) ? true-value : false-value;
-  var inSeqBot = $.isNumeric($("#inseqbot").val()) ? parseFloat($("#inseqbot").val()) : -Infinity;
-  var inSeqTop = $.isNumeric($("#inseqtop").val()) ? parseFloat($("#inseqtop").val()) : Infinity;
-  var inAliBot = $.isNumeric($("#inalibot").val()) ? parseFloat($("#inalibot").val()) : -Infinity;
-  var inAliTop = $.isNumeric($("#inalitop").val()) ? parseFloat($("#inalitop").val()) : Infinity;
-  var inDOPBot = $.isNumeric($("#indopbot").val()) ? parseFloat($("#indopbot").val()) : -Infinity;
-  var inDOPTop = $.isNumeric($("#indoptop").val()) ? parseFloat($("#indoptop").val()) : Infinity;
-  var inProBot = $.isNumeric($("#inprobot").val()) ? parseFloat($("#inprobot").val()) : -Infinity;
-  var inProTop = $.isNumeric($("#inprotop").val()) ? parseFloat($("#inprotop").val()) : Infinity;
-  var inddGBot = $.isNumeric($("#inddgbot").val()) ? parseFloat($("#inddgbot").val()) : -Infinity;
-  var inddGTop = $.isNumeric($("#inddgtop").val()) ? parseFloat($("#inddgtop").val()) : Infinity;
-  var inEL2Bot = $.isNumeric($("#inel2bot").val()) ? parseFloat($("#inel2bot").val()) : -Infinity;
-  var inEL2Top = $.isNumeric($("#inel2top").val()) ? parseFloat($("#inel2top").val()) : Infinity;
-
-  // Recusively filter the jquery object to get results.
-  var jo = $("#resulttable tbody").find("tr");
-  joFiltered = jo.filter(function () {
-    var toKeep = true;
-    var $row = $(this);
-
-    // Filter by each column
-    var test = $row.find("td").each(function () {
-      $cell = $(this);
-
-      // Protein
-      if ($cell.hasClass("td-protein")) {
-        if ($cell.text().toLowerCase().indexOf(inProt.toLowerCase()) == -1) return (toKeep = false);
-        // Status
-      } else if ($cell.hasClass("td-status")) {
-        if (!$("#instacom").prop("checked")) {
-          if ($cell.hasClass("done") || $cell.hasClass("doneNO")) return (toKeep = false);
-        }
-        if (!$("#instarun").prop("checked")) {
-          if ($cell.hasClass("running") || $cell.hasClass("queued")) return (toKeep = false);
-        }
-        if (!$("#instaerr").prop("checked")) {
-          if ($cell.hasClass("error")) return (toKeep = false);
-        }
-        // Etc...
-      } else if ($cell.hasClass("td-type")) {
-        if (!$("#intypcor").prop("checked") && $cell.text().trim() == "Core")
-          return (toKeep = false);
-        if (!$("#intypint").prop("checked") && $cell.text().trim().split(" ")[0] == "Interface")
-          return (toKeep = false);
-        if (!$("#intypunk").prop("checked") && $cell.text().trim() == "None")
-          return (toKeep = false);
-      } else if ($cell.hasClass("td-identity")) {
-        if (inSeqBot > parseFloat($cell.text()) || inSeqTop < parseFloat($cell.text())) {
-          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
-        }
-      } else if ($cell.hasClass("td-alignment")) {
-        if (inAliBot > parseFloat($cell.text()) || inAliTop < parseFloat($cell.text())) {
-          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
-        }
-      } else if ($cell.hasClass("td-model")) {
-        if (inDOPBot > parseFloat($cell.text()) || inDOPTop < parseFloat($cell.text())) {
-          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
-        }
-      } else if ($cell.hasClass("td-provean")) {
-        if (inProBot > parseFloat($cell.text()) || inProTop < parseFloat($cell.text())) {
-          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
-        }
-      } else if ($cell.hasClass("td-ddg")) {
-        if (inddGBot > parseFloat($cell.text()) || inddGTop < parseFloat($cell.text())) {
-          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
-        }
-      } else if ($cell.hasClass("td-el2")) {
-        if (inEL2Bot > parseFloat($cell.text()) || inEL2Top < parseFloat($cell.text())) {
-          if (parseFloat($cell.text()) != 1000000) return (toKeep = false);
-        }
-      }
-    });
-    if (toKeep) {
-      return true;
+  function addOrAssign(column, index, sep, value) {
+    if (column[index]) {
+      column[index] += `${sep}${value}`;
+    } else {
+      column[index] = `${value}`;
     }
-  });
+  }
 
-  // Hide all the rows, then show the rows that match.
-  jo.hide();
-  joFiltered.show();
+  var columns = ["", "", "", "", "", "", "", "", "", "", ""];
+
+  columns[1] = $("#inprot").val();
+
+  if (!($("#instacom").prop("checked") && $("#instarun").prop("checked") && $("#instaerr").prop("checked"))) {
+    if ($("#instacom").prop("checked")) {
+      addOrAssign(columns, 0, "|", "1|2");
+    }
+    if ($("#instarun").prop("checked")) {
+      addOrAssign(columns, 0, "|", "3|4");
+    }
+    if ($("#instaerr").prop("checked")) {
+      addOrAssign(columns, 0, "|", "5");
+    }
+    if (!columns[0]) {
+      columns[0] = "9";
+    }
+  }
+
+  if (!($("#intypcor").prop("checked") && $("#intypint").prop("checked") && $("#intypunk").prop("checked"))) {
+    if ($("#intypcor").prop("checked")) {
+      addOrAssign(columns, 3, "|", "Core.*");
+    }
+    if ($("#intypint").prop("checked")) {
+      addOrAssign(columns, 3, "|", "Interface.*");
+    }
+    if ($("#intypunk").prop("checked")) {
+      addOrAssign(columns, 3, "|", "None.*");
+    }
+    if (!columns[3]) {
+      columns[3] = "Some text that should never match anything.";
+    } else {
+      columns[3] = `/${columns[3]}/`;
+    }
+  }
+
+  const options = ["inseq", "inali", "indop", "inpro", "inddg", "inel2"];
+  for (const [index, element] of options.entries()) {
+    console.log($.isNumeric($(`#${element}bot`).val()));
+    if ($.isNumeric($(`#${element}bot`).val())) {
+      let value = parseFloat($(`#${element}bot`).val());
+      columns[5 + index] = `>= ${value}`;
+    }
+    if ($.isNumeric($(`#${element}top`).val())) {
+      let value = parseFloat($(`#${element}top`).val());
+      addOrAssign(columns, 5 + index, " && ", `<= ${value}`);
+    }
+  }
+
+  var result = $("#resulttable").trigger("search", [columns]);
 
   setRowColors();
   updateDlLinks();
