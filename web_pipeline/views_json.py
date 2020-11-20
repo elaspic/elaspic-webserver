@@ -258,6 +258,8 @@ def uploadFile(request):
                 ifh.write(myfile.read().decode())
 
             structure = PDB.load(input_pdb)
+            # Save cleaned up version of file
+            PDB.save(structure, Path(input_pdb).with_suffix(".pdb"))
             structure_tools.process_structure(structure)
             seq = [
                 (
