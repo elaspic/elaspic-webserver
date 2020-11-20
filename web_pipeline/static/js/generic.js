@@ -101,7 +101,7 @@ function responseAjax(error, msg) {
 }
 
 function submitContactForm() {
-  $(".form-response").text("Sending email..");
+  $(".form-response").text("Sending email...");
   $(".form-response").fadeIn(200);
 
   $.ajax({
