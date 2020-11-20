@@ -3,7 +3,7 @@ from typing import List, Dict
 
 def construct_mut_dbs_html(databases: List[Dict]) -> str:
     if databases:
-        mut_dbs_html = f"Mutation in database{'s' if databases else ''}: "
+        mut_dbs_html = f"Mutation in database{'s' if len(databases) > 1 else ''}: "
         for i, db in enumerate(databases):
             if i > 0:
                 mut_dbs_html += ", "
