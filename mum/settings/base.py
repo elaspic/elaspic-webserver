@@ -119,7 +119,7 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 
 INTERNAL_IPS = ("127.0.0.1",)
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     # 'django.middleware.csrf.CsrfViewMiddleware',
