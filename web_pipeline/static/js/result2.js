@@ -96,9 +96,8 @@ function updateSecondary2dbar(protein, isdimer) {
   $("#sbseq").html(curDomainData["seqid"]);
   $("#sbpdb").html(curDomainData["pdb"]);
   $("#sbdop").html(curDomainData["dopescore"]);
-  $("#sbdgwt").html(curDomainData["dgwt"]);
-  $("#sbdgmut").html(curDomainData["dgmut"]);
   $("#sbddg").html(curDomainData["ddg"]);
+  $("#sbel2").html(curDomainData["ddg"]);
   chainself = curDomainData["chainself"];
   chaininac = curDomainData["chaininac"];
   currentMut = curDomainData["mutnum"];
