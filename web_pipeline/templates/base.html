@@ -27,24 +27,29 @@
   
   <!-- Javascript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js" integrity="sha512-VjRpiWhUqdNa9bwBV7LnlG8CwsCVPenFyOQTSRTOGHw/tjtME96zthh0Vv9Itf3i8w4CkUrdYaS6+dAt1m1YXQ==" crossorigin="anonymous"></script>
   {% if current == "sIn" %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/3.3.2/jquery-migrate.min.js" integrity="sha512-3fMsI1vtU2e/tVxZORSEeuMhXnT9By80xlmXlsOku7hNwZSHJjwcOBpmy+uu+fyWwGCLkMvdVbHkeoXdAzBv+w==" crossorigin="anonymous"></script>
   <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.ajaxfileupload.js"></script>
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/in.js"></script>
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.color-2.1.2.min.js"></script>
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous"></script>
   <script type="text/javascript" src="{{ STATIC_FOLDER }}js/d3_force_labels.js"></script>
-  {% elif current == "result" %}
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.tablesorter.min.js" integrity="sha512-qzgd5cYSZcosqpzpn7zF2ZId8f/8CHmFKZ8j7mU4OUXTNRd5g+ZHBPsgKEwoqxCtdQvExE5LprwwPAgoicguNg=="></script>
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/extras/jquery.tablesorter.pager.min.js" integrity="sha512-y845ijdup9lDunrcSRQAlFdQICHVhkB5UNguWRX8A3L+guxO7Oow0poojw0PLckhcKij++h85bnyro80fjR9+A=="></script>
-  {% elif current == "result2" %}
   <script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/cytoscape.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/in.js"></script>
+  {% elif current == "mIn" %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/3.3.2/jquery-migrate.min.js" integrity="sha512-3fMsI1vtU2e/tVxZORSEeuMhXnT9By80xlmXlsOku7hNwZSHJjwcOBpmy+uu+fyWwGCLkMvdVbHkeoXdAzBv+w==" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.ajaxfileupload.js"></script>
+  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
+  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/in.js"></script>
+  {% elif current == "result" %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.min.js" integrity="sha512-qzgd5cYSZcosqpzpn7zF2ZId8f/8CHmFKZ8j7mU4OUXTNRd5g+ZHBPsgKEwoqxCtdQvExE5LprwwPAgoicguNg==" crossorigin="anonymous"></script>  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/extras/jquery.tablesorter.pager.min.js" integrity="sha512-y845ijdup9lDunrcSRQAlFdQICHVhkB5UNguWRX8A3L+guxO7Oow0poojw0PLckhcKij++h85bnyro80fjR9+A=="></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.3/js/jquery.tablesorter.widgets.min.js" integrity="sha512-dj/9K5GRIEZu+Igm9tC16XPOTz0RdPk9FGxfZxShWf65JJNU2TjbElGjuOo3EhwAJRPhJxwEJ5b+/Ouo+VqZdQ==" crossorigin="anonymous"></script>
+  {% elif current == "result2" %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/2.2.1/cytoscape.min.js" integrity="sha512-jscsdtMdd+gpobUEpU0OEe5GBOzFpnL7qWXz17OHmrVb/5Rkb2fQMbAdOS6ydJzeZ+QTFdLeinHJ3d8/FX/LRA==" crossorigin="anonymous"></script>
   <script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/JSmol.min.nojq.js"></script>
   <script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/js/JSmolThree.js"></script>
   <script type="text/javascript" src="{{ STATIC_FOLDER }}jsmol/js/JSmolGLmol.js"></script>
-  {% elif current == "generic" %}
-  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/jquery.color-2.1.2.min.js"></script>
+  <script type="text/javascript" src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
   {% endif %}
   {% if current %}
   <script type="text/javascript" src="{{ STATIC_FOLDER }}js/{{ current }}.js"></script>
