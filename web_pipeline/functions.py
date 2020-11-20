@@ -117,6 +117,104 @@ def checkForCompletion(jobs):
 #    return jtom
 
 
+def get_mutation_results(jtoms):
+    local = True if jtoms[0].job.localID else False
+    CM = CoreMutationLocal if local else CoreMutation
+    IM = InterfaceMutationLocal if local else InterfaceMutation
+
+    core_protein_mutations = list(
+        {(jtom.mut.protein, jtom.mut.mut) for jtom in jtoms if jtom.mut.affectedType == "CO"}
+    )
+    interface_protein_mutations = list(
+        {(jtom.mut.protein, jtom.mut.mut) for jtom in jtoms if jtom.mut.affectedType == "IN"}
+    )
+
+    core_query = functools.reduce(
+        operator.or_,
+        (Q(protein_id=protein_id, mut=mut) for protein_id, mut in core_protein_mutations),
+    )
+    interface_query = (
+        functools.reduce(
+            operator.or_,
+            (Q(protein_id=protein_id, mut=mut) for protein_id, mut in interface_protein_mutations),
+        )
+        if interface_protein_mutations
+        else None
+    )
+
+    real_mut = {}
+    for mut_result in CM.objects.select_related("model").filter(core_query):
+        real_mut.setdefault((mut_result.protein_id, mut_result.mut, "CO"), []).append(mut_result)
+    if interface_query:
+        for mut_result in (
+            IM.objects.select_related("model")
+            .select_related("model__domain1")
+            .select_related("model__domain2")
+            .filter(interface_query)
+        ):
+            real_mut.setdefault((mut_result.protein_id, mut_result.mut, "IN"), []).append(
+                mut_result
+            )
+
+    return real_mut
+
+
+def assign_mutation_results(jtoms, real_mut):
+    jtom = jtoms[0]
+    j = jtom.job
+    j.dateVisited = now()
+
+    data = []
+    for jtom in jtoms:
+        jtom.realMutErr = None
+
+        jtom.realMut = real_mut.get((jtom.mut.protein, jtom.mut.mut, "CO"), [])
+        if jtom.mut.affectedType == "IN":
+            jtom.realMut += real_mut.get((jtom.mut.protein, jtom.mut.mut, "IN"), [])
+
+        jtom = cleanup_jtom(jtom)
+        data.append(jtom)
+    return data
+
+
+def cleanup_jtom(jtom):
+    aType = jtom.mut.affectedType
+    local = True if jtom.job.localID else False
+
+    CM = CoreMutationLocal if local else CoreMutation
+
+    # Return one by one
+    if aType == "CO":
+        if len(jtom.realMut) > 1:
+            # With overlapping domains, pick first highest sequence identity,
+            # then lowest model score.
+            muts = sorted(jtom.realMut, key=lambda m: m.model.seq_id, reverse=True)
+            highestSeqID = []
+            for m in muts:
+                if m.model.seq_id < muts[0].model.seq_id:
+                    break
+                else:
+                    highestSeqID.append(m)
+            jtom.realMut = [min(highestSeqID, key=lambda m: m.model.dope_score)]
+        return jtom
+
+    if aType == "IN":
+        jtom.realMut = [m for m in jtom.realMut if not m.mut_errors]
+        return jtom
+
+    if jtom.realMut:
+        jtom.realMutErr = "NOT"  # not in core or in interface.
+        return jtom
+
+    if not jtom.realMut:
+        jtom.realMutErr = "DNE"  # does not exists.
+        jtom.realMut = [CM()]
+        return jtom
+
+    jtom.realMutErr = "OTH"  # other.
+    return jtom
+
+
 def getResultData(jtom):
     """"""
     logger.debug("getResultData({})".format(jtom))

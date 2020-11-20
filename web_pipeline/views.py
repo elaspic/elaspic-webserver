@@ -286,10 +286,16 @@ def runPipeline(request):
 
 
 def displayResult(request):
-    logger.debug("displayResult({})".format(request))
+    logger.debug("displayResult(%s)", request)
 
     # Check if request ID is legit.
     requestID = request.path.split("/")[2]
+    cache_key = f"result/{requestID}"
+
+    # response = cache.get(cache_key)
+    # if response is not None:
+    #     return response
+
     try:
         job = Job.objects.get(jobID=requestID)
     except Job.DoesNotExist:
@@ -324,14 +330,12 @@ def displayResult(request):
             j.dateFinished = now()
             j.save()
 
-    data = [getResultData(jtom) for jtom in jtoms]
-    logger.debug("data: {}".format(data))
+    real_mut = get_mutation_results(jtoms)
+    data = assign_mutation_results(jtoms, real_mut)
+
+    # data = [getResultData(jtom) for jtom in jtoms]
 
     for m in data:
-        logger.debug("m: {}".format(m))
-        logger.debug("m.realMut: {}".format(m.realMut))
-        logger.debug("m.realMutErr: {}".format(m.realMutErr))
-
         doneInt, toRemove = [], []
         # Set mutation status temporarily as 'running' if its rerunning.
         #            if m.mut.rerun and not(job.isDone):
@@ -342,7 +346,6 @@ def displayResult(request):
 
         # Get additional data for result table.
         if not m.realMutErr:
-            print(len(m.realMut))
             for i, mut in enumerate(m.realMut):
                 chain = mut.findChain()
                 # Get alignment scores.
@@ -358,7 +361,7 @@ def displayResult(request):
                         mut.inac = d.get_protein_name()
 
                     # AS: don't know what's going on here but errors so skip...
-                    mut.inacd = "h%d" % d.id if mut.inac == "self" else "n%d" % d.id
+                    mut.inacd = f"h{d.id}" if mut.inac == "self" else f"n{d.id}"
                     # Check for dublicates. Remove the last one.
                     # This is a quick and dirty fix and should be fixed to pick
                     # the highest sequence identity.
@@ -367,7 +370,26 @@ def displayResult(request):
                         toRemove.append(i)
                     else:
                         doneInt.append(dubkey)
+                else:
+                    mut.inacd = None
             m.realMut = [m for i, m in enumerate(m.realMut) if i not in toRemove]
+
+    def get_placeholder_value(jm):
+        if jm.mut.error:
+            return 1000002
+        elif jm.mut.status == "done":
+            return 1000000
+        else:
+            return 1000001
+
+    for jm in data:
+        jm.placeholder_value = get_placeholder_value(jm)
+
+        for rmut in jm.realMut:
+            rmut.web_url = (
+                f"{jm.inputIdentifier}.{jm.mut.mut}/"
+                f"{f'?p={rmut.inacd}' if getattr(rmut, 'inacd', None) else ''}"
+            )
 
     context = {
         "url": "http://%s/result/%s/" % (request.get_host(), requestID),
@@ -378,10 +400,14 @@ def displayResult(request):
         "data": data,
         "conf": conf,
     }
-    logger.debug("job: {}".format(job))
-    logger.debug("context: {}".format(context))
-    logger.debug("context.data: {}".format([d.realMut for d in context["data"]]))
-    return render(request, "result.html", context)
+
+    response = render(request, "result.html", context)
+
+    # if all(jm.mut.status == "done" for jm in data):
+    if job.isDone:
+        cache.set(cache_key, response, 24 * 60 * 60)
+
+    return response
 
 
 def displaySecondaryResult(request):
