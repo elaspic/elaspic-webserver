@@ -198,11 +198,13 @@
           <span class="half">Seq identity: <span id="sbseq" class="mono">{% if inInt %}{{ curmut.seqid }}{% else %}{{ curmut.model.getsequenceidentity }}{% endif %}</span></span>
           <span class="half hright">Model score: <span id="sbdop" class="mono">{{ curmut.model.dope_score|floatformat:3 }}</span></span>
         </p>
-        <p class="ddg">
-          <code>ELASPIC</code> ΔΔG (<span class="small"><a class="click-elaspic" target="_blank" id="elaspic" href="https://gitlab.com/kimlab/elaspic/tags/v{{ curmut.elaspic_version }}">v{{ curmut.elaspic_version }}</a></span>): <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
+
+        <p class="whole br">
+          ELASPIC ΔΔG: <span id="sbddg" class="mono">{{ curmut.ddG|floatformat:3 }}</span>
         </p>
-        <p class="ddg">
-          <code>ELASPIC2</code> score (<span class="small"><a class="click-elaspic" target="_blank" id="elaspic" href="https://gitlab.com/kimlab/elaspic/tags/v{{ curmut.elaspic_version }}">v{{ curmut.elaspic_version }}</a></span>): <span id="sbddg" class="mono">{{ curmut.getddG|floatformat:3 }}</span>
+        
+        <p class="whole br">
+          ELASPIC2 score: <span id="sbel2" class="mono">{{ curmut.ddG|floatformat:3 }}</span>
         </p>
 
         <!-- Database information -->
