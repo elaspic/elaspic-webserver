@@ -195,11 +195,7 @@
 }
 
 #result_wrapper p.br {
-  padding-top: 10px;
-}
-
-#result_wrapper p.ddg {
-  padding-top: 15px;
+  margin-top: 8px;
 }
 
 #result_wrapper p.small {
