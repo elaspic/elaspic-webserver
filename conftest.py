@@ -1,8 +1,11 @@
-import os
-
-os.environ['DJANGO_SETTINGS_MODULE'] = 'mum.settings.pytest'
-
 import django
+import pytest
+
 django.setup()
 
-assert django.conf.settings.DATABASES['default']['NAME'].startswith('pytest')
+assert django.conf.settings.DATABASES["default"]["USER"].endswith("-readonly")
+
+
+@pytest.fixture(scope="session")
+def django_db_setup():
+    pass
