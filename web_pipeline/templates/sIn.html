@@ -4,14 +4,14 @@
   <div class="boxhead">First, input a protein ID such as <span class="proteinname click example">Q9BUL8</span>:</div>
   <div class="boxheadbehind">Protein input:</div>
   <div class="styled-text"><input type="text" class="text" placeholder="POLR2A.." id="proteininput" /><span id="pwheel" class="wheel"></span></div>
-  <!--or <a href="/many/">run several proteins</a>.-->
-  <div id="proteinsfile">or <span id="pfilelabel" class="click">upload PDB structure</span> <input class="hidden" id="pfile" type="file" name="fileToUpload" /> <span id="uploaderr"></span></div>
+  <div id="protein-id-error" class="input-error"></div>
+  <div id="proteinsfile">or <span id="pfilelabel" class="click">upload PDB structure</span> <input class="hidden" id="pfile" type="file" name="fileToUpload" /><span id="uploaderr"></span></div>
 </div>
 
 <div id="selectbox" class="contentbox">
   <div class="boxhead">Now, select a mutation:</div>
   <div class="selection" id="sub">
-    <div id="selectchaindiv" style="display:none;" class="styled-select first">
+    <div id="selectchaindiv" style="display: none" class="styled-select first">
       <label><select id="selectchain"></select></label>
     </div>
     <div class="styled-select first first-switch">
@@ -51,9 +51,10 @@
 {% endcomment %}
 
 <div id="inacbox" class="descbar">
-  <div style="position:relative;height:100%;width:100%;">
+  <div style="position: relative; height: 100%; width: 100%">
     <div class="h4div">
-      <h4>Interactions affected by mutation:</h4></div>
+      <h4>Interactions affected by mutation:</h4>
+    </div>
     <div class="inacsummary"></div>
   </div>
 </div>
@@ -80,8 +81,6 @@
   </div>
 </div>
 
-<div id="nothumanwarning" class="contentbox">
-  Warning: because the selected protein is not human, the calculations can take up to several hours.
-</div>
+<div id="nothumanwarning" class="contentbox">Warning: because the selected protein is not human, the calculations can take up to several hours.</div>
 
 {% endblock %}

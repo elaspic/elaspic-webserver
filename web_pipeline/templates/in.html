@@ -1,16 +1,19 @@
 {% extends "base.html" %} {% block headscript %}
 
 <script type="text/javascript">
-  var thisPage = '{{ current }}';
+  var thisPage = "{{ current }}";
 </script>
 
 {% endblock %} {% block body %}
 
 <form action="../run/" method="GET" onsubmit="return validateForm();">
-
   <div id="tabs">
-    <div class="tab{% ifequal current 'sIn' %} active{% endifequal %}" id="onetab"><a href="/">Single mutation</a></div>
-    <div class="tab{% ifequal current 'mIn' %} active{% endifequal %}" id="manytab"><a href="/many/">Multiple mutations</a></div>
+    <div class="tab{% ifequal current 'sIn' %} active{% endifequal %}" id="onetab">
+      <a href="/">Single mutation</a>
+    </div>
+    <div class="tab{% ifequal current 'mIn' %} active{% endifequal %}" id="manytab">
+      <a href="/many/">Multiple mutations</a>
+    </div>
   </div>
 
   <div id="input" class="field">
@@ -22,16 +25,12 @@
           <hr />
         </div>
       </div>
-      <div class="content" id="protein">
-        {% block bodyin %} {% endblock %}
-      </div>
+      <div class="content" id="protein">{% block bodyin %} {% endblock %}</div>
     </fieldset>
 
     {% ifequal current 'mIn' %}
     <div id="nothumanwarning">
-      <div>
-        Warning: because some of the selected proteins are not human, the calculations can take up to several hours.
-      </div>
+      <div>Warning: because some of the selected proteins are not human, the calculations can take up to several hours.</div>
     </div>
     {% endifequal %}
   </div>
@@ -40,7 +39,9 @@
     <fieldset>
       <div class="content">
         Your email address (optional):
-        <div class="styled-text"><input type="text" id="emailtext" class="text" name="email" placeholder="name@institution.com" /></div>
+        <div class="styled-text">
+          <input type="text" id="emailtext" class="text" name="email" placeholder="name@institution.com" />
+        </div>
       </div>
     </fieldset>
   </div>
@@ -50,7 +51,6 @@
   <input class="fake" type="hidden" name="chain" id="chain" />
   <input class="fake" type="hidden" name="jid" id="jid" />
   <input id="submit" class="submit" type="submit" value="Submit" /><span id="submiterr"></span>
-
 </form>
 
 <!-- --------------------------------------------------- -->
@@ -61,8 +61,9 @@
     <div class="tclose" id="tcdom">x</div>
     <div class="ttext">
       Because {{ SITE_NAME }} uses structures of protein domains to predict stability/affinity effects, the mutation has to fall within domain boundries.<br />
-      <div><i>For more information about the mechanisms of {{ SITE_NAME }}, see
-        <a href="/reference/" class="click2">the published paper</a>.</i></div>
+      <div>
+        <i>For more information about the mechanisms of {{ SITE_NAME }}, see <a href="/reference/" class="click2">the published paper</a>.</i>
+      </div>
     </div>
   </div>
 </div>
@@ -72,10 +73,13 @@
     <div class="ttext">
       <b>Final ΔΔG</b>
       <div>The final Gibbs free energy change (ΔΔG) in kcal/mol is predicted using more than 70 sequential, molecular, and energetic features.</div>
-      <div><i>For more information see <a href="/reference/" class="click2">the original publication</a>.</i></div>
+      <div>
+        <i>For more information see <a href="/reference/" class="click2">the original publication</a>.</i>
+      </div>
     </div>
   </div>
 </div>
+
 <div class="muttooltip descbar" id="tmut">
   <div class="tlabels">
     <div class="l1"></div>
@@ -83,15 +87,11 @@
   </div>
   <div class="ttext">
     <div class="head" id="mutthead"></div>
-    <div class="half" id="muttsid">Seq iden<span id="sbseq" class="mono"></span></div>
+    <div class="half" id="muttsid">Seq iden: <span id="sbseq" class="mono"></span></div>
     <div class="half">Model score: <span id="sbdop" class="mono"></span></div>
-    <div class="whole ddg"><code>ELASPIC</code> ΔΔG:
-      <span id="sbddg" class="mono"></span>
-    </div>
-    <div class="whole el2score"><code>ELASPIC2</code> score:
-      <span id="sbel2score" class="mono"></span>
-    </div>
-    <div class="whole dbs" id="dbs"></div>
+    <div class="whole br">ELASPIC ΔΔG: <span id="sbddg" class="mono"></span></div>
+    <div class="whole br">ELASPIC2 score: <span id="sbel2" class="mono"></span></div>
+    <div class="whole" id="dbs"></div>
   </div>
 </div>
 
