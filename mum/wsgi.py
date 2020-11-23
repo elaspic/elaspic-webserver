@@ -21,9 +21,6 @@ import sys
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
 from django.core.wsgi import get_wsgi_application
-from dotenv import find_dotenv, load_dotenv
-
-load_dotenv(find_dotenv())
 
 BASE_DIR = op.dirname(op.abspath(__file__))
 PROJECT_ROOT = op.dirname(BASE_DIR)
@@ -39,7 +36,7 @@ if PROJECT_ROOT not in sys.path:
 # os.environ["DJANGO_SETTINGS_MODULE"] = "mum.settings"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mum.settings.production")
 
-application = get_wsgi_application()
+app = get_wsgi_application()
 
 # Apply WSGI middleware here.
 # from helloworld.wsgi import HelloWorldApplication
