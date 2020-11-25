@@ -1,5 +1,4 @@
 import functools
-import itertools
 import logging
 import operator
 import os
