@@ -1,71 +1,156 @@
-image: condaforge/linux-anvil:latest
+default:
+  image: condaforge/linux-anvil-cos7-x86_64:latest
 
 stages:
+  - custom
+  - lint
+  - build
   - test
   - deploy
 
 # === Variables ===
 
 variables:
-  PACKAGE_VERSION: 0.0.8
+  PACKAGE_VERSION: "0.0.8"
+  PYTHON_VERSION: "3.7"
 
-.configure_ssh: &configure_ssh
+# === Configurations ===
+
+.skip-custom-pipelines:
+  except:
+    variables:
+      - $UPDATE_IMAGES
+
+.configure:
+  extends:
+    - .skip-custom-pipelines
   before_script:
-    # Configure ssh
-    - 'which ssh-agent || ( yum update -y -q && yum install openssh-clients.x86_64 -y -q )'
-    - eval $(ssh-agent -s)
-    - ssh-add <(echo "$SSH_PRIVATE_KEY")
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo "$SSH_SERVER_HOSTKEYS" > ~/.ssh/known_hosts'
+    # Set conda envs and pkgs dirs
+    - |
+      cat <<EOF > ~/.condarc
+      channel_priority: true
+      channels:
+        - pytorch
+        - conda-forge
+        - defaults
+        - kimlab
+        - ostrokach-forge
+        - bioconda
+        - salilab
+        - omnia
+      EOF
+    - conda install -yq mamba
+
+# === Lint ===
+
+lint:
+  stage: lint
+  extends:
+    - .configure
+  script:
+    - mamba create -n lint -q "python=${PYTHON_VERSION}" isort toml flake8 mypy black
+    - source activate lint
+    - python -m isort -p ${CI_PROJECT_NAME} -c .
+    - python -m flake8 src
+    - python -m black --config pyproject.toml --check .
+    # MyPy does not support namespace packages until this issue gets resolved:
+    # https://github.com/python/mypy/issues/1645
+    - python -m mypy src/${CI_PROJECT_NAME} || true
 
 # === Build ===
 
+build:
+  stage: build
+  extends:
+    - .configure
+  script:
+    - mamba install -yq conda conda-build conda-verify conda-forge-pinning
+    - cd "${CI_PROJECT_DIR}/.gitlab/conda"
+    - >
+      mamba build .
+      --variant-config-files /opt/conda/conda_build_config.yaml
+      --variants "{python: [$PYTHON_VERSION], numpy: [1.16], python_impl: [cpython]}"
+      --output-folder "$CI_PROJECT_DIR/conda-bld"
+  artifacts:
+    paths:
+      - conda-bld
+
+# === Test ===
+
 test:
   stage: test
+  extends:
+    - .configure
+  script:
+    # Create conda environment for testing
+    - mamba create -n test -q -c file://${CI_PROJECT_DIR}/conda-bld --strict-channel-priority
+      "python=${PYTHON_VERSION}" ${CI_PROJECT_NAME} pyyaml
+      pytest pytest-cov python-dotenv pytest-asyncio || true
+    - source activate test
+    # Run tests
+    - PKG_INSTALL_DIR=$(python -c "import elaspic_rest_api; print(elaspic_rest_api.__path__[0])")
+    - python -m pytest
+      -c pyproject.toml
+      --cov="${PKG_INSTALL_DIR}"
+      --cov-config=pyproject.toml
+      --color=yes
+      "tests/"
+    # Coverage
+    - mkdir coverage
+    - mv .coverage coverage/.coverage.all
   tags:
     - local
-  variables:
-    DJANGO_SETTINGS_MODULE: mum.settings.pytest
-  <<: [*configure_ssh]
-  script:
-    # Add conda channels
-    - conda config --add channels ostrokach-forge
-    - conda config --append channels kimlab
-    # Install the elaspic-webserver environment
-    - conda env create -f environment.yml -n elaspic-webserver -q --force
-    - source activate elaspic-webserver
-    # Install packages required for testing
-    - pip install flake8 pytest pytest-asyncio pytest-logging pytest-cov codecov
-    # Test
-    - flake8
-    - ls -al /home/kimlab1/database_data
-    - python elaspic_rest_api/app.py &
-    - sleep 30  # give some time for the jobsubmitter to configure itself
-    - py.test
-    - kill %1  # stop jobsubmitter
-    - codecov -t $CODECOV_TOKEN
-  coverage: /^TOTAL.*(\d+\%)/
+  artifacts:
+    paths:
+      - coverage
 
 # === Deploy ===
 
-deploy-prod:
+trigger-custom-pipelines:
   stage: deploy
-  tags:
-    - local
-  environment:
-    name: production
-    url: http://elaspic.kimlab.org
-  variables:
-    STAGING_URL: kimadmin@192.168.6.53
-    STAGING_DIR: /home/kimadmin/elaspic-webserver
-    STAGING_CONDA: /home/kimadmin/miniconda/bin/conda
-  <<: [*configure_ssh]
+  extends:
+    - .skip-custom-pipelines
+  image:
+    name: ubuntu:18.04
+  before_script:
+    - apt-get -y -qq update
+    - apt-get -y -qq install curl jq
   script:
-    # Sync deployment server
-    - ssh ${STAGING_URL} "cd $STAGING_DIR && git pull"
-    - ssh ${STAGING_URL} "$STAGING_CONDA config --add channels ostrokach-forge"
-    - ssh ${STAGING_URL} "$STAGING_CONDA config --append channels kimlab"
-    - ssh ${STAGING_URL} "$STAGING_CONDA env create -f ${STAGING_DIR}/environment.yml -n elaspic-webserver -q --force"
-    - echo "You must run `./provision.sh' on the deployment server to finish installation"
+    - >
+      BUILD_JOB_ID=$(
+        curl --globoff -sS --header "PRIVATE-TOKEN: ${GITLAB_CI_TOKEN}"
+          https://gitlab.com/api/v4/projects/22388857/pipelines/220812929/jobs?scope[]=success
+        | jq '.[] | select(.name == "build") | .id'
+      )
+    - CONDA_BLD_ARCHIVE_URL=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/$BUILD_JOB_ID/artifacts
+    # Update images
+    - curl --request POST
+      --form token="${CI_JOB_TOKEN}"
+      --form ref=${CI_COMMIT_TAG}
+      --form "variables[UPDATE_IMAGES]=true"
+      --form "variables[CONDA_BLD_ARCHIVE_URL]=true"
+      https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
   only:
-    - master
+    - tags
+
+# === Custom pipelines ===
+
+docker-images:
+  stage: custom
+  image:
+    name: docker:latest
+  services:
+    - docker:dind
+  script:
+    - if [[ ! -z ${CI_COMMIT_TAG} ]] ; then
+      IMAGE_TAG=${CI_COMMIT_TAG} ;
+      else
+      IMAGE_TAG="latest" ;
+      fi
+    - echo "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+    - docker login registry.gitlab.com -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
+    - docker build -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" .ci/docker/
+    - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+  only:
+    variables:
+      - $UPDATE_IMAGES
