@@ -122,13 +122,12 @@ trigger-custom-pipelines:
           https://gitlab.com/api/v4/projects/22388857/pipelines/220812929/jobs?scope[]=success
         | jq '.[] | select(.name == "build") | .id'
       )
-    - CONDA_BLD_ARCHIVE_URL=https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/$BUILD_JOB_ID/artifacts
     # Update images
     - curl --request POST
       --form token="${CI_JOB_TOKEN}"
       --form ref=${CI_COMMIT_TAG}
       --form "variables[UPDATE_IMAGES]=true"
-      --form "variables[CONDA_BLD_ARCHIVE_URL]="${CONDA_BLD_ARCHIVE_URL}""
+      --form "variables[BUILD_JOB_ID]=${BUILD_JOB_ID}
       https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
   only:
     - tags
@@ -149,7 +148,8 @@ docker-images:
       fi
     - echo "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
     - docker login registry.gitlab.com -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-    - docker build -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" .gitlab/docker/
+    - CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/$BUILD_JOB_ID/artifacts"
+    - docker build --build-arg CONDA_BLD_ARCHIVE_URL -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" .gitlab/docker/
     - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
   only:
     variables:
