@@ -88,7 +88,7 @@ test:
       pytest pytest-cov python-dotenv pytest-asyncio || true
     - source activate test
     # Run tests
-    - PKG_INSTALL_DIR=$(python -c "import elaspic_rest_api; print(elaspic_rest_api.__path__[0])")
+    - PKG_INSTALL_DIR=$(python -c "import elaspic_webserver; print(elaspic_webserver.__path__[0])")
     - python -m pytest
       -c pyproject.toml
       --cov="${PKG_INSTALL_DIR}"
