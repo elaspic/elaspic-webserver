@@ -1,0 +1,33 @@
+package:
+  name: elaspic-webserver
+  version: "0.0.8"
+
+source:
+  path: ../../
+
+build:
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv"
+  number: 0
+  noarch: python
+
+requirements:
+  build:
+    - python
+  run:
+    - python
+    - biopython =1.78
+    - django =3.1
+    - kmbio =2.1
+    - kmtools =0.2.8
+
+test:
+  imports:
+    - mum
+    - web_pipeline
+  commands:
+    - which manage.py
+
+about:
+  home: https://gitlab.com/elaspic/elaspic-webserver
+  license: MIT License
+  summary: "ELASPIC Web Server"
