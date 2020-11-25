@@ -136,7 +136,7 @@ MIDDLEWARE = (
 ROOT_URLCONF = "mum.urls"
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = "mum.wsgi.application"
+WSGI_APPLICATION = "mum.wsgi.app"
 
 TEMPLATES = [
     {
