@@ -1,5 +1,5 @@
 {
-  "name": "MUM",
+  "name": "mum",
   "private": true,
   "devDependencies": {
     "browserify": "latest",
