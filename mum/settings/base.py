@@ -181,77 +181,12 @@ INSTALLED_APPS = (
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
-    "formatters": {
-        "standard": {
-            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        },
-        "timely": {
-            "format": "%(asctime)s %(message)s",
-        },
-        "clean": {
-            "format": "[%(levelname)s] %(module)s: %(message)s",
-        },
-    },
-    "handlers": {
-        "mail_admins": {
-            "level": "ERROR",
-            "filters": ["require_debug_false"],
-            "class": "django.utils.log.AdminEmailHandler",
-        },
-        "info_log": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "standard",
-            "filename": op.join(PROJECT_ROOT, "log", "django.log"),
-            "maxBytes": 32 * 1024 * 1024,  # 32 MB
-            "backupCount": 3,
-        },
-        "debug_log": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "standard",
-            "filename": op.join(PROJECT_ROOT, "log", "django.err"),
-            "maxBytes": 32 * 1024 * 1024,  # 32 MB
-            "backupCount": 3,
-        },
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "clean",
-        },
-    },
-    "loggers": {
-        "": {
-            "handlers": ["info_log", "debug_log"] + (["console"] if DEBUG else []),
-            "level": "DEBUG",
-            "propagate": False,
-        },
-        "web_pipeline": {
-            "level": "DEBUG",
-            "propagate": True,
-        },
-        "django.request": {
-            "handlers": ["mail_admins"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-    },
-}
-
-FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-
 # Email configuration
 EMAIL_USE_TLS = bool(os.getenv("EMAIL_USE_TLS"))
 EMAIL_HOST = os.getenv("EMAIL_HOST", "localhost")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", "0"))
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+# Custom logging
+LOGGING_CONFIG = None
