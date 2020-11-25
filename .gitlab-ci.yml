@@ -130,8 +130,8 @@ trigger-custom-pipelines:
       --form "variables[UPDATE_IMAGES]=true"
       --form "variables[CONDA_BLD_ARCHIVE_URL]="${CONDA_BLD_ARCHIVE_URL}""
       https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
-  only:
-    - tags
+  # only:
+  #   - tags
 
 # === Custom pipelines ===
 
