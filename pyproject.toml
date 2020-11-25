@@ -21,8 +21,18 @@ exclude = '''
 line_length = 100
 skip = "docs,__init__.py,setup.py,.gitlab,.conda,env"
 default_section = "THIRDPARTY"
-known_first_party = "elaspic_rest_api"
+known_first_party = ["mum", "web_pipeline"]
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
+
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+junit_family = "xunit2"
+log_cli = true
+addopts = """
+-sv --doctest-modules --cov=mum --cov=web_pipeline --ignore=setup.py
+"""
+filterwarnings = []
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
