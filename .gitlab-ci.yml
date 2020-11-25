@@ -44,7 +44,6 @@ test:
     - py.test
     - kill %1  # stop jobsubmitter
     - codecov -t $CODECOV_TOKEN
-    - if [[ $CI_COMMIT_REF_NAME == 'master' ]] ; then ./devtools/gitlab-ci/sentry_release.sh ; fi
   coverage: /^TOTAL.*(\d+\%)/
 
 # === Deploy ===
