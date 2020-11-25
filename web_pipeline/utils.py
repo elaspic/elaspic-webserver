@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict, List
 
 
 def construct_mut_dbs_html(databases: List[Dict]) -> str:

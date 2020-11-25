@@ -34,9 +34,9 @@ _names_stability_complex = [
     ("intraclashes_energy_1", 3),
     ("intraclashes_energy_2", 4),
 ] + [(name, position + 4) for name, position in _names_stability]
-names_stability_complex_wt = [
-    name + "_wt" for name, position in _names_stability_complex[:-1]
-] + ["number_of_residues"]
+names_stability_complex_wt = [name + "_wt" for name, position in _names_stability_complex[:-1]] + [
+    "number_of_residues"
+]
 names_stability_complex_mut = [
     name + "_mut" for name, position in _names_stability_complex[:-1]
 ] + ["number_of_residues"]

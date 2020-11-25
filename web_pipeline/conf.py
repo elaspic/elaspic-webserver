@@ -11,9 +11,7 @@ REDIS_SOCKET_FILE = "/tmp/redis.sock"
 ELASPIC_NAME = "ELASPIC"
 ELASPIC_HOME = "https://gitlab.com/kimlab/elaspic"
 ELASPIC_VERSION = "v0.1.14"
-ELASPIC_RELEASE_URL = "https://gitlab.com/kimlab/elaspic/tags/{}".format(
-    ELASPIC_VERSION
-)
+ELASPIC_RELEASE_URL = "https://gitlab.com/kimlab/elaspic/tags/{}".format(ELASPIC_VERSION)
 ELASPIC_DOCS = "https://kimlab.gitlab.io/elaspic/{}/".format(ELASPIC_VERSION)
 
 # Jobsubmitter

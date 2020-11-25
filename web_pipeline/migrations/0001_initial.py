@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -26,9 +26,7 @@ class Migration(migrations.Migration):
                 ("clan", models.CharField(max_length=255, db_column="pfam_clan")),
                 (
                     "name",
-                    models.CharField(
-                        max_length=255, db_index=True, db_column="pdbfam_name"
-                    ),
+                    models.CharField(max_length=255, db_index=True, db_column="pdbfam_name"),
                 ),
                 (
                     "alignment_def",
@@ -37,21 +35,15 @@ class Migration(migrations.Migration):
                 ("data_path", models.TextField(blank=True, db_column="path_to_data")),
                 (
                     "align_score",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_score"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_score"),
                 ),
                 (
                     "align_coverage",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_coverage"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_coverage"),
                 ),
                 (
                     "template_errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="template_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="template_errors"),
                 ),
                 ("domain_def", models.CharField(blank=True, max_length=255)),
                 (
@@ -60,9 +52,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "seq_id",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_identity"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_identity"),
                 ),
                 (
                     "model_errors",
@@ -98,21 +88,15 @@ class Migration(migrations.Migration):
                 ("model_filename_mut", models.CharField(max_length=255)),
                 (
                     "mut_errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="mutation_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="mutation_errors"),
                 ),
                 (
                     "pdb_chain",
-                    models.CharField(
-                        null=True, max_length=1, db_column="chain_modeller"
-                    ),
+                    models.CharField(null=True, max_length=1, db_column="chain_modeller"),
                 ),
                 (
                     "pdb_mut",
-                    models.CharField(
-                        null=True, max_length=8, db_column="mutation_modeller"
-                    ),
+                    models.CharField(null=True, max_length=8, db_column="mutation_modeller"),
                 ),
                 ("stability_energy_wt", models.TextField(null=True)),
                 ("stability_energy_mut", models.TextField(null=True)),
@@ -139,9 +123,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.PositiveIntegerField(
-                        primary_key=True, db_column="id", serialize=False
-                    ),
+                    models.PositiveIntegerField(primary_key=True, db_column="id", serialize=False),
                 ),
                 ("protein_id", models.CharField(max_length=50, db_column="uniprot_id")),
                 ("mut", models.CharField(max_length=8, db_column="mutation")),
@@ -160,9 +142,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.PositiveIntegerField(
-                        primary_key=True, db_column="id", serialize=False
-                    ),
+                    models.PositiveIntegerField(primary_key=True, db_column="id", serialize=False),
                 ),
                 ("protein_id", models.CharField(max_length=50, db_column="uniprot_id")),
                 ("mut", models.CharField(max_length=8, db_column="mutation")),
@@ -181,9 +161,7 @@ class Migration(migrations.Migration):
             fields=[
                 (
                     "id",
-                    models.PositiveIntegerField(
-                        primary_key=True, db_column="id", serialize=False
-                    ),
+                    models.PositiveIntegerField(primary_key=True, db_column="id", serialize=False),
                 ),
                 ("protein_id", models.CharField(max_length=50, db_column="uniprot_id")),
                 ("mut", models.CharField(max_length=8, db_column="mutation")),
@@ -212,15 +190,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "identifierType",
-                    models.CharField(
-                        max_length=20, db_index=True, db_column="identifier_type"
-                    ),
+                    models.CharField(max_length=20, db_index=True, db_column="identifier_type"),
                 ),
                 (
                     "uniprotID",
-                    models.CharField(
-                        max_length=10, db_index=True, db_column="uniprot_id"
-                    ),
+                    models.CharField(max_length=10, db_index=True, db_column="uniprot_id"),
                 ),
             ],
             options={
@@ -245,27 +219,19 @@ class Migration(migrations.Migration):
                 ("data_path", models.TextField(blank=True, db_column="path_to_data")),
                 (
                     "align_score1",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_score_1"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_score_1"),
                 ),
                 (
                     "align_score2",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_score_2"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_score_2"),
                 ),
                 (
                     "align_coverage_1",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_coverage_1"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_coverage_1"),
                 ),
                 (
                     "align_coverage_2",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_coverage_2"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_coverage_2"),
                 ),
                 (
                     "cath1",
@@ -277,21 +243,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "seq_id1",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_identity_1"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_identity_1"),
                 ),
                 (
                     "seq_id2",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_identity_2"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_identity_2"),
                 ),
                 (
                     "errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="template_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="template_errors"),
                 ),
                 ("model_domain_def_1", models.CharField(max_length=255)),
                 ("model_domain_def_2", models.CharField(max_length=255)),
@@ -338,21 +298,15 @@ class Migration(migrations.Migration):
                 ("model_filename_mut", models.CharField(max_length=255)),
                 (
                     "mut_errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="mutation_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="mutation_errors"),
                 ),
                 (
                     "pdb_chain",
-                    models.CharField(
-                        null=True, max_length=1, db_column="chain_modeller"
-                    ),
+                    models.CharField(null=True, max_length=1, db_column="chain_modeller"),
                 ),
                 (
                     "pdb_mut",
-                    models.CharField(
-                        null=True, max_length=8, db_column="mutation_modeller"
-                    ),
+                    models.CharField(null=True, max_length=8, db_column="mutation_modeller"),
                 ),
                 ("stability_energy_wt", models.TextField(null=True)),
                 ("stability_energy_mut", models.TextField(null=True)),
@@ -413,21 +367,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "identifierID",
-                    models.CharField(
-                        max_length=255, db_index=True, db_column="identifier_id"
-                    ),
+                    models.CharField(max_length=255, db_index=True, db_column="identifier_id"),
                 ),
                 (
                     "identifierType",
-                    models.CharField(
-                        max_length=20, db_index=True, db_column="identifier_type"
-                    ),
+                    models.CharField(max_length=20, db_index=True, db_column="identifier_type"),
                 ),
                 (
                     "uniprotID",
-                    models.CharField(
-                        max_length=10, db_index=True, db_column="uniprot_id"
-                    ),
+                    models.CharField(max_length=10, db_index=True, db_column="uniprot_id"),
                 ),
             ],
             options={
@@ -452,9 +400,7 @@ class Migration(migrations.Migration):
                 ("clan", models.CharField(max_length=255, db_column="pfam_clan")),
                 (
                     "name",
-                    models.CharField(
-                        max_length=255, db_index=True, db_column="pdbfam_name"
-                    ),
+                    models.CharField(max_length=255, db_index=True, db_column="pdbfam_name"),
                 ),
                 (
                     "alignment_def",
@@ -463,21 +409,15 @@ class Migration(migrations.Migration):
                 ("data_path", models.TextField(blank=True, db_column="path_to_data")),
                 (
                     "align_score",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_score"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_score"),
                 ),
                 (
                     "align_coverage",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_coverage"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_coverage"),
                 ),
                 (
                     "template_errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="template_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="template_errors"),
                 ),
                 ("domain_def", models.CharField(blank=True, max_length=255)),
                 (
@@ -486,9 +426,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "seq_id",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_identity"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_identity"),
                 ),
                 (
                     "model_errors",
@@ -523,21 +461,15 @@ class Migration(migrations.Migration):
                 ("model_filename_mut", models.CharField(max_length=255)),
                 (
                     "mut_errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="mutation_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="mutation_errors"),
                 ),
                 (
                     "pdb_chain",
-                    models.CharField(
-                        null=True, max_length=1, db_column="chain_modeller"
-                    ),
+                    models.CharField(null=True, max_length=1, db_column="chain_modeller"),
                 ),
                 (
                     "pdb_mut",
-                    models.CharField(
-                        null=True, max_length=8, db_column="mutation_modeller"
-                    ),
+                    models.CharField(null=True, max_length=8, db_column="mutation_modeller"),
                 ),
                 ("stability_energy_wt", models.TextField(null=True)),
                 ("stability_energy_mut", models.TextField(null=True)),
@@ -584,27 +516,19 @@ class Migration(migrations.Migration):
                 ("data_path", models.TextField(blank=True, db_column="path_to_data")),
                 (
                     "align_score1",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_score_1"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_score_1"),
                 ),
                 (
                     "align_score2",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_score_2"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_score_2"),
                 ),
                 (
                     "align_coverage_1",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_coverage_1"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_coverage_1"),
                 ),
                 (
                     "align_coverage_2",
-                    models.IntegerField(
-                        blank=True, null=True, db_column="alignment_coverage_2"
-                    ),
+                    models.IntegerField(blank=True, null=True, db_column="alignment_coverage_2"),
                 ),
                 (
                     "cath1",
@@ -616,21 +540,15 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "seq_id1",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_identity_1"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_identity_1"),
                 ),
                 (
                     "seq_id2",
-                    models.FloatField(
-                        blank=True, null=True, db_column="alignment_identity_2"
-                    ),
+                    models.FloatField(blank=True, null=True, db_column="alignment_identity_2"),
                 ),
                 (
                     "errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="template_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="template_errors"),
                 ),
                 ("model_domain_def_1", models.CharField(max_length=255)),
                 ("model_domain_def_2", models.CharField(max_length=255)),
@@ -694,21 +612,15 @@ class Migration(migrations.Migration):
                 ("model_filename_mut", models.CharField(max_length=255)),
                 (
                     "mut_errors",
-                    models.TextField(
-                        blank=True, null=True, db_column="mutation_errors"
-                    ),
+                    models.TextField(blank=True, null=True, db_column="mutation_errors"),
                 ),
                 (
                     "pdb_chain",
-                    models.CharField(
-                        null=True, max_length=1, db_column="chain_modeller"
-                    ),
+                    models.CharField(null=True, max_length=1, db_column="chain_modeller"),
                 ),
                 (
                     "pdb_mut",
-                    models.CharField(
-                        null=True, max_length=8, db_column="mutation_modeller"
-                    ),
+                    models.CharField(null=True, max_length=8, db_column="mutation_modeller"),
                 ),
                 ("stability_energy_wt", models.TextField(null=True)),
                 ("stability_energy_mut", models.TextField(null=True)),

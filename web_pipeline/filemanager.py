@@ -62,9 +62,7 @@ class FileManager:
         for pnm in muts:
             iden, mut = functions.getPnM(pnm)
             if iden is None or mut is None:
-                logger.error(
-                    "Something wrong happened when parsing pnm: '{}'".format(pnm)
-                )
+                logger.error("Something wrong happened when parsing pnm: '{}'".format(pnm))
                 logger.error("iden: '{}'".format(iden))
                 logger.error("mut: '{}'".format(mut))
                 continue
@@ -76,18 +74,12 @@ class FileManager:
                 try:
                     model = self.IM.objects.get(id=interfaceID)
                 except (self.IM.DoesNotExist, ValueError):
-                    logger.error(
-                        "Interface model with id '{}' was not found!".format(
-                            interfaceID
-                        )
-                    )
+                    logger.error("Interface model with id '{}' was not found!".format(interfaceID))
                     continue
 
             # Get local mutation data.
             jtom = list(
-                models.JobToMut.objects.filter(
-                    mut__mut=mut, inputIdentifier=iden, job_id=jobID
-                )
+                models.JobToMut.objects.filter(mut__mut=mut, inputIdentifier=iden, job_id=jobID)
             )
             if len(jtom) != 1:
                 continue
@@ -112,16 +104,12 @@ class FileManager:
     def makeFile(self, fileToMake):
         self.file_name, self.file_ext = op.splitext(fileToMake)
         self.tempdir = tempfile.mkdtemp()
-        self.files = functions.FixedDict(
-            {op.splitext(k)[0]: {} for k in self._valid_filenames}
-        )
+        self.files = functions.FixedDict({op.splitext(k)[0]: {} for k in self._valid_filenames})
 
         # Validate input
         if fileToMake not in self._valid_filenames:
             raise ValueError(
-                "filename {} must be one of {}".format(
-                    fileToMake, self._valid_filenames
-                )
+                "filename {} must be one of {}".format(fileToMake, self._valid_filenames)
             )
 
         # Return empty buffer if mutation list is empty
@@ -391,9 +379,7 @@ class FileManager:
             try:
                 p = self.P.objects.get(id=m.mut.protein)
             except (self.P.DoesNotExist, self.P.MultipleObjectsReturned) as e:
-                logger.error(
-                    "Failed to get protein with error: '{}: {}'".format(type(e), e)
-                )
+                logger.error("Failed to get protein with error: '{}: {}'".format(type(e), e))
                 continue
             fname = m.inputIdentifier + ".fasta"
             if not (fname in self.files["sequences"]):

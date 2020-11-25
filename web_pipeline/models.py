@@ -17,9 +17,7 @@ class Mut(models.Model):
 
     protein = models.CharField(max_length=50, db_index=True)
     mut = models.CharField(max_length=8)
-    chain = models.SmallIntegerField(
-        null=True, blank=True
-    )  # chain_idx; 0 -> first chain in PDB
+    chain = models.SmallIntegerField(null=True, blank=True)  # chain_idx; 0 -> first chain in PDB
 
     affectedType = models.CharField(max_length=2, choices=TYPE_CHOICES, blank=True)
     dateAdded = models.DateTimeField(auto_now_add=True)
@@ -104,12 +102,8 @@ class JobToMut(models.Model):
 class UniprotIdentifier(models.Model):
     id = models.AutoField(primary_key=True, db_index=True)
 
-    identifierID = models.CharField(
-        max_length=255, db_index=True, db_column="identifier_id"
-    )
-    identifierType = models.CharField(
-        max_length=20, db_index=True, db_column="identifier_type"
-    )
+    identifierID = models.CharField(max_length=255, db_index=True, db_column="identifier_id")
+    identifierType = models.CharField(max_length=20, db_index=True, db_column="identifier_type")
     uniprotID = models.CharField(max_length=10, db_index=True, db_column="uniprot_id")
 
     def __str__(self):
@@ -125,9 +119,7 @@ class HGNCIdentifier(models.Model):
     identifierID = models.CharField(
         max_length=255, primary_key=True, db_index=True, db_column="identifier_id"
     )
-    identifierType = models.CharField(
-        max_length=20, db_index=True, db_column="identifier_type"
-    )
+    identifierType = models.CharField(max_length=20, db_index=True, db_column="identifier_type")
     uniprotID = models.CharField(max_length=10, db_index=True, db_column="uniprot_id")
 
     def __str__(self):
@@ -242,9 +234,7 @@ def _get_protein_name(protein_id):
                 name = protein_name.split("_")[0]
     except HGNCIdentifier.MultipleObjectsReturned:
         name = list(
-            HGNCIdentifier.objects.filter(
-                identifierType="HGNC_genename", uniprotID=protein_id
-            )
+            HGNCIdentifier.objects.filter(identifierType="HGNC_genename", uniprotID=protein_id)
         )[0].identifierID
     if "-" not in protein_id:
         return name
@@ -295,15 +285,9 @@ class _CoreModel(models.Model):
 
     # Template
     # align_file = models.CharField(max_length=255, blank=True, db_column='alignment_filename')
-    align_score = models.IntegerField(
-        null=True, blank=True, db_column="alignment_score"
-    )
-    align_coverage = models.FloatField(
-        null=True, blank=True, db_column="alignment_coverage"
-    )
-    template_errors = models.TextField(
-        blank=True, null=True, db_column="template_errors"
-    )
+    align_score = models.IntegerField(null=True, blank=True, db_column="alignment_score")
+    align_coverage = models.FloatField(null=True, blank=True, db_column="alignment_coverage")
+    template_errors = models.TextField(blank=True, null=True, db_column="template_errors")
     domain_def = models.CharField(max_length=255, blank=True)
     cath = models.CharField(max_length=255, blank=True, db_column="cath_id")
     seq_id = models.FloatField(null=True, blank=True, db_column="alignment_identity")
@@ -467,16 +451,10 @@ class _CoreMutation(models.Model):
         return self.model
 
     def dGwt(self):
-        return (
-            self.stability_energy_wt.split(",")[0] if self.stability_energy_wt else None
-        )
+        return self.stability_energy_wt.split(",")[0] if self.stability_energy_wt else None
 
     def dGmut(self):
-        return (
-            self.stability_energy_mut.split(",")[0]
-            if self.stability_energy_mut
-            else None
-        )
+        return self.stability_energy_mut.split(",")[0] if self.stability_energy_mut else None
 
     def getddG(self):
         return self.ddG if self.ddG else "-"
@@ -605,19 +583,11 @@ class _InterfaceModel(models.Model):
     #     return '%s-%s' % (self.domain1_id, self.domain2_id)
 
     # domain pair template
-    align_score1 = models.IntegerField(
-        null=True, blank=True, db_column="alignment_score_1"
-    )
-    align_score2 = models.IntegerField(
-        null=True, blank=True, db_column="alignment_score_2"
-    )
+    align_score1 = models.IntegerField(null=True, blank=True, db_column="alignment_score_1")
+    align_score2 = models.IntegerField(null=True, blank=True, db_column="alignment_score_2")
 
-    align_coverage_1 = models.IntegerField(
-        null=True, blank=True, db_column="alignment_coverage_1"
-    )
-    align_coverage_2 = models.IntegerField(
-        null=True, blank=True, db_column="alignment_coverage_2"
-    )
+    align_coverage_1 = models.IntegerField(null=True, blank=True, db_column="alignment_coverage_1")
+    align_coverage_2 = models.IntegerField(null=True, blank=True, db_column="alignment_coverage_2")
 
     cath1 = models.CharField(max_length=255, blank=True, db_column="cath_id_1")
     cath2 = models.CharField(max_length=255, blank=True, db_column="cath_id_2")
@@ -866,9 +836,7 @@ class _InterfaceMutation(models.Model):
             return 2
         else:
             raise ValueError(
-                "self.chain_idx: {}, self.protein_id: {}".format(
-                    self.chain_idx, self.protein_id
-                )
+                "self.chain_idx: {}, self.protein_id: {}".format(self.chain_idx, self.protein_id)
             )
 
     def getinacprot(self, chain=None):
@@ -942,9 +910,7 @@ class DatabaseClinVar(models.Model):
     variation = models.CharField(max_length=50, db_column="variation_name")
 
     def makeLink(self):
-        return (
-            "http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=" + self.variation
-        )
+        return "http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=" + self.variation
 
     class Meta:
         db_table = "clinvar_mutation"
@@ -976,9 +942,7 @@ class DatabaseCOSMIC(models.Model):
     variation = models.CharField(max_length=50, db_column="variation_name")
 
     def makeLink(self):
-        return (
-            "http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=" + self.variation
-        )
+        return "http://www.ensembl.org/Homo_sapiens/Variation/Explore?v=" + self.variation
 
     class Meta:
         db_table = "cosmic_mutation"

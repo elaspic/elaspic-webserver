@@ -53,8 +53,7 @@ def test_csv(fm, filename):
     null_columns = df.columns[df.isnull().all()]
     if df.shape[0] == 1:
         assert not (
-            {c for c in null_columns if "interface" not in c.lower()}
-            - set(POTENTIAL_NULL_COLUMNS)
+            {c for c in null_columns if "interface" not in c.lower()} - set(POTENTIAL_NULL_COLUMNS)
         )
     else:
         assert not set(null_columns) - set(POTENTIAL_NULL_COLUMNS)

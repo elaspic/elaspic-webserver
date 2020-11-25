@@ -6,7 +6,8 @@ from setuptools import setup
 def _read_md_as_rst(file):
     """Read MarkDown file and convert it to ReStructuredText."""
     from pypandoc import convert
-    return convert(file, 'rst')
+
+    return convert(file, "rst")
 
 
 def _read_md_as_md(file):
@@ -25,10 +26,10 @@ def read_md(file):
 
 
 setup(
-    name='elaspic-webserver',
-    version='0.0.8',
-    author='kimlab',
-    author_email='alex.strokach@utoronto.ca',
+    name="elaspic-webserver",
+    version="0.0.8",
+    author="kimlab",
+    author_email="alex.strokach@utoronto.ca",
     url="http://elaspic.kimlab.org",
     description="Webserver for running ELASPIC",
     long_description=read_md("README.md"),
@@ -37,10 +38,9 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
-    license='MIT',
-    packages=['web_pipeline', 'elaspic_rest_api'],
+    license="MIT",
+    packages=["mum", "web_pipeline"],
     package_data={
-        'web_pipeline': ['migrations', 'static', 'templates', 'tests'],
-        'elaspic_rest_api': ['tests'],
+        "web_pipeline": ["migrations", "static", "templates", "tests"],
     },
 )
