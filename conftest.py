@@ -1,3 +1,9 @@
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.getenv("DOTENV_FILE"))
+
 import django
 import pytest
 
