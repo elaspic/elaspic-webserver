@@ -114,6 +114,10 @@ STATICFILES_FINDERS = (
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
+FILE_UPLOAD_PERMISSIONS = 0o664
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o775
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ["SECRET_KEY"]
 
