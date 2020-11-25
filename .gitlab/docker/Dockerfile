@@ -74,6 +74,6 @@ COPY entrypoint /opt/docker/bin/entrypoint
 ENTRYPOINT [ "/opt/docker/bin/entrypoint" ]
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD [ "gunicorn", "elaspic_rest_api.app:app", "--limit-request-line", "0", \
+CMD [ "gunicorn", "mum.wsgi:app", "--limit-request-line", "0", \
       "--log-config", "/opt/conda/share/logconfig.ini", \
       "--access-logfile", "-", "--error-logfile", "-", "--capture-output" ]
