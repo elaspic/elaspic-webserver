@@ -1,28 +1,9 @@
-import os.path as op
-
 from setuptools import setup
 
 
-def _read_md_as_rst(file):
-    """Read MarkDown file and convert it to ReStructuredText."""
-    from pypandoc import convert
-
-    return convert(file, "rst")
-
-
-def _read_md_as_md(file):
-    """Read MarkDown file."""
-    with open(op.join(op.dirname(__file__), file)) as ifh:
-        return ifh.read()
-
-
-def read_md(file):
-    """Read MarkDown file and try to convert it to ReStructuredText if you can."""
-    try:
-        return _read_md_as_rst(file)
-    except ImportError:
-        print("WARNING: pypandoc module not found, could not convert Markdown to RST!")
-        return _read_md_as_md(file)
+def read_file(file):
+    with open(file) as fin:
+        return fin.read()
 
 
 setup(
@@ -32,7 +13,8 @@ setup(
     author_email="alex.strokach@utoronto.ca",
     url="http://elaspic.kimlab.org",
     description="Webserver for running ELASPIC",
-    long_description=read_md("README.md"),
+    long_description=read_file("README.md"),
+    long_description_content_type="text/markdown",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3 :: Only",
