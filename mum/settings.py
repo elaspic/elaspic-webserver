@@ -27,6 +27,13 @@ DATABASES = {
     },
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": os.getenv("CACHE_BACKEND", "django.core.cache.backends.locmem.LocMemCache"),
+        "LOCATION": os.getenv("CACHE_LOCATION", "unique-snowflake"),
+    }
+}
+
 BASE_DIR = op.dirname(op.dirname(op.abspath(__file__)))
 PROJECT_ROOT = op.dirname(BASE_DIR)
 
