@@ -1,70 +1,56 @@
 # ELASPIC Webserver
 
-- [Installation](#installation)
-- [Folders](#folders)
+[![pipeline status](https://gitlab.com/elaspic/elaspic-webserver/badges/v0.0.9/pipeline.svg)](https://gitlab.com/elaspic/elaspic-webserver/commits/v0.1.3/)
+[![coverage report](https://gitlab.com/elaspic/elaspic-webserver/badges/v0.0.9/coverage.svg?job=test)](https://gitlab.com/elaspic/elaspic-webserver/commits/v0.1.3/)
 
-## Installation
+## Development
 
-Install required libraries:
+1. Build an `elaspic-webserver` conda package.
 
-```
-sudo apt install apache2-dev postfix  # to send mail
-```
+   ```bash
+   conda build .gitlab/conda
+   ```
 
-## Python requirements
+1. Create an `elaspic-webserver` conda environment.
 
-```bash
-conda create -n elaspic-webserver 'python>=3.6' django kmtools aiohttp requests mysqlclient redis redis-py sqlalchemy
-source activate elaspic-webserver
-pip install aiomysql aioredis raven
-```
+   ```bash
+   conda create -n elaspic-webserver --use-local elaspic-webserver
+   ```
 
-For testing:
+1. (Optional) Install source package in development mode.
 
-```bash
-pip install flake8 pytest pytest-logging pytest-cov pytest-asyncio
-```
+   ```bash
+   conda activate elaspic-webserver
+   pip install -e .
+   ```
 
-Create conda environment:
+1. Start development server.
 
-```
-conda env create -f environment.yml
-```
+   ```bash
+   manage.py runserver
+   ```
 
-If you already have the conda environment from a previous release, you can update using:
+## Deployment
 
-```
-conda env update -f environment.yml
-```
+1. Build Docker image.
 
-For jobsubmitter:
+   ```bash
+   # For a private repo, you may need to set the CONDA_BLD_REQUEST_HEADER environment variable
+   export CONDA_BLD_REQUEST_HEADER="PRIVATE-TOKEN: <your_access_token>"
 
-```
-aiohttp aiomysql pytest pytest-asyncio
-```
+   # Replate "870684925" with the ID of the build for which you want to create the image
+   export CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/22388857/jobs/870684925/artifacts"
 
-## Folders
+   docker build --build-arg CONDA_BLD_ARCHIVE_URL .gitlab/docker/
+   ```
 
-### [conf](/conf)
+1. Run Docker image.
 
-This folder contains apache and supervisord configuration files.
+   ```bash
+   docker run --tty --env-file .env --env HOST_USER_ID=9284 \
+       --env=GUNICORN_CMD_ARGS="--bind 0.0.0.0:8080 --workers 1" \
+       --volume /home/kimlab1/database_data/elaspic:/home/kimlab1/database_data/elaspic:rw \
+       registry.gitlab.com/elaspic/elaspic-webserver:latest
+   ```
 
-### [deploy](/deploy)
-
-This folder contains obsolete scripts for configuring vagrant and docker images.
-
-### [jobsubmitter](/jobsubmitter)
-
-Asynchronous web server for submitting and monitoring ELASPIC jobs in the SGE cluster.
-
-### [mum](/mum)
-
-MUM configurations and settings.
-
-### [notebooks](/notebooks)
-
-Notebooks with examples and tests.
-
-### [web_pipeline](/web_pipeline)
-
-MUM app.
+1. (Optional) Use docker-compose to deploy Docker image together with its dependencies.
