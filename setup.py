@@ -8,7 +8,7 @@ def read_file(file):
 
 setup(
     name="elaspic-webserver",
-    version="0.0.9.dev0",
+    version="0.0.9",
     author="kimlab",
     author_email="alex.strokach@utoronto.ca",
     url="http://elaspic.kimlab.org",
