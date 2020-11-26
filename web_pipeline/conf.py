@@ -1,3 +1,4 @@
+import os
 import os.path as op
 
 # Duplicate from proj.settings
@@ -20,6 +21,6 @@ JOB_EXPIRY_DAY = 90
 TASK_SOFT_TIME_LIMIT = 24 * 60 * 60
 
 # Other configurations.
-DATABASE_PATH = op.join("/home/kimlab1/database_data/")
+DATABASE_PATH = os.getenv("DATABASE_DIR", "/home/kimlab1/database_data/")
 DB_PATH = op.join(DATABASE_PATH, "elaspic/")
 SAVE_PATH = op.join(DB_PATH, "webserver", "jobs")
