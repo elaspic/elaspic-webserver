@@ -27,6 +27,7 @@
 1. Start the development server.
 
    ```bash
+   conda activate elaspic-webserver
    manage.py runserver
    ```
 
