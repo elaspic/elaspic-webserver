@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.urls import path, re_path
 
 from . import views, views_json
 
@@ -11,32 +11,32 @@ urlpatterns = []
 # Views accessed directly by the user.
 urlpatterns += [
     # Input sites.
-    url(r"^$", views.inp, {"p": "sIn"}),
-    url(r"^many/$", views.inp, {"p": "mIn"}),
-    url(r"^run/$", views.runPipeline),
+    path("", views.inp, {"p": "sIn"}),
+    path("many/", views.inp, {"p": "mIn"}),
+    path("run/", views.runPipeline),
     # Results sites.
-    url(r"^result/[a-zA-Z0-9]{6,12}/$", views.displayResult),
-    url(
+    re_path(r"^result/[a-zA-Z0-9]{6,12}/$", views.displayResult),
+    re_path(
         r"^result/[a-zA-Z0-9]{6,12}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$",
         views.displaySecondaryResult,
     ),
-    url(r"^popup/jsmol/$", views.jsmolpopup),
+    path("popup/jsmol/", views.jsmolpopup),
     # Generic sites.
-    url(r"^(help|reference|contact)/$", views.genericSite),
+    re_path(r"^(help|reference|contact)/$", views.genericSite),
 ]
 
 # Views accessed through AJAX calls.
 urlpatterns += [
     # Input sites.
-    url(r"^json/getprotein/$", views_json.getProtein),
-    url(r"^json/uploadfile/$", views_json.uploadFile),
+    path("json/getprotein/", views_json.getProtein),
+    path("json/uploadfile/", views_json.uploadFile),
     # Results sites.
-    url(r"^json/checkjob/$", views_json.checkIfJobIsReady),
-    url(r"^json/rerun/$", views_json.rerunMut),
-    url(r"^getfile/", views_json.getfile),
-    url(r"^json/getdownloads/$", views_json.getdownloads),
+    path("json/checkjob/", views_json.checkIfJobIsReady),
+    path("json/rerun/", views_json.rerunMut),
+    path("getfile/", views_json.getfile),
+    path("json/getdownloads/", views_json.getdownloads),
     # Generic.
-    url(r"^json/contactmail/$", views_json.contactmail),
+    path("json/contactmail/", views_json.contactmail),
 ]
 
 if settings.DEBUG:
