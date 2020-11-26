@@ -19,6 +19,7 @@ requirements:
     - django =3.1
     - kmbio =2.1
     - kmtools =0.2.8
+    - python-dotenv =0.15
 
 test:
   imports:
