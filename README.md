@@ -11,7 +11,7 @@
    conda build .gitlab/conda
    ```
 
-1. Create an `elaspic-webserver` conda environment.
+1. Create an `elaspic-webserver` conda environment using the built package (this will automatically install all dependencies).
 
    ```bash
    conda create -n elaspic-webserver --use-local elaspic-webserver
@@ -24,7 +24,7 @@
    pip install -e .
    ```
 
-1. Start development server.
+1. Start the development server.
 
    ```bash
    manage.py runserver
@@ -32,19 +32,15 @@
 
 ## Deployment
 
-1. Build Docker image.
+1. Build a Docker image.
 
    ```bash
-   # For a private repo, you may need to set the CONDA_BLD_REQUEST_HEADER environment variable
-   export CONDA_BLD_REQUEST_HEADER="PRIVATE-TOKEN: <your_access_token>"
-
-   # Replate "870684925" with the ID of the build for which you want to create the image
-   export CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/22388857/jobs/870684925/artifacts"
+   export CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/3259401/jobs/artifacts/master/download?job=build"
 
    docker build --build-arg CONDA_BLD_ARCHIVE_URL .gitlab/docker/
    ```
 
-1. Run Docker image.
+1. Run the built Docker image.
 
    ```bash
    docker run --tty --env-file .env --env HOST_USER_ID=9284 \
@@ -53,4 +49,4 @@
        registry.gitlab.com/elaspic/elaspic-webserver:latest
    ```
 
-1. (Optional) Use docker-compose to deploy Docker image together with its dependencies.
+1. (Optional) Use docker-compose to deploy the built Docker image together with its dependencies.
