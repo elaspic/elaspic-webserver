@@ -117,11 +117,17 @@ trigger-custom-pipelines:
     - apt-get -y -qq install curl jq
   script:
     - >
-      BUILD_JOB_ID=$(
-        curl --globoff -sS --header "PRIVATE-TOKEN: ${GITLAB_CI_TOKEN}"
-          https://gitlab.com/api/v4/projects/22388857/pipelines/220812929/jobs?scope[]=success
-        | jq '.[] | select(.name == "build") | .id'
+      BUILD_JOB_ID=$( \
+        curl --globoff -sS --header "PRIVATE-TOKEN: ${GITLAB_CI_TOKEN}" \
+          https://gitlab.com/api/v4/projects/22388857/pipelines/220812929/jobs?scope[]=success \
+        | jq '.[] | select(.name == "build") | .id' \
       )
+    # Update pages
+    - curl --request POST
+      --form token="${CI_JOB_TOKEN}"
+      --form ref=${CI_COMMIT_TAG}
+      --form "variables[UPDATE_PAGES]=true"
+      https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
     # Update images
     - curl --request POST
       --form token="${CI_JOB_TOKEN}"
@@ -142,13 +148,18 @@ docker-images:
     - docker:dind
   script:
     - if [[ ! -z ${CI_COMMIT_TAG} ]] ; then
-      IMAGE_TAG=${CI_COMMIT_TAG} ;
+        IMAGE_TAG=${CI_COMMIT_TAG} ;
       else
-      IMAGE_TAG="latest" ;
+        IMAGE_TAG="latest" ;
       fi
     - echo "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+    - if [[ ! -z ${BUILD_JOB_ID} ]] ; then
+        export CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/${BUILD_JOB_ID}/artifacts" ;
+      else
+        export CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/artifacts/master/download?job=build" ;
+      fi
+    - echo ${CONDA_BLD_ARCHIVE_URL}
     - docker login registry.gitlab.com -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
-    - CONDA_BLD_ARCHIVE_URL="https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/jobs/$BUILD_JOB_ID/artifacts"
     - docker build --build-arg CONDA_BLD_ARCHIVE_URL -t "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}" .gitlab/docker/
     - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
   only:
