@@ -27,8 +27,8 @@ RUN umask 0002 \
 
 ARG CONDA_BLD_ARCHIVE_URL
 ARG CONDA_BLD_REQUEST_HEADER
-ARG PACKAGE_NAME="elaspic-rest-api"
-ARG PACKAGE_VERSION="0.1.0"
+ARG PACKAGE_NAME="elaspic-webserver"
+ARG PACKAGE_VERSION="0.0.10"
 
 RUN umask 0002 \
     && mkdir /data \
