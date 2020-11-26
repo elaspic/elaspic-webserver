@@ -133,7 +133,7 @@ trigger-custom-pipelines:
       --form token="${CI_JOB_TOKEN}"
       --form ref=${CI_COMMIT_TAG}
       --form "variables[UPDATE_IMAGES]=true"
-      --form "variables[BUILD_JOB_ID]=${BUILD_JOB_ID}
+      --form "variables[BUILD_JOB_ID]=${BUILD_JOB_ID}"
       https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
   only:
     - tags
