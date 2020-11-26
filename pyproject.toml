@@ -32,7 +32,7 @@ python_files = "test_*.py"
 junit_family = "xunit2"
 log_cli = true
 addopts = """
--sv --doctest-modules --cov=mum --cov=web_pipeline --ignore=setup.py
+-sv --doctest-modules --cov=mum --cov=web_pipeline --ignore=setup.py --benchmark-disable
 """
 filterwarnings = []
 doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
