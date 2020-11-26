@@ -94,7 +94,7 @@ test:
       --cov="${PKG_INSTALL_DIR}"
       --cov-config=pyproject.toml
       --color=yes
-      "tests/"
+      "."
     # Coverage
     - mkdir coverage
     - mv .coverage coverage/.coverage.all
