@@ -120,7 +120,7 @@ trigger-custom-pipelines:
     - >
       BUILD_JOB_ID=$( \
         curl --globoff -sS --header "PRIVATE-TOKEN: ${GITLAB_CI_TOKEN}" \
-          https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/pipelines/${CI_JOB_ID}/jobs?scope[]=success \
+          "https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/pipelines/${CI_JOB_ID}/jobs?scope[]=success" \
         | jq '.[] | select(.name == "build") | .id' \
       )
     # Update pages
