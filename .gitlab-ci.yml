@@ -88,7 +88,7 @@ test:
       pytest pytest-asyncio pytest-benchmark pytest-cov || true
     - source activate test
     # Run tests
-    - export DATABASE_DIR="$(realpath tests/data_dir)"
+    - export DATA_DIR="$(realpath tests/data_dir)"
     - PKG_INSTALL_DIR=$(python -c "import web_pipeline; print(web_pipeline.__path__[0])")
     - python -m pytest
       -c pyproject.toml

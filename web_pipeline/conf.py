@@ -21,6 +21,5 @@ JOB_EXPIRY_DAY = 90
 TASK_SOFT_TIME_LIMIT = 24 * 60 * 60
 
 # Other configurations.
-DATABASE_PATH = os.getenv("DATABASE_DIR", "/home/kimlab1/database_data/")
-DB_PATH = op.join(DATABASE_PATH, "elaspic/")
+DB_PATH = os.getenv("DATA_DIR", "/home/kimlab1/database_data/elaspic/")
 SAVE_PATH = op.join(DB_PATH, "webserver", "jobs")
