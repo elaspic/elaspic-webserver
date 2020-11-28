@@ -17,7 +17,12 @@ celerybeat-schedule*
 *.pyc
 *.lprof
 
+# Notebooks
+.ipynb_checkpoints
+notebooks/*/*
+
 # Settings
 .env
 .env.*
 tmp
+
