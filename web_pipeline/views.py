@@ -3,7 +3,9 @@ import os
 import pickle
 from shutil import copyfile
 from tempfile import mkdtemp
+import gzip
 
+import pylibmc
 import requests
 from django.core.cache import cache
 from django.http import Http404, HttpResponseRedirect
@@ -302,7 +304,7 @@ def displayResult(request):
 
     response = cache.get(cache_key)
     if response is not None:
-        return response
+        return pickle.loads(gzip.decompress(response))
 
     try:
         job = Job.objects.get(jobID=requestID)
@@ -412,7 +414,14 @@ def displayResult(request):
     response = render(request, "result.html", context)
 
     if job.isDone:
-        cache.set(cache_key, response, 24 * 60 * 60)
+        try:
+            cache.set(
+                cache_key,
+                gzip.compress(pickle.dumps(response, pickle.HIGHEST_PROTOCOL)),
+                24 * 60 * 60,
+            )
+        except pylibmc.TooBig:
+            pass
 
     return response
 
