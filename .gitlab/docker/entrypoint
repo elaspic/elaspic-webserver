@@ -30,8 +30,8 @@ source /opt/conda/etc/profile.d/conda.sh
 conda activate app
 
 # Copy script files
-chown elaspic:elaspic -R /staticfiles
-chmod ug+rwX -R /staticfiles
+chown elaspic:elaspic /staticfiles
+chmod ugo+rwX /staticfiles
 /opt/conda/bin/$supkg elaspic manage.py collectstatic --noinput -i download -i jobs
 
 # Run whatever the user wants
