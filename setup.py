@@ -12,7 +12,7 @@ def read_file(file):
 def find_all_file(starting_path, *pattern):
     return [
         op.relpath(f, starting_path)
-        for f in glob.glob(op.join(starting_path, *pattern), recursive=True)
+        for f in glob.glob(op.join(starting_path, *pattern, "**"), recursive=True)
     ]
 
 
