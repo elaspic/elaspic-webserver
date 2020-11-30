@@ -114,8 +114,9 @@ def _get_content_type(filename):
 
 
 def getdownloads(request):
-    """ Used on result page to check for available files, prepared files in
-        archives, and to return their file sizes. """
+    """Used on result page to check for available files, prepared files in archives,
+    and to return their file sizes.
+    """
 
     if not request.GET:
         raise Http404
