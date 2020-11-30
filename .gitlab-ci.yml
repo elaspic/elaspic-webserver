@@ -19,7 +19,7 @@ variables:
 .skip-custom-pipelines:
   except:
     variables:
-      - $UPDATE_IMAGES
+      - $BUILD_IMAGE
 
 .configure:
   extends:
@@ -127,7 +127,7 @@ trigger-custom-pipelines:
     - curl --request POST
       --form token="${CI_JOB_TOKEN}"
       --form ref=${CI_COMMIT_TAG}
-      --form "variables[UPDATE_IMAGES]=true"
+      --form "variables[BUILD_IMAGE]=true"
       --form "variables[BUILD_JOB_ID]=${BUILD_JOB_ID}"
       https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/trigger/pipeline
   only:
@@ -159,4 +159,4 @@ docker-images:
     - docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
   only:
     variables:
-      - $UPDATE_IMAGES
+      - $BUILD_IMAGE
