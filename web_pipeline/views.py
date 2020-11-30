@@ -300,9 +300,9 @@ def displayResult(request):
     requestID = request.path.split("/")[2]
     cache_key = f"result/{requestID}"
 
-    # response = cache.get(cache_key)
-    # if response is not None:
-    #     return response
+    response = cache.get(cache_key)
+    if response is not None:
+        return response
 
     try:
         job = Job.objects.get(jobID=requestID)
@@ -411,7 +411,6 @@ def displayResult(request):
 
     response = render(request, "result.html", context)
 
-    # if all(jm.mut.status == "done" for jm in data):
     if job.isDone:
         cache.set(cache_key, response, 24 * 60 * 60)
 
