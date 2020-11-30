@@ -1,9 +1,19 @@
+import glob
+import os.path as op
+
 from setuptools import setup
 
 
 def read_file(file):
     with open(file) as fin:
         return fin.read()
+
+
+def find_all_file(starting_path, *pattern):
+    return [
+        op.relpath(f, starting_path)
+        for f in glob.glob(op.join(starting_path, *pattern), recursive=True)
+    ]
 
 
 setup(
@@ -23,18 +33,15 @@ setup(
     license="MIT",
     packages=["mum", "web_pipeline"],
     package_data={
-        "web_pipeline": [
-            "migrations/*",
-            "sql/*",
-            "static/*",
-            "static/css/*",
-            "static/fonts/*",
-            "static/images/*",
-            "static/js/*",
-            "static/jsmol/*",
-            "templates/*",
-            "tests/*",
-        ],
+        "web_pipeline": (
+            [
+                "migrations/*",
+                "sql/*",
+                "templates/*",
+            ]
+            + find_all_file("web_pipeline", "static")
+            + find_all_file("web_pipeline", "tests")
+        )
     },
     scripts=["manage.py"],
 )
