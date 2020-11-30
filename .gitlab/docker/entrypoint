@@ -10,8 +10,9 @@
 # Adapted from https://denibertovic.com/posts/handling-permissions-with-docker-volumes/
 USER_ID=${HOST_USER_ID:-9001}
 GROUP_ID=${HOST_GROUP_ID:-9001}
+id elaspic
 groupadd -g ${GROUP_ID} elaspic
-useradd --shell /bin/bash -u $USER_ID -g elaspic -G conda -o -c "" -m elaspic
+useradd --shell /bin/bash -u ${USER_ID} -g elaspic -G conda -o -c "" -m elaspic
 export HOME=/home/elaspic
 export USER=elaspic
 export LOGNAME=elaspic
@@ -29,6 +30,8 @@ source /opt/conda/etc/profile.d/conda.sh
 conda activate app
 
 # Copy script files
+chown elaspic:elaspic -R /staticfiles
+chmod ug+rwX -R /staticfiles
 /opt/conda/bin/$supkg elaspic manage.py collectstatic --noinput -i download -i jobs
 
 # Run whatever the user wants
