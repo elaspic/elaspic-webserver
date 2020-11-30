@@ -114,7 +114,6 @@ def _get_content_type(filename):
 
 
 def getdownloads(request):
-    logger.info("getdownloads({})".format(request))
     """ Used on result page to check for available files, prepared files in
         archives, and to return their file sizes. """
 
