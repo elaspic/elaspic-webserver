@@ -23,7 +23,7 @@ setup(
     license="MIT",
     packages=["mum", "web_pipeline"],
     package_data={
-        "web_pipeline": ["migrations", "static", "templates", "tests"],
+        "web_pipeline": ["migrations/*", "static/*", "templates/*", "tests/*"],
     },
     scripts=["manage.py"],
 )
