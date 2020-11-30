@@ -1,9 +1,9 @@
+import gzip
 import logging
 import os
 import pickle
 from shutil import copyfile
 from tempfile import mkdtemp
-import gzip
 
 import pylibmc
 import requests
