@@ -33,6 +33,13 @@ CACHES = {
         "LOCATION": os.getenv("CACHE_LOCATION", "unique-snowflake"),
     }
 }
+if CACHES["default"]["BACKEND"] == "django.core.cache.backends.memcached.PyLibMCCache":
+    CACHES["default"]["OPTIONS"] = {  # type: ignore
+        "binary": True,
+        "behaviors": {
+            "ketama": True,
+        },
+    }
 
 BASE_DIR = op.dirname(op.dirname(op.abspath(__file__)))
 PROJECT_ROOT = op.dirname(BASE_DIR)

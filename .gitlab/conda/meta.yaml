@@ -22,7 +22,7 @@ requirements:
     - kmtools =0.2.8
     - mysqlclient =2.0
     - python-dotenv =0.15
-    - python-memcached =1.59
+    - pylibmc =1.6
     - sentry-sdk =0.19
 
 test:
