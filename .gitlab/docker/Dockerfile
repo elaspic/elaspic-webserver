@@ -68,10 +68,10 @@ COPY --chown=root:conda logconfig.ini /opt/conda/share/
 
 COPY entrypoint /opt/docker/bin/entrypoint
 
-# Ensure that all containers start with tini and the user selected process.
-# Activate the `conda` environment `base` and the devtoolset compiler.
-# Provide a default command (`bash`), which will start if the user doesn't specify one.
-ENTRYPOINT [ "/opt/docker/bin/entrypoint" ]
+# Using tini prevents the following warning on container boot:
+# bash: cannot set terminal process group (-1): Inappropriate ioctl for device
+# bash: no job control in this shell
+ENTRYPOINT [ "/opt/conda/bin/tini", "--", "/opt/docker/bin/entrypoint" ]
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 CMD [ "gunicorn", "mum.wsgi:app", "--limit-request-line", "0", \
