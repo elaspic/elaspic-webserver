@@ -7,6 +7,7 @@ from tempfile import mkdtemp
 
 import pylibmc
 import requests
+from django.conf import settings
 from django.core.cache import cache
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
@@ -217,10 +218,10 @@ def runPipeline(request):
 
     if local:
         data_in = {
+            "api_token": settings.REST_API_TOKEN,
             "job_id": j.jobID,
             "job_email": j.email,
             "job_type": "local",
-            "secret_key": conf.JOBSUBMITTER_SECRET_KEY,
             "mutations": [
                 {
                     "protein_id": random_id,
@@ -233,10 +234,10 @@ def runPipeline(request):
     else:
         # Run pipeline for new mutations.
         data_in = {
+            "api_token": settings.REST_API_TOKEN,
             "job_id": j.jobID,
             "job_email": j.email,
             "job_type": "database",
-            "secret_key": conf.JOBSUBMITTER_SECRET_KEY,
             "mutations": [],
         }
         for m in newMuts:
@@ -257,7 +258,7 @@ def runPipeline(request):
         n_tries = 0
         while (not status or status == "error") and n_tries < 10:
             n_tries += 1
-            r = requests.post("http://localhost:8001/elaspic/api/1.0/", json=data_in)
+            r = requests.post(settings.REST_API_URL, json=data_in)
             if not r.ok:
                 logger.error("Bad response from jobsubmitter server: {}".format(r))
                 continue

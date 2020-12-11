@@ -64,10 +64,10 @@ def rerunMut(request):
             # runPipelineWrapper.delay(m, j.jobID)
             # sleepabit.delay(5,10)
             data_in = {
+                "api_token": settings.REST_API_TOKEN,
                 "job_id": j.jobID,
-                "job_email": j.email,
                 "job_type": "database",
-                "secret_key": conf.JOBSUBMITTER_SECRET_KEY,
+                "job_email": j.email,
                 "mutations": [
                     {
                         "protein_id": mut.protein,
@@ -80,7 +80,7 @@ def rerunMut(request):
             n_tries = 0
             while (not status or status == "error") and n_tries < 10:
                 n_tries += 1
-                r = requests.post("http://localhost:8001/elaspic/api/1.0/", json=data_in)
+                r = requests.post(settings.REST_API_URL, json=data_in)
                 status = r.json().get("status", None)
 
     return HttpResponse(json.dumps({"error": error}), content_type="application/json")

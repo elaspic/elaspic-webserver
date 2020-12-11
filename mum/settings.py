@@ -198,3 +198,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 # Custom logging
 LOGGING_CONFIG = None
+
+# REST API
+REST_API_URL = os.environ["REST_API_URL"]
+REST_API_TOKEN = os.environ["REST_API_TOKEN"]
