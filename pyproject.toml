@@ -17,6 +17,17 @@ exclude = '''
 )/
 '''
 
+[tool.coverage.run]
+omit = [
+    "*.so",
+]
+
+[tool.coverage.paths]
+source = [
+    "{{ cookiecutter.project_import }}",
+    "*/site-packages/{{ cookiecutter.project_import }}",
+]
+
 [tool.isort]
 line_length = 100
 skip = "docs,__init__.py,setup.py,.gitlab,.conda,env"
