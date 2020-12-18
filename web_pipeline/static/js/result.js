@@ -424,21 +424,21 @@ $(document).ready(function () {
     $("table").trigger("pageAndSize", [1, 10]);
   });
 
-  // Enable filtering of table.
+  // Enable filtering of table (but do not redownload files)
   $("#filtcontrols input").click(function () {
     filterResultTable();
-    updateDownloadableFiles(ajaxRequests);
+    // updateDownloadableFiles(ajaxRequests);
   });
   $("#filtcontrols input").keyup(function () {
     filterResultTable();
-    updateDownloadableFiles(ajaxRequests);
+    // updateDownloadableFiles(ajaxRequests);
   });
   $("#reset").click(function () {
     $("#filtcontrols .inputtext").val("");
     $("#filtcontrols .checkbox").prop("checked", true);
     $(".tooltip#tfil").hide();
     filterResultTable();
-    updateDownloadableFiles(ajaxRequests);
+    // updateDownloadableFiles(ajaxRequests);
   });
 
   // Tooltips
