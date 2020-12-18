@@ -686,6 +686,7 @@ def displaySecondaryResult(request):
                     dgmut = intmuts[idx - 1]["mut"].dGmut()
                     ddg = intmuts[idx - 1]["mut"].getddG()
                     pdbmutnum = intmuts[idx - 1]["mut"].pdb_mut[1:-1]
+                    el2_score = intmuts[idx - 1]["mut"].el2_score
 
                 # Color if interacting with protein 1.
                 index = intmuts[idx - 1]["domain"].id
@@ -732,6 +733,7 @@ def displaySecondaryResult(request):
                     ddg if idx else None,
                     pdbmutnum if idx else None,
                     pdbtemp if idx else None,
+                    el2_score if idx else None,
                 ]
             )
             # if prot.name.split('_')[0] == 'UBC':
