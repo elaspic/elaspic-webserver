@@ -52,6 +52,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+# Install system requirements
+RUN apt-get -qq -o=Dpkg::Use-Pty=0 update \
+    && apt-get -qq -o=Dpkg::Use-Pty=0 -y install \
+    file \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd -g 32766 conda
 
 # Give sudo permission for conda user to run yum (user creation is postponed
