@@ -56,6 +56,8 @@
   <script defer src="{{ STATIC_FOLDER }}jsmol/js/JSmolThree.js"></script>
   <script defer src="{{ STATIC_FOLDER }}jsmol/js/JSmolGLmol.js"></script>
   <script defer src="{{ STATIC_FOLDER }}js/2dprotein.js"></script>
+  {% else %}
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
   {% endif %}
   {% if current %}
   <script defer src="{{ STATIC_FOLDER }}js/{{ current }}.js"></script>
