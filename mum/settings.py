@@ -58,7 +58,7 @@ if SENTRY_DSN is not None:
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 # ALLOWED_HOSTS = [SITE_URL, '142.150.84.65', 'elaspic.kimlab.org', 'elaspic.witvliet.ca']
-SITE_URL = "http://elaspic.kimlab.org"  # required only for 'sendEmail'
+SITE_URL = os.getenv("SITE_URL", "http://elaspic.kimlab.org")  # required only for 'sendEmail'
 ALLOWED_HOSTS = "*"
 
 # Local time zone for this installation. Choices can be found here:
