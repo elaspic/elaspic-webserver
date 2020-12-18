@@ -579,3 +579,47 @@ function color(mode, chains) {
   }
   return script + trans;
 }
+
+$(document).ready(function () {
+  // Tooltips
+  $(document).click(function () {
+    $(".tooltip").hide();
+  });
+
+  $(".tclose").click(function () {
+    var tooltip = "t" + $(this).attr("id").substr(2);
+    $(".tooltip#" + tooltip).hide();
+  });
+
+  $(".tooltip").click(function (e) {
+    e.stopPropagation();
+  });
+
+  $(".help").mousedown(function (e) {
+    e.stopPropagation();
+  });
+
+  var lastHelp;
+  $(".help").click(function (e) {
+    e.stopPropagation();
+    var tooltip = "t" + $(this).attr("class").split(" ")[1];
+    var offTop = $(this).offset().top - 10;
+    var offLeft = $(this).offset().left + 30;
+    $(".tooltip#" + tooltip)
+      .css("top", offTop + "px")
+      .css("left", offLeft + "px");
+
+    // Insert protein and mutation for error tooltip.
+    if (tooltip == "term") {
+      $("#toolpnm").html($(this).attr("data-pnm"));
+    }
+
+    // Ensure show if same tooltip.
+    if (lastHelp == this) {
+      $(".tooltip#" + tooltip).toggle(0);
+    } else {
+      $(".tooltip#" + tooltip).show(0);
+    }
+    lastHelp = this;
+  });
+});
