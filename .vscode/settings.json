@@ -1,0 +1,9 @@
+{
+  "files.watcherExclude": {
+    "**/.mypy_cache/**": true,
+    "**/.pytest_cache/**": true,
+    "**/jsmol.old/**": true,
+    "**/jsmol/**": true,
+    "**/tests/data_dir/**": true
+  }
+}
