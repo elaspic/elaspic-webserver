@@ -15,7 +15,6 @@ from django.utils import html
 from kmbio import PDB
 from kmtools import structure_tools
 
-from . import conf
 from . import functions as fn
 from . import utils
 from .filemanager import FileManager
