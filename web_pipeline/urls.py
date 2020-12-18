@@ -15,9 +15,9 @@ urlpatterns += [
     path("many/", views.inp, {"p": "mIn"}),
     path("run/", views.runPipeline),
     # Results sites.
-    re_path(r"^result/[a-zA-Z0-9]{6,12}/$", views.displayResult),
+    re_path(r"^result/[a-zA-Z0-9\-]{6,128}/$", views.displayResult),
     re_path(
-        r"^result/[a-zA-Z0-9]{6,12}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$",
+        r"^result/[a-zA-Z0-9\-]{6,128}/.+\.[A-Za-z]{1}[0-9]+[A-Za-z]{1}/$",
         views.displaySecondaryResult,
     ),
     path("popup/jsmol/", views.jsmolpopup),
