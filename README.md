@@ -45,7 +45,7 @@
 
    ```bash
    docker run --tty --env-file .env --env HOST_USER_ID=9284 \
-       --env=GUNICORN_CMD_ARGS="--bind 0.0.0.0:8080 --workers 1" \
+       --env=GUNICORN_CMD_ARGS="--bind 0.0.0.0:8080 --workers 3" \
        --volume /home/kimlab1/database_data/elaspic:/home/kimlab1/database_data/elaspic:rw \
        registry.gitlab.com/elaspic/elaspic-webserver:latest
    ```
