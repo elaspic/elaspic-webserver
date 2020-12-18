@@ -131,9 +131,13 @@ def get_mutation_results(jtoms):
         {(jtom.mut.protein, jtom.mut.mut) for jtom in jtoms if jtom.mut.affectedType == "IN"}
     )
 
-    core_query = functools.reduce(
-        operator.or_,
-        (Q(protein_id=protein_id, mut=mut) for protein_id, mut in core_protein_mutations),
+    core_query = (
+        functools.reduce(
+            operator.or_,
+            (Q(protein_id=protein_id, mut=mut) for protein_id, mut in core_protein_mutations),
+        )
+        if core_protein_mutations
+        else None
     )
     interface_query = (
         functools.reduce(
@@ -145,8 +149,11 @@ def get_mutation_results(jtoms):
     )
 
     real_mut = {}
-    for mut_result in CM.objects.select_related("model").filter(core_query):
-        real_mut.setdefault((mut_result.protein_id, mut_result.mut, "CO"), []).append(mut_result)
+    if core_query:
+        for mut_result in CM.objects.select_related("model").filter(core_query):
+            real_mut.setdefault((mut_result.protein_id, mut_result.mut, "CO"), []).append(
+                mut_result
+            )
     if interface_query:
         for mut_result in (
             IM.objects.select_related("model")
