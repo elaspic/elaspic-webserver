@@ -212,11 +212,6 @@ tr.error td.tdt span {
   white-space: nowrap;
 }
 
-.help {
-  position: relative;
-  top: 3px;
-}
-
 /* Table pager */
 
 /* pager wrapper, div */
@@ -484,42 +479,4 @@ input[type="checkbox"]:checked + label {
 
 #dltable tr:hover td {
   background: #c5e7f9;
-}
-
-/* Tooltips */
-
-.tooltip .img {
-  background-repeat: no-repeat;
-  background-position: left center;
-  padding-left: 16px;
-}
-
-.tooltip .img.doneNO {
-  background-position: 3px center;
-}
-
-.tooltip .img.running {
-  background-position: 1px center;
-}
-
-.tooltip .img.queued {
-  background-position: 3px center;
-}
-
-.tooltip .img.error {
-  background-position: 3px center;
-}
-
-.tooltip #rerun {
-  display: inline-block;
-  cursor: pointer;
-  font-size: 10px;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 1px;
-  padding: 0 2px;
-}
-
-.tooltip .click2 {
-  font-style: italic !important;
 }

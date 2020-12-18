@@ -1,5 +1,7 @@
 {% extends "res.html" %} {% block headscript %} {% include "result_head.html" %} {% endblock %} {% block otherfields %}
 
+{% include "tooltip.html" %}
+
 <div id="summary" class="field topfield">
   <div class="top ">
     <h2>Results</h2>
@@ -117,69 +119,6 @@
           Your results will be kept for {{ conf.JOB_EXPIRY_DAY }} days from last access.
         </p>
         {% endif %}
-      </div>
-    </div>
-
-
-    
-    <!-- --------------------------------------------------- -->
-    <!-- - Tooltips.                      - -->
-    <!-- --------------------------------------------------- -->
-    <div class="tooltip" id="tfil">
-      <div class="tinner">
-        <div class="tclose" id="tcfil">x</div>
-        <div class="ttext">
-          Choose which mutations you want to be shown in the result table below.<br />
-          <i>The filtering will also change your downloadable files.</i><br />
-          <span class="p"><span class="click" id="reset">Reset</span> to show everything.</span>
-        </div>
-      </div>
-    </div>
-    <div class="tooltip" id="toob">
-      <div class="tinner">
-        <div class="tclose" id="tcoob">x</div>
-        <div class="ttext">
-          <b>Status of calculations</b>
-          <div class="img done">: Completed with success</div>
-          <div class="img doneNO">: Mutation not in domain</div>
-          <div class="img running">: Running</div>
-          <div class="img queued">: In task queue</div>
-          <div class="img error">: Error</div>
-          <i>When calculations are done, you can click on each mutation to see their
-            detailed results.</i>
-        </div>
-      </div>
-    </div>
-    <div class="tooltip" id="term">
-      <div class="tinner">
-        <div class="tclose" id="tcerm">x</div>
-        <div class="ttext">
-          <b>Try again</b>
-          <div><span class="mono" id="toolpnm"></span> can be rerun by clicking the button:
-            <div id="rerun">RERUN</div>
-          </div>
-          <div><i>For more information about the error, <a href="/contact/" class="click2">contact us</a>.</i></div>
-        </div>
-      </div>
-    </div>
-    <div class="tooltip" id="tdgwtf">
-      <div class="tinner">
-        <div class="tclose" id="tcdgwtf">x</div>
-        <div class="ttext">
-          <b>Final ΔΔG</b>
-          <div>The final Gibbs free energy change (ΔΔG) in kcal/mol is predicted using more than 70 sequential, molecular and energetic features, using the Stochastic Gradient Boosting of Decision Trees algorithm.</div>
-          <div><i>For more information see <a href="/reference/" class="click2">the original publication</a>.</i></div>
-        </div>
-      </div>
-    </div>
-    <div class="tooltip" id="tel2wtf">
-      <div class="tinner">
-        <div class="tclose" id="tcel2wtf">x</div>
-        <div class="ttext">
-          <b>Final ΔΔG</b>
-          <div>The final Gibbs free energy change (ΔΔG) in kcal/mol is predicted using more than 70 sequential, molecular and energetic features, using the Stochastic Gradient Boosting of Decision Trees algorithm.</div>
-          <div><i>For more information see <a href="/reference/" class="click2">the original publication</a>.</i></div>
-        </div>
       </div>
     </div>
 

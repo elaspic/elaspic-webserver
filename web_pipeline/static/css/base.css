@@ -318,6 +318,11 @@ textarea {
   padding: 0 !important;
 }
 
+.help {
+  position: relative;
+  top: 2px;
+}
+
 .tooltip {
   display: none;
   max-width: 200px;
@@ -415,6 +420,44 @@ textarea {
 .tooltip .ttext .p {
   display: inline-block;
   padding-top: 5px;
+}
+
+/* Tooltips (from results) */
+
+.tooltip .img {
+  background-repeat: no-repeat;
+  background-position: left center;
+  padding-left: 16px;
+}
+
+.tooltip .img.doneNO {
+  background-position: 3px center;
+}
+
+.tooltip .img.running {
+  background-position: 1px center;
+}
+
+.tooltip .img.queued {
+  background-position: 3px center;
+}
+
+.tooltip .img.error {
+  background-position: 3px center;
+}
+
+.tooltip #rerun {
+  display: inline-block;
+  cursor: pointer;
+  font-size: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 1px;
+  padding: 0 2px;
+}
+
+.tooltip .click2 {
+  font-style: italic !important;
 }
 
 /* Shadows, fonts */

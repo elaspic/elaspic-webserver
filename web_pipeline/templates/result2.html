@@ -1,5 +1,7 @@
 {% extends "res.html" %} {% block headscript %} {% include "result2_head.html" %} {% endblock %} {% block otherfields %}
 
+{% include "tooltip.html" %}
+
 <div id="topresults" class="field topfield">
   <div class="top{% if inInt %} inac{% endif %}">
     <h2>{{ data.inputIdentifier }}.{{ data.mut.mut }}</h2>
@@ -200,11 +202,11 @@
         </p>
 
         <p class="whole br">
-          ELASPIC ΔΔG: <span id="sbddg" class="mono">{{ curmut.ddG|floatformat:3 }}</span>
+          ELASPIC ΔΔG: <span class="help dgwtf"></span> <span id="sbddg" class="mono">{{ curmut.ddG|floatformat:3 }}</span>
         </p>
         
         <p class="whole br">
-          ELASPIC2 score: <span id="sbel2" class="mono">{{ curmut.ddG|floatformat:3 }}</span>
+          ELASPIC2 (EL2) score: <span class="help el2wtf"></span> <span id="sbel2" class="mono">{{ curmut.ddG|floatformat:3 }}</span>
         </p>
 
         <!-- Database information -->
