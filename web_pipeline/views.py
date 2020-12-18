@@ -220,8 +220,8 @@ def runPipeline(request):
         data_in = {
             "api_token": settings.REST_API_TOKEN,
             "job_id": j.jobID,
-            "job_email": j.email,
             "job_type": "local",
+            "job_email": j.email,
             "mutations": [
                 {
                     "protein_id": random_id,
@@ -236,8 +236,8 @@ def runPipeline(request):
         data_in = {
             "api_token": settings.REST_API_TOKEN,
             "job_id": j.jobID,
-            "job_email": j.email,
             "job_type": "database",
+            "job_email": j.email,
             "mutations": [],
         }
         for m in newMuts:
