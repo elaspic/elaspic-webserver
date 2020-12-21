@@ -62,7 +62,7 @@ class FileManager:
         for pnm in muts:
             iden, mut = functions.getPnM(pnm)
             if iden is None or mut is None:
-                logger.error("Something wrong happened when parsing pnm: '{}'".format(pnm))
+                logger.error("Something wrong happened when parsing pnm: %s", pnm)
                 logger.error("iden: '{}'".format(iden))
                 logger.error("mut: '{}'".format(mut))
                 continue
@@ -281,6 +281,14 @@ class FileManager:
         # Final ddG.
         header += ["Final_ddG"]
         bodyline += [str(rm.ddG)] if mutCompleted else r(1)
+
+        # EL2 score
+        header += ["ProtBert_score", "ProteinSolver_score", "EL2_score"]
+        bodyline += (
+            [str(rm.protbert_score), str(rm.proteinsolver_score), str(rm.el2_score)]
+            if mutCompleted
+            else r(3)
+        )
 
         if self.file_name == "allresults":
             # Remaining shared features IF allresults.

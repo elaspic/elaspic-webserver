@@ -329,7 +329,7 @@ def sendEmail(j, sendType):
         logger.debug("Email sent successfully! :)")
         return 1
     except Exception as e:
-        logger.error("The following exception occured while trying to send mail: {}".format(e))
+        logger.error("The following exception occured while trying to send mail: %s", e)
         return 0
 
 
