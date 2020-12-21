@@ -9,6 +9,7 @@ import pytest
 
 django.setup()
 
+django.conf.settings.DATABASES["default"]["USER"] += "-readonly"
 assert django.conf.settings.DATABASES["default"]["USER"].endswith("-readonly")
 
 

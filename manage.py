@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=os.getenv("ENV_FILE", ".env.prod"))
+load_dotenv(dotenv_path=os.getenv("ENV_FILE", ".env.test"), override=True)
 
 import sys
 
