@@ -4,6 +4,7 @@ import os
 import pickle
 from shutil import copyfile
 from tempfile import mkdtemp
+from urllib.parse import quote
 
 import pylibmc
 import requests
@@ -393,6 +394,7 @@ def displayResult(request):
         else:
             return 1000001
 
+    muts_for_dl = []
     for jm in data:
         jm.placeholder_value = get_placeholder_value(jm)
 
@@ -401,6 +403,11 @@ def displayResult(request):
                 f"{jm.inputIdentifier}.{jm.mut.mut}/"
                 f"{f'?p={rmut.inacd}' if getattr(rmut, 'inacd', None) else ''}"
             )
+            rmut.data_pnt = f"{jm.inputIdentifier}.{jm.mut.mut}"
+            if rmut.mutation_type == "interface":
+                rmut.data_pnt += f"_{rmut.model.id}"
+            muts_for_dl.append(rmut.data_pnt)
+    job.muts_for_dl = quote(" ".join(muts_for_dl))
 
     context = {
         "url": "http://%s/result/%s/" % (request.get_host(), requestID),

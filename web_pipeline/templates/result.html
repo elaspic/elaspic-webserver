@@ -173,7 +173,7 @@
       </thead>
       <tbody>
         {% for jm in data %}{% spaceless %} {% for rmut in jm.realMut %}
-        <tr class="{{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}" data-pnt="{{ jm.inputIdentifier }}.{{ jm.mut.mut }}{% if rmut.mutation_type == 'interface' %}_{{ rmut.model.id }}{% endif %}">
+        <tr class="{{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}" data-pnt="{{ rmut.data_pnt }}">
           <!-- Status -->
           <td class="td-status {{ jm.mut.status }}{% if jm.mut.affectedType == 'NO' %}NO{% endif %}">
             {% ifequal jm.mut.status 'done' %}<a href="{{ rmut.web_url }}">

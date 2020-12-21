@@ -93,18 +93,10 @@ function filterResultTable() {
 }
 
 function updateDlLinks() {
-  // Get all filtered mutations.
-  var filteredMuts = [];
-  $("#resulttable tbody tr:visible").each(function (index) {
-    filteredMuts.push($(this).attr("data-pnt"));
-  });
-  filteredMuts = filteredMuts.join(" ");
-
   // Put them in the href of all download links.
   $("#download a").each(function (index) {
     var thisFile = $(this).attr("data-file");
-    var baseHref = "/getfile/?j=" + jobID + "&f=" + thisFile + "&m=";
-    $(this).attr("href", baseHref + filteredMuts);
+    $(this).attr("href", "/getfile/?j=" + jobID + "&f=" + thisFile + "&m=" + mutsForDl);
   });
 }
 
