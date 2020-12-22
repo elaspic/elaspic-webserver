@@ -1,7 +1,7 @@
 # ELASPIC Webserver
 
-[![pipeline status](https://gitlab.com/elaspic/elaspic-webserver/badges/v0.0.11.dev0/pipeline.svg)](https://gitlab.com/elaspic/elaspic-webserver/commits/v0.1.3/)
-[![coverage report](https://gitlab.com/elaspic/elaspic-webserver/badges/v0.0.11.dev0/coverage.svg?job=test)](https://gitlab.com/elaspic/elaspic-webserver/commits/v0.1.3/)
+[![pipeline status](https://gitlab.com/elaspic/elaspic-webserver/badges/v0.0.11/pipeline.svg)](https://gitlab.com/elaspic/elaspic-webserver/commits/v0.1.3/)
+[![coverage report](https://gitlab.com/elaspic/elaspic-webserver/badges/v0.0.11/coverage.svg?job=test)](https://gitlab.com/elaspic/elaspic-webserver/commits/v0.1.3/)
 
 ## Development
 
