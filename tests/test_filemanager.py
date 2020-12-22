@@ -46,7 +46,7 @@ def test_csv(fm, filename):
     df = pd.read_csv(io.BytesIO(data), encoding="utf8", sep="\t", na_values=["-"])
 
     # Correct shape
-    assert df.shape[1] in [10, 100]
+    assert df.shape[1] in [13, 103]
 
     # Make sure few nulls
     POTENTIAL_NULL_COLUMNS = ["ClinVar_mut_ID", "UniProt_mut_ID"]
