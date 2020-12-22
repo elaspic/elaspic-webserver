@@ -11,7 +11,9 @@ django.setup()
 
 if not django.conf.settings.DATABASES["default"]["USER"].endswith("-readonly"):
     django.conf.settings.DATABASES["default"]["USER"] += "-readonly"
+    django.conf.settings.DATABASES["default"]["PASSWORD"] += "-readonly"
 assert django.conf.settings.DATABASES["default"]["USER"].endswith("-readonly")
+assert django.conf.settings.DATABASES["default"]["PASSWORD"].endswith("-readonly")
 
 
 @pytest.fixture(scope="session")
