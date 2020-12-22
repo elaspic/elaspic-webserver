@@ -9,6 +9,8 @@ from pathlib import Path
 import django
 import pytest
 
+import web_pipeline.conf
+
 django.setup()
 
 # Database settings
@@ -19,7 +21,9 @@ assert django.conf.settings.DATABASES["default"]["USER"].endswith("-readonly")
 assert django.conf.settings.DATABASES["default"]["PASSWORD"].endswith("-readonly")
 
 # Data dir
-django.conf.settings.DATA_DIR = Path(__file__).resolve(strict=True).parent.as_posix()
+web_pipeline.conf.DB_PATH = (
+    Path(__file__).resolve(strict=True).parent.joinpath("data_dir", "elaspic").as_posix()
+)
 
 
 @pytest.fixture(scope="session")
