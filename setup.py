@@ -18,7 +18,7 @@ def find_all_file(starting_path, *pattern):
 
 setup(
     name="elaspic-webserver",
-    version="0.0.11",
+    version="0.1.0.dev0",
     author="kimlab",
     author_email="alex.strokach@utoronto.ca",
     url="http://elaspic.kimlab.org",
