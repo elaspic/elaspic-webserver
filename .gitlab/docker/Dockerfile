@@ -60,7 +60,9 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update \
     file \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -g 32766 conda
+RUN sed -ri -e 's@^UMASK[[:space:]]+[[:digit:]]+@UMASK    002@g' /etc/login.defs \
+    && grep -E "^UMASK" /etc/login.defs \
+    groupadd -g 32766 conda
 
 # Give sudo permission for conda user to run yum (user creation is postponed
 # to the entrypoint, so we can create a user with the same id as the host)
