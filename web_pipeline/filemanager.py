@@ -88,11 +88,15 @@ class FileManager:
             if isInterface:
                 data = jtom[0]
                 realMut = list(self.IMut.objects.filter(mut=mut, model=model))
-                data.realMut = [realMut[0]]
-                data.realMutErr = None
             else:
                 data = functions.getResultData(jtom[0])
-                data.realMut = [data.realMut[0]]
+                realMut = data.realMut
+
+            if not realMut:
+                logger.warning("Skipping mutation %s because realMut is empty", data)
+                continue
+            data.realMut = [realMut[0]]
+            data.realMutErr = None
             self.muts.append(data)
 
     @property
