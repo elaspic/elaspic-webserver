@@ -1,3 +1,5 @@
+import os
+from contextlib import contextmanager
 from typing import Dict, List
 
 
@@ -11,3 +13,12 @@ def construct_mut_dbs_html(databases: List[Dict]) -> str:
     else:
         mut_dbs_html = "Mutation run by user"
     return mut_dbs_html
+
+
+@contextmanager
+def set_umask(umask=0):
+    original_umask = os.umask(umask)
+    try:
+        yield
+    finally:
+        os.umask(original_umask)

@@ -15,8 +15,8 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils.timezone import now
 
-from . import conf
-from .models import (
+from web_pipeline import conf
+from web_pipeline.models import (
     CoreMutation,
     CoreMutationLocal,
     HGNCIdentifier,
@@ -27,6 +27,7 @@ from .models import (
     ProteinLocal,
     UniprotIdentifier,
 )
+from web_pipeline.utils import set_umask
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,8 @@ def get_random_id():
         ).count() == 0 and not op.exists(user_path)
         if is_valid:
             try:
-                os.makedirs(user_path)
+                with set_umask():
+                    os.makedirs(user_path)
                 return random_id
             except (OSError, FileExistsError):
                 pass
@@ -82,8 +84,8 @@ def get_random_id():
 
 def get_user_path(random_id):
     user_path = op.join(conf.DB_PATH, "user_input", random_id)
-    os.makedirs(user_path, mode=0o777, exist_ok=True)
-    os.chmod(user_path, 0o777)
+    with set_umask():
+        os.makedirs(user_path, exist_ok=True)
     return user_path
 
 

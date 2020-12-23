@@ -14,10 +14,10 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.timezone import now
 
-from . import conf
-from . import functions as fn
-from . import utils
-from .functions import (
+from web_pipeline import conf
+from web_pipeline import functions as fn
+from web_pipeline import utils
+from web_pipeline.functions import (
     assign_mutation_results,
     fetchProtein,
     get_mutation_results,
@@ -26,7 +26,7 @@ from .functions import (
     isInvalidMut,
     sendEmail,
 )
-from .models import (
+from web_pipeline.models import (
     CoreModel,
     CoreMutation,
     InterfaceMutation,
@@ -39,6 +39,7 @@ from .models import (
     _InterfaceMutation,
     findInDatabase,
 )
+from web_pipeline.utils import set_umask
 
 logger = logging.getLogger(__name__)
 
@@ -506,11 +507,8 @@ def displaySecondaryResult(request):
         # Create pdb folder if not accessed before.
         pdbpath = os.path.join(conf.SAVE_PATH, job, currentIDs[3])
         if not os.path.exists(pdbpath):
-            original_umask = os.umask(0)
-            try:
-                os.makedirs(pdbpath, 0o777)
-            finally:
-                os.umask(original_umask)
+            with set_umask():
+                os.makedirs(pdbpath)
         fileError = False
 
         doneInt, toRemove = [], []
