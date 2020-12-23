@@ -14,6 +14,8 @@ RUN apt-get -qq -o=Dpkg::Use-Pty=0 update \
 SHELL ["/bin/bash", "-c"]
 
 RUN umask 0002 \
+    && sed -ri -e 's@^UMASK[[:space:]]+[[:digit:]]+@UMASK    002@g' /etc/login.defs \
+    && grep -E "^UMASK" /etc/login.defs \
     && curl -sS https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh \
     && openssl dgst -sha256 miniconda.sh | grep 1314b90489f154602fd794accfc90446111514a5a72fe1f71ab83e07de9504a7 \
     && bash miniconda.sh -b -p /opt/conda \
