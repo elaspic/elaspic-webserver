@@ -3,9 +3,9 @@ import logging
 import operator
 import os
 import os.path as op
-import random
 import re
 import time
+import uuid
 from collections import MutableMapping
 
 from django.conf import settings
@@ -66,7 +66,7 @@ def get_random_id():
             A unique id for the `jobID` / `localID` columns.
     """
     while True:
-        random_id = "%06x" % random.randint(1, 16777215)
+        random_id = uuid.uuid4().hex[:12]
         user_path = op.join(conf.DB_PATH, "user_input", random_id)
         is_valid = Job.objects.filter(
             Q(jobID=random_id) | Q(localID=random_id)
