@@ -92,9 +92,11 @@ class FileManager:
                 data = functions.getResultData(jtom[0])
                 realMut = data.realMut
 
+            realMut = [rm for rm in realMut if hasattr(rm, "model")]
             if not realMut:
                 logger.warning("Skipping mutation %s because realMut is empty", data)
                 continue
+
             data.realMut = [realMut[0]]
             data.realMutErr = None
             self.muts.append(data)
@@ -411,9 +413,10 @@ class FileManager:
             if m.realMutErr:
                 continue
             rm = m.realMut[0]
-            chain = rm.findChain()
             mpath = rm.model.data_path
+            chain = rm.findChain()
             defs = rm.model.getdefs(chain).replace(":", "-")
+
             if isinstance(rm.model, models._CoreModel):
                 extratext = ""
             else:
@@ -421,6 +424,7 @@ class FileManager:
                 inacprot = rm.model.getprot(inacChain).id
                 inacdefs = rm.model.getdefs(inacChain).replace(":", "-")
                 extratext = " with %s_%s" % (inacprot, inacdefs)
+
             if self.file_name in ["wtmodels-ori", "allresults"]:
                 if rm.model.model_filename:
                     fname = "%s_%s%s original.pdb" % (
@@ -460,6 +464,7 @@ class FileManager:
             rm = m.realMut[0]
             chain = rm.findChain()
             defs = rm.model.getdefs(chain).replace(":", "-")
+
             if isinstance(rm.model, models._CoreModel):
                 fname = "%s_%s.aln" % (m.inputIdentifier, defs)
                 if not (fname in self.files["alignments"]):
