@@ -515,6 +515,7 @@ function fixMutPopupData(data, num) {
         "</a>"
       : "Stability results";
     var sbddg = data[num][0].d,
+      el2_score = data[num][0].el2_score,
       sbmutdb = data[num][0].db,
       sbdgwt = data[num][0].dw,
       sbdgmut = data[num][0].dm,
@@ -534,6 +535,7 @@ function fixMutPopupData(data, num) {
     $(".muttooltip .ttext #sbdgwt").html(sbdgwt);
     $(".muttooltip .ttext #sbdgmut").html(sbdgmut);
     $(".muttooltip .ttext #sbddg").html(sbddg);
+    $(".muttooltip .ttext #sbel2").html(el2_score);
     $(".muttooltip .ttext #dbs").html(sbmutdb + ".");
     // $('.muttooltip .ttext a#elaspic').attr("href", "https://gitlab.com/kimlab/elaspic/tags/v" + elaspic_version).html("v" + elaspic_version);
   }
