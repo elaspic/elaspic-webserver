@@ -1,54 +1,5 @@
 <script type="text/javascript">
-  var jobID = '{{ job.jobID }}';
-  var mutsForDl = '{{ job.muts_for_dl }}';
-</script>{% if isRunning %}
-<script type="text/javascript">
-  /*
-  function updateMutTable(data) {
-    for (var i = 0; i < data.status.length; i++) {
-      $("#resulttable tbody").find(".td-status").eq(i).removeClass("running");
-      $("#resulttable tbody").find(".td-status").eq(i).removeClass("queued");
-      $("#resulttable tbody").find(".td-status").eq(i).removeClass("error");
-      $("#resulttable tbody").find(".td-status").eq(i).addClass(data.status[i].toLowerCase());
-      if (data.status[i] == "done") {
-      alert(1)
-        $("#resulttable tbody"").find(".status").eq(i).html('<a href="{{ url }}' + data.iden[i] + '.' + data.seq[i] + '/" class="click">Complete</a>');
-      } else {
-      alert(2)
-        $("#resulttable").find(".status").eq(i).text(data.status[i]);
-      }
-    }
-  }
-
-  function checkIfDone() {
-    $.ajax({
-      url: "/json/checkjob/",
-      data: {j: "{{ job.jobID }}"},
-      type: "POST",
-      dataType: "json",
-      cache: false,
-      success: function (data) {
-
-        updateMutTable(data);
-
-        if (data.done) {
-          $("#notreadyyet").remove();
-        } else {
-          setTimeout(function() {
-            checkIfDone();
-          }, 30000);
-        }
-      },
-      error: function (data) {
-        setTimeout(function() {
-          checkIfDone();
-        }, 30000);
-      }
-    });
-  }*/
-
-  $("#notreadyyet").show();
-  setTimeout(function() {
-    location.reload();
-  }, 120000);
-</script>{% endif %}
+  var jobID = "{{ job.jobID }}";
+  var mutsForDl = "{{ job.muts_for_dl }}";
+  var isRunning = {{ isRunning|lower }};
+</script>

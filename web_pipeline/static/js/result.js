@@ -481,3 +481,11 @@ $(document).ready(function () {
     $("#rerun").unbind("click");
   });
 });
+
+if (isRunning) {
+  $("#notreadyyet").show();
+  // Reload page every minute
+  setTimeout(function () {
+    location.reload();
+  }, 60000);
+}
