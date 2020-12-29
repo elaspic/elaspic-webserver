@@ -327,22 +327,6 @@ def displayResult(request):
     #        data = [m]
 
     jtoms = job.jobtomut_set.all()
-    j = jtoms[0].job
-    if not j.isDone:
-        job_is_done = True
-        for jtom in jtoms:
-            running_time = jtom.mut.dateAdded - now()
-            if running_time.total_seconds() > 86400:  # 1 day
-                jtom.mut.status = "error"
-                jtom.mut.error = "3: OUTATIME"
-                jtom.mut.save()
-            if jtom.mut.status not in ["done", "error"]:
-                job_is_done = False
-        if job_is_done:
-            j.isDone = True
-            j.dateFinished = now()
-            j.save()
-
     real_mut = get_mutation_results(jtoms)
     data = assign_mutation_results(jtoms, real_mut)
 
@@ -387,6 +371,19 @@ def displayResult(request):
                     mut.inacd = None
             m.realMut = [m for i, m in enumerate(m.realMut) if i not in toRemove]
 
+    if not job.isDone:
+        job_is_done = False
+        if (now() - job.getDateRun()).total_seconds() > 86400:  # 1 day
+            for jtom in jtoms:
+                jtom.mut.status = "error"
+                jtom.mut.error = "3: OUTATIME"
+                jtom.mut.save()
+            job_is_done = True
+        if job_is_done:
+            job.isDone = True
+            job.dateFinished = now()
+            job.save()
+
     def get_placeholder_value(jm):
         if jm.mut.error:
             return 1000002
@@ -414,7 +411,7 @@ def displayResult(request):
         "url": "http://%s/result/%s/" % (request.get_host(), requestID),
         "type": "result",
         "current": "result",
-        "isRunning": not (job.isDone),
+        "isRunning": not job.isDone,
         "job": job,  # {'jobID': 'asd'},
         "data": data,
         "conf": conf,
