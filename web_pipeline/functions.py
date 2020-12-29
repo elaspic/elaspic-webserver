@@ -67,7 +67,7 @@ def get_random_id():
             A unique id for the `jobID` / `localID` columns.
     """
     while True:
-        random_id = uuid.uuid4().hex[:12]
+        random_id = uuid.uuid4().hex[:8]
         user_path = op.join(conf.DB_PATH, "user_input", random_id)
         is_valid = Job.objects.filter(
             Q(jobID=random_id) | Q(localID=random_id)
