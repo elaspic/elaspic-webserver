@@ -397,10 +397,8 @@ def displayResult(request):
         jm.placeholder_value = get_placeholder_value(jm)
 
         for rmut in jm.realMut:
-            rmut.web_url = (
-                f"{jm.inputIdentifier}.{jm.mut.mut}/"
-                f"{f'?p={rmut.inacd}' if getattr(rmut, 'inacd', None) else ''}"
-            )
+            query = f"?p={rmut.inacd}" if getattr(rmut, "inacd", None) else ""
+            rmut.web_url = f"{jm.inputIdentifier}.{jm.mut.mut}/{query}"
             rmut.data_pnt = f"{jm.inputIdentifier}.{jm.mut.mut}"
             if rmut.mutation_type == "interface":
                 rmut.data_pnt += f"_{rmut.model.id}"
