@@ -205,8 +205,8 @@ def get_protein_name(protein_id, local):
 
 def _get_protein_name_local(protein_id):
     try:
-        name = ProteinLocal.objects.get(id=protein_id).name
-    except ProteinLocal.DoesNotExist:
+        name = list(ProteinLocal.objects.filter(id=protein_id))[0].name
+    except (IndexError, ProteinLocal.DoesNotExist):
         name = None
     return name
 
@@ -508,7 +508,7 @@ class CoreMutationLocal(_CoreMutation):
 
     @property
     def protein(self):
-        return ProteinLocal.objects.get(id=self.protein_id)
+        return list(ProteinLocal.objects.filter(id=self.protein_id))[self.domain_idx]
 
     # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
