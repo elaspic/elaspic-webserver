@@ -332,8 +332,13 @@ def displayResult(request):
 
     # data = [getResultData(jtom) for jtom in jtoms]
 
-    for m in data:
+    job_is_done = True
+    for jtom in data:
         doneInt, toRemove = [], []
+
+        if jtom.mut.status not in ["done", "error"]:
+            job_is_done = False
+
         # Set mutation status temporarily as 'running' if its rerunning.
         #            if m.mut.rerun and not(job.isDone):
         #                if m.mut.rerun == 2:
@@ -342,8 +347,8 @@ def displayResult(request):
         #                    m.mut.status = 'queued'
 
         # Get additional data for result table.
-        if not m.realMutErr:
-            for i, mut in enumerate(m.realMut):
+        if not jtom.realMutErr:
+            for i, mut in enumerate(jtom.realMut):
                 chain = mut.findChain()
                 # Get alignment scores.
                 mut.alignscore = mut.model.getalignscore(chain)
@@ -352,7 +357,7 @@ def displayResult(request):
                 # Get interacting protein.
                 if isinstance(mut, _InterfaceMutation):
                     d = mut.getdomain(1 if chain == 2 else 2)
-                    if d.protein_id == m.mut.protein:
+                    if d.protein_id == jtom.mut.protein:
                         mut.inac = "self"
                     else:
                         mut.inac = d.get_protein_name()
@@ -362,17 +367,16 @@ def displayResult(request):
                     # Check for dublicates. Remove the last one.
                     # This is a quick and dirty fix and should be fixed to pick
                     # the highest sequence identity.
-                    dubkey = "%s.%s.%d" % (m.mut.protein, m.mut.mut, d.id)
+                    dubkey = "%s.%s.%d" % (jtom.mut.protein, jtom.mut.mut, d.id)
                     if dubkey in doneInt:
                         toRemove.append(i)
                     else:
                         doneInt.append(dubkey)
                 else:
                     mut.inacd = None
-            m.realMut = [m for i, m in enumerate(m.realMut) if i not in toRemove]
+            jtom.realMut = [m for i, m in enumerate(jtom.realMut) if i not in toRemove]
 
     if not job.isDone:
-        job_is_done = False
         if (now() - job.getDateRun()).total_seconds() > 86400:  # 1 day
             for jtom in jtoms:
                 jtom.mut.status = "error"
