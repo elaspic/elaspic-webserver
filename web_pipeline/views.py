@@ -190,8 +190,15 @@ def runPipeline(request):
                     doneMuts.append([mut, pnm[2]])
             else:
                 # Create new mutations if the result isn't already complete.
-                if (muts and not imuts and all(mut.ddG for mut in muts)) or (
-                    imuts and all(mut.ddG for mut in imuts)
+                if (
+                    muts
+                    and not imuts
+                    and all(mut.ddG is not None for mut in muts)
+                    and all(mut.el2_score is not None for mut in muts)
+                ) or (
+                    imuts
+                    and all(mut.ddG is not None for mut in imuts)
+                    and all(mut.el2_score is not None for mut in imuts)
                 ):
                     doneMuts.append(
                         [
