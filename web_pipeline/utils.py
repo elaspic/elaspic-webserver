@@ -16,7 +16,7 @@ def construct_mut_dbs_html(databases: List[Dict]) -> str:
 
 
 @contextmanager
-def set_umask(umask=0):
+def set_umask(umask=0o002):
     original_umask = os.umask(umask)
     try:
         yield
