@@ -523,7 +523,7 @@ def _get_known_muts(p, ds, all_domain_range, all_interface_models):
             "id": iId,
             "m": m.mut,
             "d": f"{m.ddG:0.3f}",
-            "el2_score": f"{m.el2_score:0.3f}",
+            "el2_score": f"{m.el2_score:0.3f}" if m.el2_score is not None else "",
             "dw": m.dGwt(),
             "dm": m.dGmut(),
             "si": m.model.getsequenceidentity(chain),
