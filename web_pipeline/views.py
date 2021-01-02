@@ -429,15 +429,15 @@ def displayResult(request):
 
     response = render(request, "result.html", context)
 
-    # if job.isDone:
-    #     try:
-    #         cache.set(
-    #             cache_key,
-    #             gzip.compress(pickle.dumps(response, pickle.HIGHEST_PROTOCOL)),
-    #             24 * 60 * 60,
-    #         )
-    #     except pylibmc.TooBig:
-    #         pass
+    if job.isDone:
+        try:
+            cache.set(
+                cache_key,
+                gzip.compress(pickle.dumps(response, pickle.HIGHEST_PROTOCOL)),
+                24 * 60 * 60,
+            )
+        except pylibmc.TooBig:
+            pass
 
     return response
 
