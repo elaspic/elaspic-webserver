@@ -1,12 +1,12 @@
 import functools
 import logging
 import operator
-import os
 import os.path as op
 import re
 import time
 import uuid
 from collections import MutableMapping
+from pathlib import Path
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
@@ -75,7 +75,7 @@ def get_random_id():
         if is_valid:
             try:
                 with set_umask():
-                    os.makedirs(user_path)
+                    Path(user_path).mkdir(parents=True)
                 return random_id
             except (OSError, FileExistsError):
                 pass
@@ -85,7 +85,7 @@ def get_random_id():
 def get_user_path(random_id):
     user_path = op.join(conf.DB_PATH, "user_input", random_id)
     with set_umask():
-        os.makedirs(user_path, exist_ok=True)
+        Path(user_path).mkdir(parents=True, exist_ok=True)
     return user_path
 
 

@@ -2,6 +2,7 @@ import gzip
 import logging
 import os
 import pickle
+from pathlib import Path
 from shutil import copyfile
 from tempfile import mkdtemp
 from urllib.parse import quote
@@ -428,15 +429,15 @@ def displayResult(request):
 
     response = render(request, "result.html", context)
 
-    if job.isDone:
-        try:
-            cache.set(
-                cache_key,
-                gzip.compress(pickle.dumps(response, pickle.HIGHEST_PROTOCOL)),
-                24 * 60 * 60,
-            )
-        except pylibmc.TooBig:
-            pass
+    # if job.isDone:
+    #     try:
+    #         cache.set(
+    #             cache_key,
+    #             gzip.compress(pickle.dumps(response, pickle.HIGHEST_PROTOCOL)),
+    #             24 * 60 * 60,
+    #         )
+    #     except pylibmc.TooBig:
+    #         pass
 
     return response
 
@@ -511,10 +512,11 @@ def displaySecondaryResult(request):
             )
 
         # Create pdb folder if not accessed before.
-        pdbpath = os.path.join(conf.SAVE_PATH, job, currentIDs[3])
-        if not os.path.exists(pdbpath):
-            with set_umask():
-                os.makedirs(pdbpath)
+        pdb_parent_path = os.path.join(conf.SAVE_PATH, job)
+        pdbpath = os.path.join(pdb_parent_path, currentIDs[3])
+        with set_umask():
+            Path(pdb_parent_path).mkdir(parents=True, exist_ok=True)
+            Path(pdbpath).mkdir(exist_ok=True)
         fileError = False
 
         doneInt, toRemove = [], []
