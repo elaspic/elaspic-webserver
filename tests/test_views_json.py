@@ -48,6 +48,8 @@ def test_getdownloads_noerror(caplog):
     request.GET["_"] = "1609707160346"
 
     response = getdownloads(request)
+    assert isinstance(response, HttpResponse)
+
     response_data = json.loads(response.content.decode("utf-8"))
     assert response_data == response_data_exp
 
@@ -55,4 +57,3 @@ def test_getdownloads_noerror(caplog):
     # - web_pipeline.models.ProteinLocal.MultipleObjectsReturned
     for record in caplog.records:
         assert record.levelname != "ERROR"
-    assert isinstance(response, HttpResponse)
