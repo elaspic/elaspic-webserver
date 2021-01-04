@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import pytest
 from django.http import Http404, HttpRequest, HttpResponse
@@ -27,6 +28,7 @@ def test_downloads_error(http_request):
         _ = getdownloads(request)
 
 
+@pytest.mark.skipif("CI" in os.environ, reason="Test needs access to prod filesystem")
 def test_getdownloads_noerror(caplog):
     caplog.set_level(logging.ERROR)
 
