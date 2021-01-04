@@ -34,4 +34,5 @@ chmod ugo+rwX /staticfiles
 /opt/conda/bin/$supkg elaspic manage.py collectstatic --noinput -i download -i jobs
 
 # Run whatever the user wants
+umask 002
 exec /opt/conda/bin/$supkg elaspic "$@"
