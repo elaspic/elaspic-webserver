@@ -388,12 +388,19 @@ class FileManager:
                 bodyline += r(55)
         return header, bodyline
 
+    @staticmethod
+    def _get_protein_sequence(P, protein_id, mutation):
+        mut_pos = int(mutation[1:-1])
+        for p in P.objects.filter(id=protein_id):
+            if len(p.seq) >= mut_pos and p.seq[mut_pos - 1] == mutation[0]:
+                return p
+        return None
+
     def add_sequence_files(self):
         for m in self.muts:
-            try:
-                p = self.P.objects.get(id=m.mut.protein)
-            except (self.P.DoesNotExist, self.P.MultipleObjectsReturned) as e:
-                logger.error("Failed to get protein with error: '{}: {}'".format(type(e), e))
+            p = self._get_protein_sequence(self.P, m.mut.protein, m.mut.mut)
+            if p is None:
+                logger.error("Failed to get sequence for protein: %s", m.mut.protein)
                 continue
             fname = m.inputIdentifier + ".fasta"
             if not (fname in self.files["sequences"]):
