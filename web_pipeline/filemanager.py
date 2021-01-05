@@ -62,9 +62,9 @@ class FileManager:
         for pnm in muts:
             iden, mut = functions.getPnM(pnm)
             if iden is None or mut is None:
-                logger.error("Something wrong happened when parsing pnm: %s", pnm)
-                logger.error("iden: '{}'".format(iden))
-                logger.error("mut: '{}'".format(mut))
+                logger.error(
+                    "Something wrong happened when parsing pnm: %s (%s, %s)", pnm, iden, mut
+                )
                 continue
 
             # Get interaction if it is an interface mutaition.
