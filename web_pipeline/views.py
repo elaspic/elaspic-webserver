@@ -284,14 +284,7 @@ def runPipeline(request):
     else:
         # Set job to done if all mutations are already done.
         if all(
-            [
-                (
-                    True
-                    if (m[0].status == "done" or m[0].status == "error") and not (m[0].rerun)
-                    else False
-                )
-                for m in newMuts + doneMuts
-            ]
+            [(m[0].status in ["done", "error"] and not (m[0].rerun)) for m in newMuts + doneMuts]
         ):
             j.isDone = True
             j.dateFinished = now()
