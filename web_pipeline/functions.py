@@ -362,8 +362,8 @@ def fetchProtein(pid, local=False):
         logger.debug(e)
         try:
             # Local protein
-            return ProteinLocal.objects.get(id=re.sub(r"[^\x00-\x7f]", r"_", pid))
-        except ProteinLocal.DoesNotExist as e:
+            return list(ProteinLocal.objects.filter(id=re.sub(r"[^\x00-\x7f]", r"_", pid)))[0]
+        except (ProteinLocal.DoesNotExist, IndexError) as e:
             logger.debug(e)
             try:
                 # 2)

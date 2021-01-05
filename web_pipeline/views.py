@@ -609,7 +609,11 @@ def displaySecondaryResult(request):
 
     # Load domains if mutation failed.
     elif not loadEverything:
-        p = ProteinLocal.objects.get(id=m.protein) if local else Protein.objects.get(id=m.protein)
+        p = (
+            list(ProteinLocal.objects.filter(id=m.protein))[m.chain]
+            if local
+            else Protein.objects.get(id=m.protein)
+        )
 
     pSize = len(p.seq) + 0.0
 

@@ -383,7 +383,7 @@ class CoreModelLocal(_CoreModel):
     # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
     def getprot(self, chain=1):
-        return ProteinLocal.objects.get(id=self.protein_id)
+        return list(ProteinLocal.objects.filter(id=self.protein_id))[self.domain_idx]
 
     def getpdbtemplate(self, chain=1, link=True):
         return self.cath
@@ -731,9 +731,9 @@ class InterfaceModelLocal(_InterfaceModel):
 
     def getprot(self, chain):
         if chain == 1:
-            return ProteinLocal.objects.get(id=self.protein_id_1)
+            return list(ProteinLocal.objects.filter(id=self.protein_id_1))[0]
         elif chain == 2:
-            return ProteinLocal.objects.get(id=self.protein_id_2)
+            return list(ProteinLocal.objects.filter(id=self.protein_id_2))[-1]
 
     def getpdbtemplate(self, chain, link=True):
         if chain == 1:
@@ -888,13 +888,12 @@ class InterfaceMutationLocal(_InterfaceMutation):
 
     @property
     def protein(self):
-        return ProteinLocal.objects.get(id=self.protein_id)
+        return list(ProteinLocal.objects.filter(id=self.protein_id))[self.chain_idx]
 
     # protein = models.ForeignKey(ProteinLocal, db_index=True, db_column='protein_id')
 
     def __init__(self, *args, **kwargs):
         models.Model.__init__(self, *args, **kwargs)
-        # self.protein = ProteinLocal.objects.get(id=self.protein_id)
 
     class Meta(_InterfaceMutation.Meta):
         db_table = "elaspic_interface_mutation_local"
