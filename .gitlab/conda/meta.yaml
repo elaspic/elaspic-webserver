@@ -1,6 +1,6 @@
 package:
   name: elaspic-webserver
-  version: "0.2.6.dev0"
+  version: "0.2.6"
 
 source:
   path: ../../
