@@ -370,8 +370,8 @@ class FileManager:
                     energyComplexWt = rm.analyse_complex_energy_wt.split(",")
                     energyComplexMut = rm.analyse_complex_energy_mut.split(",")
                     bodyline += (
-                        energyComplexWt[2:]
-                        + energyComplexMut[2:]
+                        energyComplexWt[2:25]
+                        + energyComplexMut[2:25]
                         + [
                             energyComplexWt[0],
                             energyComplexMut[0],
