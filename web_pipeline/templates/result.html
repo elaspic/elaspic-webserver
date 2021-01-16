@@ -222,7 +222,7 @@
                     Protein is blacklisted for being too long or irregular.
                   {% else %}
                     {% ifequal jm.mut.error.0 '3' %}
-                      Mutation exceeded the time limit of {{ conf.TIME_LIMIT }} hours.
+                      Mutation exceeded the time limit of 3 days.
                     {% endifequal %}
                     {% ifequal jm.mut.error.0 '2' %}
                       {{ SITE_NAME }} closed unexpectedly.

@@ -378,7 +378,7 @@ def displayResult(request):
             jtom.realMut = [m for i, m in enumerate(jtom.realMut) if i not in toRemove]
 
     if not job.isDone:
-        if (now() - job.getDateRun()).total_seconds() > 86400:  # 1 day
+        if (now() - job.getDateRun()).total_seconds() > (3600 * 24 * 3):  # 3 days
             for jtom in jtoms:
                 jtom.mut.status = "error"
                 jtom.mut.error = "3: OUTATIME"
