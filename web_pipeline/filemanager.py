@@ -58,8 +58,16 @@ class FileManager:
             self.IM = models.InterfaceModel
             self.IMut = models.InterfaceMutation
 
+        pnms = []
+        for pnm in muts.split(" "):
+            iden, mut = functions.getPnM(pnm)
+            if iden is None or mut is None:
+                muts = [muts]
+                break
+            pnms.append(pnm)
+
         # Save mutation list.
-        for pnm in muts:
+        for pnm in pnms:
             iden, mut = functions.getPnM(pnm)
             if iden is None or mut is None:
                 logger.error(

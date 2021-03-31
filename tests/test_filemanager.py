@@ -32,7 +32,7 @@ from web_pipeline import filemanager
 )
 def fm(request):
     job_id, muts = request.param
-    return filemanager.FileManager(job_id, muts)
+    return filemanager.FileManager(job_id, " ".join(muts))
 
 
 @pytest.mark.parametrize("filename", filemanager.FileManager._valid_filenames)

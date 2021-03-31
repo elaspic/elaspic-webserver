@@ -93,7 +93,7 @@ def getfile(request):
     if not ("j" in request.GET) or not ("f" in request.GET) or not ("m" in request.GET):
         raise Http404
 
-    fm = FileManager(jobID=request.GET["j"], muts=request.GET["m"].split(" "))
+    fm = FileManager(jobID=request.GET["j"], muts=request.GET["m"])
 
     filename = request.GET["f"]
     data = fm.makeFile(fileToMake=filename)
@@ -133,7 +133,7 @@ def getdownloads(request):
     ]
 
     jsonDict = {}
-    fm = FileManager(jobID=request.GET["j"], muts=request.GET["m"].split(" "))
+    fm = FileManager(jobID=request.GET["j"], muts=request.GET["m"])
 
     for f in files:
         data = fm.makeFile(fileToMake=f)
