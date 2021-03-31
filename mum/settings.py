@@ -53,6 +53,7 @@ if SENTRY_DSN is not None:
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True,
+        release="elaspic-webserver@0.2.8",
     )
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
