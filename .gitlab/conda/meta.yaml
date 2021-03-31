@@ -1,6 +1,6 @@
 package:
   name: elaspic-webserver
-  version: "0.2.8"
+  version: "0.2.9.dev0"
 
 source:
   path: ../../
@@ -19,7 +19,7 @@ requirements:
     - django =3.1
     - gunicorn =20.0
     - kmbio =2.1
-    - kmtools =0.2.8
+    - kmtools =0.2.9.dev0
     - mysqlclient =2.0
     - python-dotenv =0.15
     - pylibmc =1.6
